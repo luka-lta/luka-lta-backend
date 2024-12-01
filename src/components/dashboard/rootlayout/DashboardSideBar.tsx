@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {NavItem} from "@/components/dashboard/rootlayout/types/SidebarTypes.ts";
 import {navigation} from "@/components/dashboard/rootlayout/items/NavigationItems.ts";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 
 export default function DashboardSideBar() {
     const location = useLocation();
@@ -36,7 +37,7 @@ export default function DashboardSideBar() {
         setCurrentPage(location.pathname);
     }, [location]);
 
-    const { isMobile } = useSidebar()
+    const {isMobile} = useSidebar()
 
     const loadDropdownActions = (navItem: NavItem) => {
         if (navItem.dropdown?.length) {
@@ -44,7 +45,7 @@ export default function DashboardSideBar() {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuAction showOnHover>
-                            <MoreHorizontal />
+                            <MoreHorizontal/>
                             <span className="sr-only">More</span>
                         </SidebarMenuAction>
                     </DropdownMenuTrigger>
@@ -55,7 +56,7 @@ export default function DashboardSideBar() {
                     >
                         {
                             navItem.dropdown.map((dropdownItem) => (
-                                <DropdownMenuItem >
+                                <DropdownMenuItem>
                                     <dropdownItem.icon/>
                                     {dropdownItem.title}
                                 </DropdownMenuItem>
@@ -68,9 +69,9 @@ export default function DashboardSideBar() {
     };
 
     return (
-        <Sidebar collapsible="icon" >
+        <Sidebar collapsible="icon">
             <SidebarHeader className="pt-5 items-center">
-                <SiteLogo />
+                <SiteLogo/>
             </ SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
@@ -79,12 +80,25 @@ export default function DashboardSideBar() {
                             {
                                 navigation.navMain.map((navItem) => (
                                     <SidebarMenuItem key={navItem.title}>
-                                        <SidebarMenuButton isActive={currentPage === "/dashboard" + navItem.url} asChild>
-                                            <NavLink to={navItem.url}>
-                                                <navItem.icon/>
-                                                <span>{navItem.title}</span>
-                                            </NavLink>
-                                        </SidebarMenuButton>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <SidebarMenuButton
+                                                        isActive={
+                                                            navItem.url === '/dashboard' ? currentPage === '/dashboard' : currentPage.startsWith(`/dashboard/${navItem.url}`)
+                                                        }
+                                                        asChild>
+                                                        <NavLink to={navItem.url}>
+                                                            <navItem.icon/>
+                                                            <span>{navItem.title}</span>
+                                                        </NavLink>
+                                                    </SidebarMenuButton>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="right" align="center">
+                                                    {navItem.title}
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                         {loadDropdownActions(navItem)}
                                     </SidebarMenuItem>
                                 ))
@@ -94,7 +108,7 @@ export default function DashboardSideBar() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={navigation.user} />
+                <NavUser user={navigation.user}/>
             </SidebarFooter>
         </Sidebar>
     )
