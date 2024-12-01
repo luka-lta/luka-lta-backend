@@ -5,7 +5,7 @@ export const navigation: Navigation = {
     user: {
         name: "TEST",
         email: "test@test.de",
-        avatar: "TT"
+        avatar: "https://avatars.githubusercontent.com/u/67432564?s=400&u=725e1ed64ea2108364b514fa74405600f168242b&v=4"
     },
     navMain: [
         {

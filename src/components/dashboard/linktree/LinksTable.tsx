@@ -6,17 +6,19 @@ import {SortableContext, verticalListSortingStrategy} from "@dnd-kit/sortable";
 import LinkItem from "@/components/dashboard/linktree/LinkItem.tsx";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import {LinkItemType} from "@/lib/types/LinkItemType.ts";
-import {LinkFormDialog} from "@/components/dashboard/linktree/LinkFormDialog.tsx";
+import {LinkEditDialog} from "@/components/dashboard/linktree/dialog/LinkEditDialog.tsx";
+import LinkAddDialog from "@/components/dashboard/linktree/dialog/LinkAddDialog.tsx";
 
 function LinksTable() {
-    const [open, setOpen] = useState(false);
+    const [edit, setEdit] = useState(false);
+    const [create, setCreate] = useState(false);
     const [editingLink, setEditingLink] = useState<LinkItemType | undefined>()
     const {links, fetchLinks, deleteLink, isLoading, error} =
         useLinkStore();
 
     useEffect(() => {
         fetchLinks();
-    }, [fetchLinks, open]);
+    }, [fetchLinks, edit]);
 
     const sortedLinks = useMemo(() =>
             [...links].sort((a, b) => a.displayOrder - b.displayOrder),
@@ -29,7 +31,7 @@ function LinksTable() {
 
     return (
         <div className="space-y-4">
-            <Button disabled={!!error}>
+            <Button disabled={!!error} onClick={() => setCreate(true)}>
                 <Plus className="mr-2 h-4 w-4"/>
                 Add Link
             </Button>
@@ -61,7 +63,7 @@ function LinksTable() {
                                         onDelete={() => handleDelete(link.id)}
                                         onEdit={() => {
                                             setEditingLink(link)
-                                            setOpen(true)
+                                            setEdit(true)
                                         }}
                                     />
                                 ))}
@@ -72,14 +74,15 @@ function LinksTable() {
                     )}
                 </div>
             </div>
-            <LinkFormDialog
-                open={open}
+            <LinkEditDialog
+                open={edit}
                 onOpenChange={(open) => {
-                    setOpen(open)
+                    setEdit(open)
                     if (!open) setEditingLink(undefined)
                 }}
                 initialData={editingLink}
             />
+            <LinkAddDialog open={create} onOpenChange={(open) => setCreate(open)} />
         </div>
     );
 }

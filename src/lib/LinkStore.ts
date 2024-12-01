@@ -62,6 +62,28 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
             set({ error: error.message, isLoading: false });
         }
     },
+
+    addLink: async (newLink: LinkItemType) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(endpoint + '/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newLink),
+            });
+            if (!response.ok) throw new Error('Failed to add new link');
+            const addedLink: LinkItemType = await response.json();
+
+            set((state) => ({
+                links: [...state.links, addedLink],
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
 }));
 
 export default useLinkStore;

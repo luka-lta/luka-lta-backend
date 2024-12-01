@@ -36,7 +36,7 @@ interface LinkFormDialogProps {
     initialData?: LinkItemType
 }
 
-export function LinkFormDialog({ open, onOpenChange, initialData }: LinkFormDialogProps) {
+export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDialogProps) {
     const { updateLink } = useLinkStore();
 
     // Erstelle das Formular mit useForm
@@ -51,12 +51,12 @@ export function LinkFormDialog({ open, onOpenChange, initialData }: LinkFormDial
         },
     });
 
-    // Wenn initialData verfügbar ist, setze die defaultValues
     useEffect(() => {
         if (initialData) {
             form.reset(initialData);
         }
     }, [initialData, form]);
+
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         try {
@@ -64,8 +64,7 @@ export function LinkFormDialog({ open, onOpenChange, initialData }: LinkFormDial
                 updateLink(initialData.id, values)
                 toast.success("Link updated")
             } else {
-                // addLink(values)
-                toast.success("Link created")
+                toast.error("An error occurred")
             }
             form.reset()
             onOpenChange(false)
@@ -78,11 +77,9 @@ export function LinkFormDialog({ open, onOpenChange, initialData }: LinkFormDial
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{initialData ? "Edit Link" : "Add Link"}</DialogTitle>
+                    <DialogTitle>{ "Edit Link"}</DialogTitle>
                     <DialogDescription>
-                        {initialData
-                            ? "Update your link details below"
-                            : "Add a new link to your linktree"}
+                            Update your link details below
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>

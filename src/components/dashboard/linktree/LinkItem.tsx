@@ -9,6 +9,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
+import {MdError} from "react-icons/md";
 
 interface LinksTableRowProps {
     link: LinkItemType
@@ -19,7 +20,7 @@ interface LinksTableRowProps {
 function LinkItem({link, onDelete, onEdit}: LinksTableRowProps) {
     const CustomFaIcon = ({name}) => {
         const FaIcon = Icons[name];
-        if (!FaIcon) return <p>Icon not found!</p>;
+        if (!FaIcon) return <MdError className="text-red-500">Icon not found!</MdError>;
 
         return <FaIcon/>;
     };

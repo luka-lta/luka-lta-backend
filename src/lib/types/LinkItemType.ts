@@ -16,4 +16,5 @@ export interface LinkTreeStore {
     fetchLinks: () => Promise<void>;
     updateLink: (id: number, updatedData: Partial<LinkItemType>) => Promise<void>;
     deleteLink: (id: number) => Promise<void>;
+    addLink: (newLink) => Promise<void>;
 }
