@@ -26,6 +26,7 @@ import {Textarea} from "@/components/ui/textarea.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {Button} from "@/components/ui/button.tsx";
+import {useEffect} from "react";
 
 const formSchema = LinkItemSchema.omit({ id: true, createdOn: true, displayOrder: true })
 
@@ -38,16 +39,24 @@ interface LinkFormDialogProps {
 export function LinkFormDialog({ open, onOpenChange, initialData }: LinkFormDialogProps) {
     const { updateLink } = useLinkStore();
 
+    // Erstelle das Formular mit useForm
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialData || {
+        defaultValues: {
             displayname: "",
             description: "",
             url: "",
             isActive: true,
             iconName: "",
         },
-    })
+    });
+
+    // Wenn initialData verfügbar ist, setze die defaultValues
+    useEffect(() => {
+        if (initialData) {
+            form.reset(initialData);
+        }
+    }, [initialData, form]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         try {

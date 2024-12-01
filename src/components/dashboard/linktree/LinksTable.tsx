@@ -16,7 +16,7 @@ function LinksTable() {
 
     useEffect(() => {
         fetchLinks();
-    }, [fetchLinks]);
+    }, [fetchLinks, open]);
 
     const sortedLinks = useMemo(() =>
             [...links].sort((a, b) => a.displayOrder - b.displayOrder),
