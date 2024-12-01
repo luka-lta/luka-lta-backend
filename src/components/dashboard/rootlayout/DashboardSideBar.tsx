@@ -56,7 +56,7 @@ export default function DashboardSideBar() {
                     >
                         {
                             navItem.dropdown.map((dropdownItem) => (
-                                <DropdownMenuItem>
+                                <DropdownMenuItem key={dropdownItem.url}>
                                     <dropdownItem.icon/>
                                     {dropdownItem.title}
                                 </DropdownMenuItem>

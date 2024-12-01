@@ -30,7 +30,13 @@ export const navigation: Navigation = {
             title: "Linktree",
             url: "linktree",
             icon: ListTree,
-            dropdown: []
+            dropdown: [
+                {
+                    title: "Create new link",
+                    url: "/linktree/create",
+                    icon: Plus,
+                }
+            ]
         },
         {
             title: "Analytics",
