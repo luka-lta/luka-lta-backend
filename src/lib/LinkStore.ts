@@ -1,0 +1,68 @@
+import { create } from 'zustand'
+import {LinkItemType, LinkTreeStore} from "@/lib/types/LinkItemType.ts";
+
+const url = 'http://localhost/api/v1';
+const endpoint = url + '/linkCollection';
+
+export const useLinkStore = create<LinkTreeStore>((set) => ({
+    links: [],
+    isLoading: false,
+    error: null,
+
+    fetchLinks: async () => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(endpoint + '/links'); // Passe den API-Endpunkt an
+            if (!response.ok) throw new Error('Failed to load links');
+            const data = await response.json();
+            const links: LinkItemType[] = data.links;
+            set({ links, isLoading: false });
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    updateLink: async (id, updatedData) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(endpoint + `/link/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData),
+            });
+            if (!response.ok) throw new Error('Failed to update link');
+            const updatedLink: LinkItemType = await response.json();
+
+            set((state) => ({
+                links: state.links.map((link) =>
+                    link.id === id ? { ...link, ...updatedLink } : link
+                ),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    deleteLink: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/linktree/links/${id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Failed to delete link');
+
+            set((state) => ({
+                links: state.links.filter((link) => link.id !== id),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+}));
+
+export default useLinkStore;
+
