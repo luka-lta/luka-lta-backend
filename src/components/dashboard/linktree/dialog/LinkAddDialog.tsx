@@ -33,7 +33,7 @@ interface LinkFormDialogProps {
 }
 
 function LinkAddDialog({ open, onOpenChange }: LinkFormDialogProps) {
-    const { addLink } = useLinkStore();
+    const { addLink, fetchLinks } = useLinkStore();
 
     // React Hook Form Setup
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -58,6 +58,7 @@ function LinkAddDialog({ open, onOpenChange }: LinkFormDialogProps) {
         if (!isOpen) {
             form.reset(defaultValues); // Zurücksetzen der Werte und Fehler
         }
+        fetchLinks(); // Links neu laden
         onOpenChange(isOpen); // Statusänderung weitergeben
     };
 

@@ -1,4 +1,4 @@
-import {FormSchema, LinkItemSchema, LinkItemTypeSchema} from "@/lib/LinkTypes.ts";
+import {FormSchema, LinkItemTypeSchema} from "@/lib/LinkTypes.ts";
 import useLinkStore from "@/lib/LinkStore.ts";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -34,7 +34,7 @@ interface LinkFormDialogProps {
 }
 
 export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDialogProps) {
-    const { updateLink } = useLinkStore();
+    const { updateLink, fetchLinks } = useLinkStore();
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -67,6 +67,7 @@ export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDial
             form.reset(defaultValues); // Zurücksetzen der Werte und Fehler
         }
         onOpenChange(isOpen); // Statusänderung weitergeben
+        fetchLinks(); // Links neu laden
     };
 
     return (
