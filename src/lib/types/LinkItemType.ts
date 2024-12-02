@@ -1,20 +1,11 @@
-export interface LinkItemType {
-    id: number;
-    displayname: string;
-    description?: string;
-    url: string;
-    createdOn: string;
-    isActive: boolean;
-    iconName?: string;
-    displayOrder: number;
-}
+import {LinkItemTypeSchema} from "@/lib/LinkTypes.ts";
 
 export interface LinkTreeStore {
-    links: LinkItemType[];
+    links: LinkItemTypeSchema[];
     isLoading: boolean;
     error: string | null;
     fetchLinks: () => Promise<void>;
-    updateLink: (id: number, updatedData: Partial<LinkItemType>) => Promise<void>;
+    updateLink: (id: number, updatedData: Partial<LinkItemTypeSchema>) => Promise<void>;
     deleteLink: (id: number) => Promise<void>;
     addLink: (newLink) => Promise<void>;
 }

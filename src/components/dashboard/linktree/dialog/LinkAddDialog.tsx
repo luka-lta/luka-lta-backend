@@ -1,146 +1,81 @@
 import useLinkStore from "@/lib/LinkStore.ts";
-import {useForm} from "react-hook-form";
-import {z} from "zod";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {LinkItemSchema} from "@/lib/LinkTypes.ts";
-import {toast} from "sonner";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {FormSchema, LinkItemSchema} from "@/lib/LinkTypes.ts";
+import { toast } from "sonner";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogFooter,
     DialogHeader,
-    DialogTitle
+    DialogTitle,
 } from "@/components/ui/dialog.tsx";
 import {
     Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage
 } from "@/components/ui/form.tsx";
-import {Input} from "@/components/ui/input.tsx";
-import {Textarea} from "@/components/ui/textarea.tsx";
-import {Switch} from "@/components/ui/switch.tsx";
-import {Button} from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import AddForm from "@/components/dashboard/linktree/dialog/form/AddForm.tsx";
 
-const formSchema = LinkItemSchema.omit({id: true, createdOn: true, displayOrder: true})
+// Default-Werte für das Formular
+const defaultValues = {
+    displayname: "",
+    description: "",
+    url: "",
+    iconName: "",
+    isActive: true,
+};
 
 interface LinkFormDialogProps {
-    open: boolean
-    onOpenChange: (open: boolean) => void
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
 }
 
-function LinkAddDialog({open, onOpenChange}: LinkFormDialogProps) {
-    const {addLink} = useLinkStore();
+function LinkAddDialog({ open, onOpenChange }: LinkFormDialogProps) {
+    const { addLink } = useLinkStore();
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            displayname: "",
-            description: "",
-            url: "",
-            isActive: true,
-            iconName: "",
-        },
+    // React Hook Form Setup
+    const form = useForm<z.infer<typeof FormSchema>>({
+        resolver: zodResolver(FormSchema),
+        defaultValues,
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    // Formular-Submit-Handler
+    const onSubmit = (values: z.infer<typeof FormSchema>) => {
         try {
-            addLink(values)
-            toast.success("Link created")
-            form.reset()
-            onOpenChange(false)
+            addLink(values);
+            toast.success("Link created successfully!");
+            form.reset(defaultValues); // Formular zurücksetzen
+            onOpenChange(false); // Dialog schließen
         } catch (error) {
-            toast.error("Something went wrong")
+            console.error("Error creating link:", error);
+            toast.error("An error occurred while creating the link.");
         }
-    }
+    };
+
+    const handleClose = (isOpen: boolean) => {
+        if (!isOpen) {
+            form.reset(defaultValues); // Zurücksetzen der Werte und Fehler
+        }
+        onOpenChange(isOpen); // Statusänderung weitergeben
+    };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{ "Edit Link"}</DialogTitle>
+                    <DialogTitle>Create Link</DialogTitle>
                     <DialogDescription>
-                        Update your link details below
+                        Create an external link to your social media or website.
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="displayname"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Display Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="GitHub" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Description</FormLabel>
-                                    <FormControl>
-                                        <Textarea placeholder="Check out my projects" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="url"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>URL</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="https://github.com/yourusername" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="iconName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Icon Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="FaGithub" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="isActive"
-                            render={({ field }) => (
-                                <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                                    <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Active</FormLabel>
-                                        <FormDescription>
-                                            Show or hide this link on your linktree
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
+                    <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-4"
+                    >
+                        <AddForm form={form} />
                         <DialogFooter>
                             <Button type="submit">Save</Button>
                         </DialogFooter>

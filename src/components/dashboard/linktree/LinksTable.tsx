@@ -5,20 +5,25 @@ import {Plus} from "lucide-react";
 import {SortableContext, verticalListSortingStrategy} from "@dnd-kit/sortable";
 import LinkItem from "@/components/dashboard/linktree/LinkItem.tsx";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
-import {LinkItemType} from "@/lib/types/LinkItemType.ts";
-import {LinkEditDialog} from "@/components/dashboard/linktree/dialog/LinkEditDialog.tsx";
-import LinkAddDialog from "@/components/dashboard/linktree/dialog/LinkAddDialog.tsx";
+import {LinkItemTypeSchema} from "@/lib/LinkTypes.ts";
 
-function LinksTable() {
-    const [edit, setEdit] = useState(false);
-    const [create, setCreate] = useState(false);
-    const [editingLink, setEditingLink] = useState<LinkItemType | undefined>()
-    const {links, fetchLinks, deleteLink, isLoading, error} =
-        useLinkStore();
+interface LinktreePageProps {
+    edit: boolean;
+    setEdit: (edit: boolean) => void;
+    create: boolean;
+    setCreate: (create: boolean) => void;
+    setEditingLink: (link: LinkItemTypeSchema) => void;
+    editingLink: LinkItemTypeSchema | undefined;
+}
+
+function LinksTable(
+    {edit, setEdit, create, setCreate, setEditingLink}: LinktreePageProps
+) {
+    const {links, fetchLinks, deleteLink, isLoading, error} = useLinkStore();
 
     useEffect(() => {
         fetchLinks();
-    }, [fetchLinks, edit]);
+    }, [fetchLinks, edit, create]);
 
     const sortedLinks = useMemo(() =>
             [...links].sort((a, b) => a.displayOrder - b.displayOrder),
@@ -74,15 +79,6 @@ function LinksTable() {
                     )}
                 </div>
             </div>
-            <LinkEditDialog
-                open={edit}
-                onOpenChange={(open) => {
-                    setEdit(open)
-                    if (!open) setEditingLink(undefined)
-                }}
-                initialData={editingLink}
-            />
-            <LinkAddDialog open={create} onOpenChange={(open) => setCreate(open)} />
         </div>
     );
 }

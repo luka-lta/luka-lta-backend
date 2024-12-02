@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import {LinkItemType, LinkTreeStore} from "@/lib/types/LinkItemType.ts";
+import {LinkTreeStore} from "@/lib/types/LinkItemType.ts";
+import {LinkItemTypeSchema} from "@/lib/LinkTypes.ts";
 
 const url = 'http://localhost/api/v1';
 const endpoint = url + '/linkCollection';
@@ -15,7 +16,7 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
             const response = await fetch(endpoint + '/links'); // Passe den API-Endpunkt an
             if (!response.ok) throw new Error('Failed to load links');
             const data = await response.json();
-            const links: LinkItemType[] = data.links;
+            const links: LinkItemTypeSchema[] = data.links;
             set({ links, isLoading: false });
         } catch (error: any) {
             set({ error: error.message, isLoading: false });
@@ -33,7 +34,7 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
                 body: JSON.stringify(updatedData),
             });
             if (!response.ok) throw new Error('Failed to update link');
-            const updatedLink: LinkItemType = await response.json();
+            const updatedLink: LinkItemTypeSchema = await response.json();
 
             set((state) => ({
                 links: state.links.map((link) =>
@@ -63,7 +64,7 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         }
     },
 
-    addLink: async (newLink: LinkItemType) => {
+    addLink: async (newLink: LinkItemTypeSchema) => {
         set({ isLoading: true, error: null });
         try {
             const response = await fetch(endpoint + '/create', {
@@ -74,7 +75,7 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
                 body: JSON.stringify(newLink),
             });
             if (!response.ok) throw new Error('Failed to add new link');
-            const addedLink: LinkItemType = await response.json();
+            const addedLink: LinkItemTypeSchema = await response.json();
 
             set((state) => ({
                 links: [...state.links, addedLink],

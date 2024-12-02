@@ -1,4 +1,3 @@
-import {LinkItemType} from "@/lib/types/LinkItemType.ts";
 import * as Icons from "react-icons/fa";
 import {ExternalLink, GripVertical, MoreHorizontal, Pencil, Trash} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
@@ -10,9 +9,11 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 import {MdError} from "react-icons/md";
+import {LinkItemTypeSchema} from "@/lib/LinkTypes.ts";
+import {Badge, badgeVariants} from "@/components/ui/badge.tsx";
 
 interface LinksTableRowProps {
-    link: LinkItemType
+    link: LinkItemTypeSchema
     onDelete: () => void
     onEdit: () => void
 }
@@ -43,6 +44,12 @@ function LinkItem({link, onDelete, onEdit}: LinksTableRowProps) {
                         <span className="text-muted-foreground">|</span>
                         <span>{link.displayname}</span>
                     </div>
+                    <div className="flex items-center font-medium gap-2">
+                        {Date.parse(link.createdOn) ? new Date(link.createdOn).toLocaleString() : "Unknown"}
+                    </div>
+                    <div className="flex items-center font-medium gap-2">
+                        <Badge className={badgeVariants({variant: link.isActive ? 'default' : 'destructive'})}>{link.isActive ? "Active" : "Inactive"}</Badge>
+                    </div>
                     <div className="text-sm text-muted-foreground">{link.url}</div>
                     {link.description && (
                         <div className="text-sm text-muted-foreground">{link.description}</div>
@@ -51,7 +58,7 @@ function LinkItem({link, onDelete, onEdit}: LinksTableRowProps) {
             </div>
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" asChild>
-                    <a href={link.url} target="_blank" rel="noopener noreferrer">
+                <a href={link.url} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-4 w-4"/>
                         <span className="sr-only">Open {link.displayname}</span>
                     </a>
