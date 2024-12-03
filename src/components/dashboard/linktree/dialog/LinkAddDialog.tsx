@@ -1,9 +1,9 @@
 import useLinkStore from "@/lib/LinkStore.ts";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {useForm} from "react-hook-form";
+import {z} from "zod";
+import {zodResolver} from "@hookform/resolvers/zod";
 import {FormSchema, LinkItemSchema} from "@/lib/LinkTypes.ts";
-import { toast } from "sonner";
+import {toast} from "sonner";
 import {
     Dialog,
     DialogContent,
@@ -12,10 +12,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog.tsx";
-import {
-    Form,
-} from "@/components/ui/form.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import {Form,} from "@/components/ui/form.tsx";
+import {Button} from "@/components/ui/button.tsx";
 import AddForm from "@/components/dashboard/linktree/dialog/form/AddForm.tsx";
 
 // Default-Werte für das Formular
@@ -42,7 +40,7 @@ function LinkAddDialog({ open, onOpenChange }: LinkFormDialogProps) {
     });
 
     // Formular-Submit-Handler
-    const onSubmit = (values: z.infer<typeof FormSchema>) => {
+    const onSubmit = (values: z.infer<typeof LinkItemSchema>) => {
         try {
             addLink(values);
             toast.success("Link created successfully!");

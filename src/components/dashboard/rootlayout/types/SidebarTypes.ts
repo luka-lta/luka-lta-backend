@@ -25,4 +25,4 @@ interface Navigation {
     navMain: NavItem[];
 }
 
-export {Navigation, NavItem, DropdownItem, User};
+export type {Navigation, NavItem, DropdownItem, User};

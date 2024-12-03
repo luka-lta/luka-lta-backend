@@ -19,11 +19,17 @@ interface LinksTableRowProps {
 }
 
 function LinkItem({link, onDelete, onEdit}: LinksTableRowProps) {
-    const CustomFaIcon = ({name}) => {
-        const FaIcon = Icons[name];
-        if (!FaIcon) return <MdError className="text-red-500">Icon not found!</MdError>;
+    const CustomFaIcon = ({ name }: { name: keyof typeof Icons | null }) => {
+        if (!name) {
+            return <MdError className="text-red-500" title="Icon not found!">?</MdError>;
+        }
 
-        return <FaIcon/>;
+        const FaIcon = Icons[name];
+        if (!FaIcon) {
+            return <MdError className="text-red-500" title="Invalid Icon!">?</MdError>;
+        }
+
+        return <FaIcon />;
     };
 
     return (

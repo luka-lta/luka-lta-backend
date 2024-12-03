@@ -17,7 +17,8 @@ export default function UserTable({users}: { users: User[] }) {
 
     const handleDelete = async (id: number) => {
         if (confirm('Are you sure you want to delete this user?')) {
-
+            console.log('Deleting user with id:', id)
+            // TODO: Implement delete user
         }
     }
 

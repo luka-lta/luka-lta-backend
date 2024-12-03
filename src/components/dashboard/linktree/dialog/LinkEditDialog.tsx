@@ -12,18 +12,16 @@ import {
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog.tsx";
-import {
-    Form,
-} from "@/components/ui/form.tsx";
+import {Form,} from "@/components/ui/form.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {useEffect} from "react";
 import EditForm from "@/components/dashboard/linktree/dialog/form/EditForm.tsx";
 
 const defaultValues = {
     displayname: "",
-    description: "",
+    description: null,
     url: "",
-    iconName: "",
+    iconName: null,
     isActive: true,
 };
 

@@ -1,4 +1,4 @@
-import {ChevronsUpDown, HeartHandshake, LogOut, Mail, Settings, Ticket,} from "lucide-react"
+import {ChevronsUpDown, LogOut, Settings} from "lucide-react"
 
 import {Avatar, AvatarFallback, AvatarImage,} from "@/components/ui//avatar"
 import {

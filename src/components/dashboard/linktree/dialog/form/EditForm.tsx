@@ -3,9 +3,11 @@ import {Input} from "@/components/ui/input.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {UseFormReturn} from "react-hook-form";
+import {z} from "zod";
+import {FormSchema} from "@/lib/LinkTypes.ts";
 
 interface EditFormProps {
-    form: UseFormReturn;
+    form: UseFormReturn<z.infer<typeof FormSchema>>;
 }
 
 function EditForm({ form }: EditFormProps) {
@@ -18,7 +20,7 @@ function EditForm({ form }: EditFormProps) {
                     <FormItem>
                         <FormLabel>Display Name</FormLabel>
                         <FormControl>
-                            <Input placeholder="GitHub" {...field} />
+                            <Input placeholder="github" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
