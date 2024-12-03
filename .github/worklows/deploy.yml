@@ -1,0 +1,36 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm install
+      - name: Build React app
+        run: npm run build
+
+      # 3. Verbindung zum Raspberry Pi herstellen und App deployen
+#      - name: Deploy to Raspberry Pi
+#        uses: appleboy/ssh-action@v0.1.8
+#        with:
+#          host: ${{ secrets.RPI_HOST }}
+#          username: ${{ secrets.RPI_USER }}
+#          key: ${{ secrets.RPI_SSH_KEY }}
+#          script: |
+#            cd /path/to/your/deployment
+#            git pull origin main
+#            docker-compose down
+#            docker-compose up --build -d
