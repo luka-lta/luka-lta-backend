@@ -1,6 +1,22 @@
 import {Link} from "react-router-dom";
+import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 
 function ErrorPage() {
+    const { isAuthenticated } = useAuthenticatedUserStore();
+
+    const renderGoToDashboardButton = () => {
+        if (isAuthenticated()) {
+            return (
+                <Link
+                    to={"/dashboard"}
+                    className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                >
+                    Go to dashboard
+                </Link>
+            )
+        }
+    };
+
     return (
         <div
             className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8 z-20">
@@ -16,6 +32,7 @@ function ErrorPage() {
                     >
                         Go to landing page
                     </Link>
+                    {renderGoToDashboardButton()}
                 </div>
             </div>
         </div>

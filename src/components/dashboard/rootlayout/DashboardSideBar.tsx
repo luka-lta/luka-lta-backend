@@ -1,6 +1,4 @@
-import {
-    MoreHorizontal,
-} from "lucide-react"
+import {MoreHorizontal,} from "lucide-react"
 
 import {
     Sidebar,
@@ -28,10 +26,16 @@ import {
 import {NavItem} from "@/components/dashboard/rootlayout/types/SidebarTypes.ts";
 import {navigation} from "@/components/dashboard/rootlayout/items/NavigationItems.ts";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
+import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 
 export default function DashboardSideBar() {
     const location = useLocation();
     const [currentPage, setCurrentPage] = useState(location.pathname);
+    const { getUser } = useAuthenticatedUserStore();
+
+    if(!getUser()) {
+        return null;
+    }
 
     useEffect(() => {
         setCurrentPage(location.pathname);
@@ -108,7 +112,7 @@ export default function DashboardSideBar() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={navigation.user}/>
+                {getUser() ? <NavUser user={getUser()} /> : null}
             </SidebarFooter>
         </Sidebar>
     )
