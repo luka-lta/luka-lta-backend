@@ -4,7 +4,7 @@ import {Textarea} from "@/components/ui/textarea.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {UseFormReturn} from "react-hook-form";
 import {z} from "zod";
-import {FormSchema} from "@/lib/LinkTypes.ts";
+import {FormSchema} from "@/shemas/LinkSchema.ts";
 
 interface EditFormProps {
     form: UseFormReturn<z.infer<typeof FormSchema>>;

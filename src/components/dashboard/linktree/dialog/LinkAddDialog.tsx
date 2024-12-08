@@ -1,8 +1,8 @@
-import useLinkStore from "@/lib/LinkStore.ts";
+import useLinkStore from "@/stores/LinkStore.ts";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {FormSchema, LinkItemSchema} from "@/lib/LinkTypes.ts";
+import {FormSchema, LinkItemSchema} from "@/shemas/LinkSchema.ts";
 import {toast} from "sonner";
 import {
     Dialog,

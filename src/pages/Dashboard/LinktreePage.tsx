@@ -2,7 +2,7 @@ import LinksTable from "@/components/dashboard/linktree/LinksTable.tsx";
 import {LinkEditDialog} from "@/components/dashboard/linktree/dialog/LinkEditDialog.tsx";
 import LinkAddDialog from "@/components/dashboard/linktree/dialog/LinkAddDialog.tsx";
 import {useState} from "react";
-import {LinkItemTypeSchema} from "@/lib/LinkTypes.ts";
+import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
 
 function LinktreePage() {
     const [editingLink, setEditingLink] = useState<LinkItemTypeSchema | undefined>()

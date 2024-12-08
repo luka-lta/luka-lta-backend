@@ -10,6 +10,7 @@ import LinktreePage from "@/pages/Dashboard/LinktreePage.tsx";
 import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 import authenticatedLoader from "@/loader/authenticatedLoader.ts";
 import protectedLoader from "@/loader/protectedLoader.ts";
+import AnalyticsPage from "@/pages/Dashboard/AnalyticsPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -38,7 +39,7 @@ export const appRouter = createBrowserRouter([
             },
             {
                 path: 'analytics',
-                element: <WorkAndProgressPage/>
+                element: <AnalyticsPage/>
             },
             {
                 path: 'todos',

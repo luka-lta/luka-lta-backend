@@ -12,14 +12,10 @@ interface AuthenticatedUserActions {
     setJwt: (jwt: string) => void;
     setUser: (user: User) => void;
     getUser: () => User | null;
-    isJwtValid: () => boolean;
+    isJwtValid: (jwt: string) => boolean;
     isAuthenticated: () => boolean;
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
-}
-
-interface DecodedJwt {
-    exp?: number; // Ablaufdatum des JWT
 }
 
 const initialState: AuthenticatedUserState = {
@@ -32,6 +28,7 @@ export const useAuthenticatedUserStore = create<AuthenticatedUserState & Authent
         (set, get) => ({
             ...initialState,
             setJwt: (jwt: string) => set({ jwt }),
+            setUser: (user: User) => set({ user }),
             isJwtValid: (jwt: string) => {
                 try {
                     const parsedJwt = jwtDecode(jwt);
@@ -45,7 +42,6 @@ export const useAuthenticatedUserStore = create<AuthenticatedUserState & Authent
                 return (jwt && isJwtValid(jwt)) === true;
             },
             getUser: () => get().user,
-            // Login-Funktion
             login: async (email: string, password: string) => {
                 try {
                     const response = await fetch("http://localhost/api/v1/auth", {
@@ -64,11 +60,10 @@ export const useAuthenticatedUserStore = create<AuthenticatedUserState & Authent
                     set({ jwt, user });
                 } catch (error) {
                     console.error("Login error:", error);
-                    throw error; // Fehler weiterleiten
+                    throw error;
                 }
             },
 
-            // Logout (Zustand zurücksetzen)
             logout: () => set({ ...initialState }),
         }),
         {

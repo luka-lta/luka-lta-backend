@@ -32,10 +32,8 @@ export default function DashboardSideBar() {
     const location = useLocation();
     const [currentPage, setCurrentPage] = useState(location.pathname);
     const { getUser } = useAuthenticatedUserStore();
+    const user = getUser();
 
-    if(!getUser()) {
-        return null;
-    }
 
     useEffect(() => {
         setCurrentPage(location.pathname);
@@ -112,7 +110,7 @@ export default function DashboardSideBar() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                {getUser() ? <NavUser user={getUser()} /> : null}
+                <NavUser user={user} />
             </SidebarFooter>
         </Sidebar>
     )

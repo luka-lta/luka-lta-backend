@@ -1,25 +1,31 @@
-import * as Icons from "react-icons/fa";
-import {ExternalLink, GripVertical, MoreHorizontal, Pencil, Trash} from "lucide-react";
+import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
+import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu.tsx";
+import {GripVertical, Pencil, Trash} from "lucide-react";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
+import * as Icons from "react-icons/fa";
 import {MdError} from "react-icons/md";
-import {LinkItemTypeSchema} from "@/lib/LinkTypes.ts";
+import {Link} from "react-router-dom";
 import {Badge, badgeVariants} from "@/components/ui/badge.tsx";
+import {useSortable} from "@dnd-kit/sortable";
+import {CSS} from "@dnd-kit/utilities";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 
-interface LinksTableRowProps {
-    link: LinkItemTypeSchema
-    onDelete: () => void
-    onEdit: () => void
+interface LinkItemProps {
+    link: LinkItemTypeSchema;
+    onDelete: () => void;
+    onEdit: () => void;
 }
 
-function LinkItem({link, onDelete, onEdit}: LinksTableRowProps) {
-    const CustomFaIcon = ({ name }: { name: keyof typeof Icons | null }) => {
+function LinkItem({link, onDelete, onEdit}: LinkItemProps) {
+    const {attributes, listeners, setNodeRef, transform, transition} = useSortable({id: link.id});
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    const CustomFaIcon = ({name}: { name: keyof typeof Icons | null }) => {
         if (!name) {
             return <MdError className="text-red-500" title="Icon not found!">?</MdError>;
         }
@@ -29,69 +35,79 @@ function LinkItem({link, onDelete, onEdit}: LinksTableRowProps) {
             return <MdError className="text-red-500" title="Invalid Icon!">?</MdError>;
         }
 
-        return <FaIcon />;
+        return <FaIcon/>;
     };
 
     return (
-        <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-4">
-                <button
-                    className="touch-none p-2 hover:cursor-grab active:cursor-grabbing"
-                >
-                    <GripVertical className="h-4 w-4 text-muted-foreground"/>
-                    <span className="sr-only">Drag handle</span>
-                </button>
-
-                <div>
-                    <div className="flex items-center font-medium gap-2">
-                        <Avatar>
-                            <AvatarFallback><CustomFaIcon name={link.iconName}/></AvatarFallback>
-                        </Avatar>
-                        <span className="text-muted-foreground">|</span>
-                        <span>{link.displayname}</span>
-                    </div>
-                    <div className="flex items-center font-medium gap-2">
-                        {Date.parse(link.createdOn) ? new Date(link.createdOn).toLocaleString() : "Unknown"}
-                    </div>
-                    <div className="flex items-center font-medium gap-2">
-                        <Badge className={badgeVariants({variant: link.isActive ? 'default' : 'destructive'})}>{link.isActive ? "Active" : "Inactive"}</Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">{link.url}</div>
-                    {link.description && (
-                        <div className="text-sm text-muted-foreground">{link.description}</div>
-                    )}
-                </div>
-            </div>
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" asChild>
-                <a href={link.url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4"/>
-                        <span className="sr-only">Open {link.displayname}</span>
-                    </a>
-                </Button>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4"/>
-                            <span className="sr-only">Open menu</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={onEdit}>
-                            <Pencil className="mr-2 h-4 w-4"/>
+        <TableRow
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+        >
+            <TooltipProvider>
+                <TableCell className="flex items-center space-x-2">
+                    <GripVertical {...listeners} className="cursor-grab text-muted-foreground hover:text-blue-500"/>
+                    <Avatar>
+                        <AvatarFallback>
+                            <CustomFaIcon name={link.iconName}/>
+                        </AvatarFallback>
+                    </Avatar>
+                    <span className="text-muted-foreground">|</span>
+                    <span>{link.displayname}</span>
+                </TableCell>
+                <TableCell>
+                    {link.description || "[No description]"}
+                </TableCell>
+                <TableCell>
+                    <Link
+                        to={link.url}
+                        className="text-muted-foreground hover:text-blue-500 transition-colors"
+                    >
+                        {link.url}
+                    </Link>
+                </TableCell>
+                <TableCell>
+                    <Badge className={badgeVariants({variant: link.isActive ? "default" : "destructive"})}>
+                        {link.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                </TableCell>
+                <TableCell>
+                    {Date.parse(link.createdOn)
+                        ? new Intl.DateTimeFormat("de-DE", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hourCycle: "h23",
+                        }).format(new Date(link.createdOn))
+                        : "Unknown"}
+                </TableCell>
+                <TableCell>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" className="mr-2" onClick={onEdit}>
+                                <Pencil/>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="center">
                             Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={onDelete}
-                            className="text-destructive focus:text-destructive"
-                        >
-                            <Trash className="mr-2 h-4 w-4"/>
+                        </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="destructive" onClick={onDelete}>
+                                <Trash/>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="center">
                             Delete
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-        </div>
+                        </TooltipContent>
+                    </Tooltip>
+                </TableCell>
+            </TooltipProvider>
+        </TableRow>
     );
 }
 

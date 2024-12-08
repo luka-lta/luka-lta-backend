@@ -1,9 +1,20 @@
-import { create } from 'zustand'
-import {LinkTreeStore} from "@/lib/types/LinkItemType.ts";
-import {LinkItemTypeSchema} from "@/lib/LinkTypes.ts";
+import {create} from 'zustand'
+import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
+import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 
 const url = 'http://localhost/api/v1';
 const endpoint = url + '/linkCollection';
+
+interface LinkTreeStore {
+    links: LinkItemTypeSchema[];
+    isLoading: boolean;
+    error: string | null;
+    fetchLinks: () => Promise<void>;
+    updateLink: (id: number, updatedData: Partial<LinkItemTypeSchema>) => Promise<void>;
+    deleteLink: (id: number) => Promise<void>;
+    addLink: (newLink: LinkItemTypeSchema) => Promise<void>;
+    triggerFetch: () => void;
+}
 
 export const useLinkStore = create<LinkTreeStore>((set) => ({
     links: [],
@@ -12,8 +23,13 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
 
     fetchLinks: async () => {
         set({ isLoading: true, error: null });
+        const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + '/links'); // Passe den API-Endpunkt an
+            const response = await fetch(endpoint + '/links', {
+                headers: {
+                    Authorization: `${jwt}`,
+                },
+            }); // Passe den API-Endpunkt an
             if (!response.ok) throw new Error('Failed to load links');
             const data = await response.json();
             const links: LinkItemTypeSchema[] = data.links;
@@ -25,11 +41,13 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
 
     updateLink: async (id, updatedData) => {
         set({ isLoading: true, error: null });
+        const { jwt } = useAuthenticatedUserStore.getState();
         try {
             const response = await fetch(endpoint + `/link/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `${jwt}`,
                 },
                 body: JSON.stringify(updatedData),
             });
@@ -49,9 +67,13 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
 
     deleteLink: async (id) => {
         set({ isLoading: true, error: null });
+        const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(`/api/linktree/links/${id}`, {
+            const response = await fetch(endpoint + `links/${id}`, {
                 method: 'DELETE',
+                headers: {
+                    Authorization: `${jwt}`,
+                },
             });
             if (!response.ok) throw new Error('Failed to delete link');
 
@@ -66,11 +88,13 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
 
     addLink: async (newLink: LinkItemTypeSchema) => {
         set({ isLoading: true, error: null });
+        const { jwt } = useAuthenticatedUserStore.getState();
         try {
             const response = await fetch(endpoint + '/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `${jwt}`,
                 },
                 body: JSON.stringify(newLink),
             });
@@ -84,6 +108,10 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         } catch (error: any) {
             set({ error: error.message, isLoading: false });
         }
+    },
+    triggerFetch: () => {
+        const fetchLinks = useLinkStore.getState().fetchLinks;
+        fetchLinks();
     },
 }));
 
