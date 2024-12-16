@@ -1,0 +1,15 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    image: ghcr.io/luka-lta/luka-lta-backend/backend-nginx:dev
+    container_name: luka-lta-frontend-nginx
+    ports:
+      - "80:80"
+    networks:
+      - luka-lta-frontend-network
+
+networks:
+  luka-lta-frontend-network:
+    driver: bridge

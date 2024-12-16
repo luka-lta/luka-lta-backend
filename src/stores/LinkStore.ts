@@ -2,7 +2,7 @@ import {create} from 'zustand'
 import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
 import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 
-const url = 'http://localhost/api/v1';
+const url = 'https://api.luka-lta.dev/api/v1';
 const endpoint = url + '/linkCollection';
 
 interface LinkTreeStore {

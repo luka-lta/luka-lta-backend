@@ -33,7 +33,8 @@ function EditForm({ form }: EditFormProps) {
                     <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Textarea placeholder="Check out my projects" {...field} />
+                            // @ts-ignore
+                            <Textarea placeholder="Check out my projects" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -46,7 +47,7 @@ function EditForm({ form }: EditFormProps) {
                     <FormItem>
                         <FormLabel>URL</FormLabel>
                         <FormControl>
-                            <Input placeholder="https://github.com/yourusername" {...field} />
+                            <Input placeholder="https://github.com/yourusername" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -59,7 +60,8 @@ function EditForm({ form }: EditFormProps) {
                     <FormItem>
                         <FormLabel>Icon Name</FormLabel>
                         <FormControl>
-                            <Input placeholder="github" {...field} />
+                            // @ts-ignore
+                            <Input placeholder="github" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>

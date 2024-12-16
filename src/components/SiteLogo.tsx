@@ -9,8 +9,8 @@ interface SiteLogoProps {
     collapsed?: boolean
 }
 
-export default function SiteLogo({ className, collapsed: collapsedProp }: SiteLogoProps) {
-    const { isAuthenticated } = useAuthenticatedUserStore();
+export default function SiteLogo({className, collapsed: collapsedProp}: SiteLogoProps) {
+    const {isAuthenticated} = useAuthenticatedUserStore();
 
     const sidebarContext = (() => {
         try {
@@ -25,7 +25,7 @@ export default function SiteLogo({ className, collapsed: collapsedProp }: SiteLo
     return (
         <Link to={isAuthenticated() ? "/dashboard" : "/"} className={className}>
             <div className="flex items-center justify-center">
-                <Origami className="h-8 w-8 shrink-0" />
+                <Origami className="h-8 w-8 shrink-0"/>
                 <span
                     className={cn(
                         "ml-2 text-2xl font-bold transition-all duration-200",

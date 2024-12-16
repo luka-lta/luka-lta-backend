@@ -44,6 +44,7 @@ function LoginForm({isLoading, setIsLoading}: LoginFormProps) {
                 navigate("/dashboard");
             }, 1000);
         } catch (error) {
+            // @ts-ignore
             toast.error(error.message);
         } finally {
             setIsLoading(false);

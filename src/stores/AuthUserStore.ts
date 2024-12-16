@@ -44,7 +44,7 @@ export const useAuthenticatedUserStore = create<AuthenticatedUserState & Authent
             getUser: () => get().user,
             login: async (email: string, password: string) => {
                 try {
-                    const response = await fetch("http://localhost/api/v1/auth", {
+                    const response = await fetch("https://api.luka-lta.dev/api/v1/auth", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email, password }),

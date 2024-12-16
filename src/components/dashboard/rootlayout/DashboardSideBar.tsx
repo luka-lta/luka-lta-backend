@@ -110,7 +110,7 @@ export default function DashboardSideBar() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={user} />
+                {user && <NavUser user={user} />}
             </SidebarFooter>
         </Sidebar>
     )

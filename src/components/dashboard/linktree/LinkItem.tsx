@@ -49,6 +49,7 @@ function LinkItem({link, onDelete, onEdit}: LinkItemProps) {
                     <GripVertical {...listeners} className="cursor-grab text-muted-foreground hover:text-blue-500"/>
                     <Avatar>
                         <AvatarFallback>
+                            {/* @ts-ignore */}
                             <CustomFaIcon name={link.iconName}/>
                         </AvatarFallback>
                     </Avatar>

@@ -71,9 +71,11 @@ function LinkAddDialog({ open, onOpenChange }: LinkFormDialogProps) {
                 </DialogHeader>
                 <Form {...form}>
                     <form
+                        // @ts-ignore
                         onSubmit={form.handleSubmit(onSubmit)}
                         className="space-y-4"
                     >
+                        {/* @ts-ignore */}
                         <AddForm form={form} />
                         <DialogFooter>
                             <Button type="submit">Save</Button>
