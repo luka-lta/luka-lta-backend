@@ -12,10 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {NavLink} from "react-router-dom"
 import {SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar} from "@/components/ui/sidebar.tsx";
-import {User} from "@/shemas/UserSchema.ts";
+import {UserTypeSchema} from "@/shemas/UserSchema.ts";
+import {splitAvatarUrl} from "@/lib/utils.ts";
 
 interface NavUserProps {
-    user: User;
+    user: UserTypeSchema;
 }
 
 export function NavUser({user}: NavUserProps) {
@@ -31,7 +32,7 @@ export function NavUser({user}: NavUserProps) {
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
                             <Avatar className="h-8 w-8 rounded-lg">
-                                <AvatarImage src={user.avatarUrl || undefined} alt={user.email}/>
+                                <AvatarImage src={splitAvatarUrl(user.avatarUrl)} alt={user.email}/>
                                 <AvatarFallback className="rounded-lg"><strong>?</strong></AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
@@ -49,7 +50,7 @@ export function NavUser({user}: NavUserProps) {
                         <DropdownMenuLabel className="p-0 font-normal">
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <Avatar className="h-8 w-8 rounded-lg">
-                                    <AvatarImage src={user.avatarUrl || undefined} alt={user.email}/>
+                                    <AvatarImage src={splitAvatarUrl(user.avatarUrl)} alt={user.email}/>
                                     <AvatarFallback className="rounded-lg"><strong>?</strong></AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">

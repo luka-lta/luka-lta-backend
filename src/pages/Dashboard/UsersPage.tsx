@@ -1,6 +1,5 @@
 import AddUserButton from "@/components/dashboard/user/button/AddUserButton.tsx";
 import UserTable from "@/components/dashboard/user/UserTable.tsx";
-import {users} from "@/placeholder/users.ts";
 import {
     Pagination,
     PaginationContent,
@@ -14,7 +13,7 @@ function UsersPage() {
         <div className="container mx-auto py-10 bg-muted/50 rounded-lg">
             <h1 className="text-2xl font-bold mb-5">User Management</h1>
             <AddUserButton/>
-            <UserTable users={users}/>
+            <UserTable />
 
             <Pagination>
                 <PaginationContent>

@@ -1,17 +1,17 @@
 import {create} from "zustand";
 import {createJSONStorage, persist} from "zustand/middleware";
-import {User} from "@/shemas/UserSchema.ts";
+import {UserTypeSchema} from "@/shemas/UserSchema.ts";
 import {jwtDecode} from "jwt-decode";
 
 interface AuthenticatedUserState {
     jwt: string | null;
-    user: User | null;
+    user: UserTypeSchema | null;
 }
 
 interface AuthenticatedUserActions {
     setJwt: (jwt: string) => void;
-    setUser: (user: User) => void;
-    getUser: () => User | null;
+    setUser: (user: UserTypeSchema) => void;
+    getUser: () => UserTypeSchema | null;
     isJwtValid: (jwt: string) => boolean;
     isAuthenticated: () => boolean;
     login: (email: string, password: string) => Promise<void>;
@@ -28,7 +28,7 @@ export const useAuthenticatedUserStore = create<AuthenticatedUserState & Authent
         (set, get) => ({
             ...initialState,
             setJwt: (jwt: string) => set({ jwt }),
-            setUser: (user: User) => set({ user }),
+            setUser: (user: UserTypeSchema) => set({ user }),
             isJwtValid: (jwt: string) => {
                 try {
                     const parsedJwt = jwtDecode(jwt);
@@ -44,7 +44,7 @@ export const useAuthenticatedUserStore = create<AuthenticatedUserState & Authent
             getUser: () => get().user,
             login: async (email: string, password: string) => {
                 try {
-                    const response = await fetch("https://api.luka-lta.dev/api/v1/auth", {
+                    const response = await fetch(`https://api.luka-lta.dev/api/v1/auth`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email, password }),

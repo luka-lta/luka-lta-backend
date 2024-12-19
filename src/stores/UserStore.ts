@@ -1,38 +1,38 @@
-import {create} from 'zustand'
-import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
+import {UserTypeSchema} from "@/shemas/UserSchema.ts";
 import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
+import {create} from "zustand";
 
-const endpoint = 'https://api.luka-lta.dev/api/v1/linkCollection';
+const endpoint = 'https://api.luka-lta.dev/api/v1';
 
-interface LinkTreeStore {
-    links: LinkItemTypeSchema[];
+interface UserStore {
+    users: UserTypeSchema[];
     isLoading: boolean;
     error: string | null;
-    fetchLinks: () => Promise<void>;
-    updateLink: (id: number, updatedData: Partial<LinkItemTypeSchema>) => Promise<void>;
-    deleteLink: (id: number) => Promise<void>;
-    addLink: (newLink: LinkItemTypeSchema) => Promise<void>;
+    fetchUser: () => Promise<void>;
+    updateUser: (id: number, updatedData: Partial<UserTypeSchema>) => Promise<void>;
+    deleteUser: (id: number) => Promise<void>;
+    addUser: (newUser: UserTypeSchema) => Promise<void>;
     triggerFetch: () => void;
 }
 
-export const useLinkStore = create<LinkTreeStore>((set) => ({
-    links: [],
+export const useUserStore = create<UserStore>((set) => ({
+    users: [],
     isLoading: false,
     error: null,
 
-    fetchLinks: async () => {
+    fetchUser: async () => {
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + '/links', {
+            const response = await fetch(endpoint + '/user/all', {
                 headers: {
                     Authorization: `${jwt}`,
                 },
             }); // Passe den API-Endpunkt an
-            if (!response.ok) throw new Error('Failed to load links');
+            if (!response.ok) throw new Error('Failed to load user');
             const data = await response.json();
-            const links: LinkItemTypeSchema[] = data.links;
-            set({ links, isLoading: false });
+            const users: UserTypeSchema[] = data.users;
+            set({ users, isLoading: false });
         } catch (error: unknown) {
             if (error instanceof Error) {
                 set({ error: error.message, isLoading: false });
@@ -40,11 +40,11 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         }
     },
 
-    updateLink: async (id, updatedData) => {
+    updateUser: async (id, updatedData) => {
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + `/link/${id}`, {
+            const response = await fetch(endpoint + `/user/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -52,12 +52,12 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
                 },
                 body: JSON.stringify(updatedData),
             });
-            if (!response.ok) throw new Error('Failed to update link');
-            const updatedLink: LinkItemTypeSchema = await response.json();
+            if (!response.ok) throw new Error('Failed to update user');
+            const updatedUser: UserTypeSchema = await response.json();
 
             set((state) => ({
-                links: state.links.map((link) =>
-                    link.id === id ? { ...link, ...updatedLink } : link
+                user: state.users.map((user) =>
+                    user.userId === id ? { ...user, ...updatedUser } : user
                 ),
                 isLoading: false,
             }));
@@ -67,21 +67,19 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
             }
         }
     },
-
-    deleteLink: async (id) => {
+    deleteUser: async (id) => {
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + `links/${id}`, {
+            const response = await fetch(endpoint + `/user/${id}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `${jwt}`,
                 },
             });
-            if (!response.ok) throw new Error('Failed to delete link');
-
+            if (!response.ok) throw new Error('Failed to delete user');
             set((state) => ({
-                links: state.links.filter((link) => link.id !== id),
+                user: state.users.filter((user) => user.userId !== id),
                 isLoading: false,
             }));
         } catch (error: unknown) {
@@ -90,24 +88,22 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
             }
         }
     },
-
-    addLink: async (newLink: LinkItemTypeSchema) => {
+    addUser: async (newUser) => {
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + '/create', {
+            const response = await fetch(endpoint + '/user', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `${jwt}`,
                 },
-                body: JSON.stringify(newLink),
+                body: JSON.stringify(newUser),
             });
-            if (!response.ok) throw new Error('Failed to add new link');
-            const addedLink: LinkItemTypeSchema = await response.json();
-
+            if (!response.ok) throw new Error('Failed to add user');
+            const addedUser: UserTypeSchema = await response.json();
             set((state) => ({
-                links: [...state.links, addedLink],
+                user: [...state.users, addedUser],
                 isLoading: false,
             }));
         } catch (error: unknown) {
@@ -117,10 +113,9 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         }
     },
     triggerFetch: () => {
-        const fetchLinks = useLinkStore.getState().fetchLinks;
-        fetchLinks();
+        const fetchUser = useUserStore.getState().fetchUser;
+        fetchUser();
     },
 }));
 
-export default useLinkStore;
-
+export default useUserStore;

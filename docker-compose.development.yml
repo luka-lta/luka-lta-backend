@@ -5,8 +5,12 @@ services:
       dockerfile: ./docker/nginx/Dockerfile
     image: ghcr.io/luka-lta/luka-lta-backend/backend-nginx:dev
     container_name: luka-lta-frontend-nginx
+    environment:
+      - APP_ENV=development
     ports:
-      - "80:80"
+      - "81:80"
+    volumes:
+      - ./:/app:rw
     networks:
       - luka-lta-frontend-network
 
