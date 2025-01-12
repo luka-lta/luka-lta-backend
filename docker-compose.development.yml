@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: ./docker/nginx/Dockerfile
+      platforms:
+        - linux/arm64
     image: ghcr.io/luka-lta/luka-lta-backend/backend-nginx:dev
     container_name: luka-lta-frontend-nginx
     environment:

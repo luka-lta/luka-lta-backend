@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
+import React, {useState} from 'react'
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog'
+import {Input} from '@/components/ui/input'
+import {Label} from '@/components/ui/label'
+import {Button} from '@/components/ui/button'
 import {toast} from "sonner";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 
 type User = {
     id: number
@@ -20,10 +20,21 @@ type EditUserModalProps = {
     onClose: () => void
 }
 
-export default function EditUserModal({ user, onClose }: EditUserModalProps) {
+export default function EditUserModal({user, onClose}: EditUserModalProps) {
     const [name, setName] = useState(user?.name || '')
     const [email, setEmail] = useState(user?.email || '')
-    const [role, setRole] = useState(user?.role || 'User')
+    const [avatar, setAvatar] = useState<string | null>(null);
+
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]; // Erste Datei aus der Datei-Liste
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setAvatar(reader.result as string); // Setze die Data-URL als Avatar
+            };
+            reader.readAsDataURL(file); // Lies die Datei als Data-URL
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -33,7 +44,7 @@ export default function EditUserModal({ user, onClose }: EditUserModalProps) {
         }
         formData.append('name', name)
         formData.append('email', email)
-        formData.append('role', role)
+        formData.append('avatar', avatar || '')
 
         if (user) {
             toast.success('User edited successfully')
@@ -70,17 +81,22 @@ export default function EditUserModal({ user, onClose }: EditUserModalProps) {
                             required
                         />
                     </div>
-                    <div>
-                        <Label htmlFor="role">Role</Label>
-                        <Select value={role} onValueChange={setRole}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Admin">Admin</SelectItem>
-                                <SelectItem value="User">User</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <Label htmlFor="avatar">Avatar</Label>
+                    <div className="flex items-center gap-4">
+                        <Avatar>
+                            {avatar ? (
+                                <AvatarImage src={avatar} alt="Avatar"/>
+                            ) : (
+                                <AvatarFallback>?</AvatarFallback>
+                            )}
+                        </Avatar>
+                        <Input
+                            id="avatar"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarChange}
+                            required
+                        />
                     </div>
                     <Button type="submit">{user ? 'Update' : 'Add'} User</Button>
                 </form>

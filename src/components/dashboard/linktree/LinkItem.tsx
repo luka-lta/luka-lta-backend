@@ -3,13 +3,14 @@ import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {GripVertical, Pencil, Trash} from "lucide-react";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
-import * as Icons from "react-icons/fa";
-import {MdError} from "react-icons/md";
 import {Link} from "react-router-dom";
 import {Badge, badgeVariants} from "@/components/ui/badge.tsx";
 import {useSortable} from "@dnd-kit/sortable";
 import {CSS} from "@dnd-kit/utilities";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
+import {formatDate} from "@/lib/utils.ts";
+import CustomFaIcon from "@/components/CustomFaIcon.tsx";
+import {useCallback} from "react";
 
 interface LinkItemProps {
     link: LinkItemTypeSchema;
@@ -19,23 +20,14 @@ interface LinkItemProps {
 
 function LinkItem({link, onDelete, onEdit}: LinkItemProps) {
     const {attributes, listeners, setNodeRef, transform, transition} = useSortable({id: link.id});
+    const badgeVariant = link.isActive ? "default" : "destructive";
+
+    const handleDelete = useCallback(onDelete, [onDelete]);
+    const handleEdit = useCallback(onEdit, [onEdit]);
 
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-    };
-
-    const CustomFaIcon = ({name}: { name: keyof typeof Icons | null }) => {
-        if (!name) {
-            return <MdError className="text-red-500" title="Icon not found!">?</MdError>;
-        }
-
-        const FaIcon = Icons[name];
-        if (!FaIcon) {
-            return <MdError className="text-red-500" title="Invalid Icon!">?</MdError>;
-        }
-
-        return <FaIcon/>;
     };
 
     return (
@@ -50,7 +42,7 @@ function LinkItem({link, onDelete, onEdit}: LinkItemProps) {
                     <Avatar>
                         <AvatarFallback>
                             {/* @ts-ignore */}
-                            <CustomFaIcon name={link.iconName}/>
+                            <CustomFaIcon name={link.iconName ?? undefined}/>
                         </AvatarFallback>
                     </Avatar>
                     <span className="text-muted-foreground">|</span>
@@ -68,26 +60,17 @@ function LinkItem({link, onDelete, onEdit}: LinkItemProps) {
                     </Link>
                 </TableCell>
                 <TableCell>
-                    <Badge className={badgeVariants({variant: link.isActive ? "default" : "destructive"})}>
+                    <Badge className={badgeVariants({variant: badgeVariant})}>
                         {link.isActive ? "Active" : "Inactive"}
                     </Badge>
                 </TableCell>
                 <TableCell>
-                    {Date.parse(link.createdOn)
-                        ? new Intl.DateTimeFormat("de-DE", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hourCycle: "h23",
-                        }).format(new Date(link.createdOn))
-                        : "Unknown"}
+                    {formatDate(link.createdOn)}
                 </TableCell>
                 <TableCell>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="outline" className="mr-2" onClick={onEdit}>
+                            <Button variant="secondary" className="mr-2" onClick={handleEdit}>
                                 <Pencil/>
                             </Button>
                         </TooltipTrigger>
@@ -97,8 +80,8 @@ function LinkItem({link, onDelete, onEdit}: LinkItemProps) {
                     </Tooltip>
 
                     <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="destructive" onClick={onDelete}>
+                        <TooltipTrigger>
+                            <Button variant="destructive" onClick={handleDelete}>
                                 <Trash/>
                             </Button>
                         </TooltipTrigger>

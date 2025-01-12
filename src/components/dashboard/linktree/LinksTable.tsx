@@ -1,43 +1,37 @@
-import {useEffect, useMemo} from 'react';
+import {useMemo} from 'react';
 import useLinkStore from "@/stores/LinkStore.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {Plus} from "lucide-react";
 import {arrayMove, SortableContext, verticalListSortingStrategy} from "@dnd-kit/sortable";
-import {Skeleton} from "@/components/ui/skeleton.tsx";
 import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
+import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import LinkItem from "@/components/dashboard/linktree/LinkItem.tsx";
-import {closestCenter, DndContext} from "@dnd-kit/core";
+import {closestCenter, DndContext, DragEndEvent} from "@dnd-kit/core";
+import LinkSkeleton from "@/components/dashboard/linktree/LinkSkeleton.tsx";
 
 interface LinktreePageProps {
-    edit: boolean;
     setEdit: (edit: boolean) => void;
-    create: boolean;
     setCreate: (create: boolean) => void;
     setEditingLink: (link: LinkItemTypeSchema) => void;
     editingLink: LinkItemTypeSchema | undefined;
+    setDeleteLinkId: (id: number) => void;
+    setDeleteDialog: (open: boolean) => void;
 }
 
 function LinksTable(
-    {edit, setEdit, create, setCreate, setEditingLink}: LinktreePageProps
+    {setEdit, setCreate, setEditingLink, setDeleteLinkId, setDeleteDialog}: LinktreePageProps
 ) {
-    const {links, triggerFetch, deleteLink, isLoading, error} = useLinkStore();
+    const {links, isLoading, error} = useLinkStore();
 
-    useEffect(() => {
-        triggerFetch();
-    }, [edit, create]);
+    const sortedLinks = useMemo(() => {
+        if (!links) return [];
 
-    const sortedLinks = useMemo(() =>
-            [...links].sort((a, b) => a.displayOrder - b.displayOrder),
-        [links]
-    );
+        return links.slice().sort((a, b) => a.displayOrder - b.displayOrder);
+    }, [links]);
 
-    const handleDelete = async (id: number) => {
-        await deleteLink(id);
-    };
-
-    const handleDragEnd = (event: any) => {
+    const handleDragEnd = (event: DragEndEvent) => {
         const {active, over} = event;
+        if (!over) return; // Sicherstellen, dass `over` nicht null ist.
         if (active.id !== over.id) {
             const oldIndex = sortedLinks.findIndex(link => link.id === active.id);
             const newIndex = sortedLinks.findIndex(link => link.id === over.id);
@@ -75,32 +69,7 @@ function LinksTable(
                     {isLoading ? (
                         <TableBody>
                             {Array(5).fill(null).map((_, index) => (
-                                <TableRow key={index} className="animate-pulse">
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2">
-                                            <Skeleton className="w-8 h-8 rounded-full"/>
-                                            <Skeleton className="w-20 h-5"/>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Skeleton className="w-2/3 h-5"/>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Skeleton className="w-1/2 h-5"/>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Skeleton className="w-16 h-5"/>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Skeleton className="w-24 h-5"/>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex space-x-2">
-                                            <Skeleton className="w-16 h-8"/>
-                                            <Skeleton className="w-16 h-8"/>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
+                                <LinkSkeleton key={index}/>
                             ))}
                         </TableBody>
                     ) : sortedLinks.length > 0 ? (
@@ -111,7 +80,10 @@ function LinksTable(
                                     <LinkItem
                                         key={link.id}
                                         link={link}
-                                        onDelete={() => handleDelete(link.id)}
+                                        onDelete={() => {
+                                            setDeleteLinkId(link.id)
+                                            setDeleteDialog(true)
+                                        }}
                                         onEdit={() => {
                                             setEditingLink(link)
                                             setEdit(true)
@@ -125,7 +97,7 @@ function LinksTable(
                             {error ? (
                                 <p className="text-red-500">{error}</p>
                             ) : (
-                                <p className="text-muted-foreground">No links found</p>
+                                <p className="text-red-500">No links found</p>
                             )}
                         </div>
                     )}

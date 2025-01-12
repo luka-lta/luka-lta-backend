@@ -33,7 +33,6 @@ function EditForm({ form }: EditFormProps) {
                     <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            // @ts-ignore
                             <Textarea placeholder="Check out my projects" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />

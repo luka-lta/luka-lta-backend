@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog.tsx";
 import {Form,} from "@/components/ui/form.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {useEffect} from "react";
+import {useCallback, useEffect} from "react";
 import EditForm from "@/components/dashboard/linktree/dialog/form/EditForm.tsx";
 
 const defaultValues = {
@@ -32,7 +32,7 @@ interface LinkFormDialogProps {
 }
 
 export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDialogProps) {
-    const { updateLink, fetchLinks } = useLinkStore();
+    const { updateLink, isLoading } = useLinkStore();
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -45,36 +45,33 @@ export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDial
         }
     }, [initialData, form]);
 
-
-    function onSubmit(values: z.infer<typeof FormSchema>) {
+    const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>): Promise<void> => {
         try {
             if (initialData) {
-                updateLink(initialData.id, values)
-                toast.success("Link updated")
+                await updateLink(initialData.id, values);
+                toast.success("Link updated");
             }
-            form.reset()
-            onOpenChange(false)
+            onOpenChange(false);
         } catch (error) {
             console.error("Error editing link:", error);
             toast.error("An error occurred while editing the link.");
         }
-    }
+    }, [initialData, updateLink, form, onOpenChange]);
 
-    const handleClose = (isOpen: boolean) => {
+    const handleClose = async (isOpen: boolean): Promise<void> => {
         if (!isOpen) {
-            form.reset(defaultValues); // Zurücksetzen der Werte und Fehler
+            form.reset(defaultValues);
         }
-        onOpenChange(isOpen); // Statusänderung weitergeben
-        fetchLinks(); // Links neu laden
+        onOpenChange(isOpen);
     };
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{ "Edit Link"}</DialogTitle>
+                    <DialogTitle>Edit Link</DialogTitle>
                     <DialogDescription>
-                            Update your link details below
+                        Update your link details below
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -84,7 +81,9 @@ export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDial
                     >
                         <EditForm form={form} />
                         <DialogFooter>
-                            <Button type="submit">Save</Button>
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? "Saving..." : "Save"}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>

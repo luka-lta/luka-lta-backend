@@ -1,8 +1,8 @@
+import {FormSchema} from "@/shemas/LinkSchema.ts";
 import useLinkStore from "@/stores/LinkStore.ts";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {FormSchema, LinkItemSchema} from "@/shemas/LinkSchema.ts";
 import {toast} from "sonner";
 import {
     Dialog,
@@ -15,8 +15,8 @@ import {
 import {Form,} from "@/components/ui/form.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import AddForm from "@/components/dashboard/linktree/dialog/form/AddForm.tsx";
+import {useCallback} from "react";
 
-// Default-Werte für das Formular
 const defaultValues = {
     displayname: "",
     description: "",
@@ -31,33 +31,29 @@ interface LinkFormDialogProps {
 }
 
 function LinkAddDialog({ open, onOpenChange }: LinkFormDialogProps) {
-    const { addLink, fetchLinks } = useLinkStore();
+    const { addLink, isLoading} = useLinkStore();
 
-    // React Hook Form Setup
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues,
     });
 
-    // Formular-Submit-Handler
-    const onSubmit = (values: z.infer<typeof LinkItemSchema>) => {
+    const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>): Promise<void> => {
         try {
-            addLink(values);
+            await addLink(values);
             toast.success("Link created successfully!");
-            form.reset(defaultValues); // Formular zurücksetzen
-            onOpenChange(false); // Dialog schließen
+            onOpenChange(false);
         } catch (error) {
             console.error("Error creating link:", error);
             toast.error("An error occurred while creating the link.");
         }
-    };
+    }, [addLink, onOpenChange]);
 
-    const handleClose = (isOpen: boolean) => {
+    const handleClose = async (isOpen: boolean): Promise<void> => {
         if (!isOpen) {
-            form.reset(defaultValues); // Zurücksetzen der Werte und Fehler
+            form.reset(defaultValues);
         }
-        fetchLinks(); // Links neu laden
-        onOpenChange(isOpen); // Statusänderung weitergeben
+        onOpenChange(isOpen);
     };
 
     return (
@@ -71,14 +67,14 @@ function LinkAddDialog({ open, onOpenChange }: LinkFormDialogProps) {
                 </DialogHeader>
                 <Form {...form}>
                     <form
-                        // @ts-ignore
                         onSubmit={form.handleSubmit(onSubmit)}
                         className="space-y-4"
                     >
-                        {/* @ts-ignore */}
                         <AddForm form={form} />
                         <DialogFooter>
-                            <Button type="submit">Save</Button>
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? "Saving..." : "Save"}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>

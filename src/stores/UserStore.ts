@@ -24,7 +24,7 @@ export const useUserStore = create<UserStore>((set) => ({
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + '/user/all', {
+            const response = await fetch(endpoint + '/user/', {
                 headers: {
                     Authorization: `${jwt}`,
                 },
@@ -92,7 +92,7 @@ export const useUserStore = create<UserStore>((set) => ({
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + '/user', {
+            const response = await fetch(endpoint + '/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

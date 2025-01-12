@@ -11,7 +11,7 @@ interface LinkTreeStore {
     fetchLinks: () => Promise<void>;
     updateLink: (id: number, updatedData: Partial<LinkItemTypeSchema>) => Promise<void>;
     deleteLink: (id: number) => Promise<void>;
-    addLink: (newLink: LinkItemTypeSchema) => Promise<void>;
+    addLink: (newLink: Partial<LinkItemTypeSchema>) => Promise<void>;
     triggerFetch: () => void;
 }
 
@@ -24,7 +24,7 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + '/links', {
+            const response = await fetch(endpoint + '/', {
                 headers: {
                     Authorization: `${jwt}`,
                 },
@@ -44,7 +44,7 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + `/link/${id}`, {
+            const response = await fetch(endpoint + `/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + `links/${id}`, {
+            const response = await fetch(endpoint + `/${id}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `${jwt}`,
@@ -91,11 +91,11 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         }
     },
 
-    addLink: async (newLink: LinkItemTypeSchema) => {
+    addLink: async (newLink) => {
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + '/create', {
+            const response = await fetch(endpoint + '/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

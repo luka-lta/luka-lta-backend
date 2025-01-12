@@ -11,6 +11,7 @@ import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 import authenticatedLoader from "@/loader/authenticatedLoader.ts";
 import protectedLoader from "@/loader/protectedLoader.ts";
 import AnalyticsPage from "@/pages/Dashboard/AnalyticsPage.tsx";
+import ApiKeysPage from "@/pages/Dashboard/ApiKeysPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -36,6 +37,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'linktree',
                 element: <LinktreePage/>
+            },
+            {
+                path: 'api-keys',
+                element: <ApiKeysPage/>
             },
             {
                 path: 'analytics',

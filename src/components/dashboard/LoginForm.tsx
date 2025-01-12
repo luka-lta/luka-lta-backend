@@ -43,9 +43,10 @@ function LoginForm({isLoading, setIsLoading}: LoginFormProps) {
             setTimeout(() => {
                 navigate("/dashboard");
             }, 1000);
-        } catch (error) {
-            // @ts-ignore
-            toast.error(error.message);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                toast.error(error.message);
+            }
         } finally {
             setIsLoading(false);
         }

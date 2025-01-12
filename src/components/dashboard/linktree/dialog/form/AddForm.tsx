@@ -3,9 +3,12 @@ import {Input} from "@/components/ui/input.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {UseFormReturn} from "react-hook-form";
+import {z} from "zod";
+import {FormSchema} from "@/shemas/LinkSchema.ts";
+import {IconSelector} from "@/components/IconSelector.tsx";
 
 interface AddFormProps {
-    form: UseFormReturn;
+    form: UseFormReturn<z.infer<typeof FormSchema>>;
 }
 
 function AddForm({ form }: AddFormProps) {
@@ -31,7 +34,7 @@ function AddForm({ form }: AddFormProps) {
                     <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                            <Textarea placeholder="Check out my projects" {...field} />
+                            <Textarea placeholder="Check out my projects" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -44,7 +47,7 @@ function AddForm({ form }: AddFormProps) {
                     <FormItem>
                         <FormLabel>URL</FormLabel>
                         <FormControl>
-                            <Input placeholder="https://github.com/yourusername" {...field} />
+                            <Input placeholder="https://github.com/yourusername" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -57,7 +60,8 @@ function AddForm({ form }: AddFormProps) {
                     <FormItem>
                         <FormLabel>Icon Name</FormLabel>
                         <FormControl>
-                            <Input placeholder="FaGithub" {...field} />
+                            <IconSelector value={field.value ?? ''} onChange={field.onChange} />
+                            {/*<Input placeholder="FaGithub" {...field} value={field.value ?? ''} />*/}
                         </FormControl>
                         <FormMessage />
                     </FormItem>
