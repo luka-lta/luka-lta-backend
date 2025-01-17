@@ -33,10 +33,10 @@ function LoginForm({isLoading, setIsLoading}: LoginFormProps) {
         formState: {errors},
     } = form;
 
-    const onSubmit = (values: z.infer<typeof UserFormSchema>) => {
+    const onSubmit = async (values: z.infer<typeof UserFormSchema>) => {
         setIsLoading(true);
         try {
-            login(values.email, values.password);
+            await login(values.email, values.password);
 
             toast.success("Redirecting to dashboard");
 

@@ -1,29 +1,17 @@
-import {FormSchema, LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
+import {LinkFormSchema, LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
 import useLinkStore from "@/stores/LinkStore.ts";
-import {useForm} from "react-hook-form";
+import {useForm, UseFormReturn} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {toast} from "sonner";
-import {z} from "zod";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog.tsx";
-import {Form,} from "@/components/ui/form.tsx";
-import {Button} from "@/components/ui/button.tsx";
 import {useCallback, useEffect} from "react";
-import EditForm from "@/components/dashboard/linktree/dialog/form/EditForm.tsx";
-
-const defaultValues = {
-    displayname: "",
-    description: null,
-    url: "",
-    iconName: null,
-    isActive: true,
-};
+import { LinkForm } from "../form/LinkForm";
 
 interface LinkFormDialogProps {
     open: boolean
@@ -31,11 +19,19 @@ interface LinkFormDialogProps {
     initialData?: LinkItemTypeSchema
 }
 
+const defaultValues: object = {
+    displayname: "",
+    description: "",
+    url: "",
+    iconName: "",
+    isActive: true,
+}
+
 export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDialogProps) {
     const { updateLink, isLoading } = useLinkStore();
 
-    const form = useForm<z.infer<typeof FormSchema>>({
-        resolver: zodResolver(FormSchema),
+    const form: UseFormReturn<LinkItemTypeSchema> = useForm<LinkItemTypeSchema>({
+        resolver: zodResolver(LinkFormSchema),
         defaultValues,
     });
 
@@ -45,7 +41,7 @@ export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDial
         }
     }, [initialData, form]);
 
-    const onSubmit = useCallback(async (values: z.infer<typeof FormSchema>): Promise<void> => {
+    const handleSubmit = useCallback(async (values: LinkItemTypeSchema) => {
         try {
             if (initialData) {
                 await updateLink(initialData.id, values);
@@ -53,10 +49,10 @@ export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDial
             }
             onOpenChange(false);
         } catch (error) {
-            console.error("Error editing link:", error);
-            toast.error("An error occurred while editing the link.");
+            console.error("Error editing the link:", error);
+            toast.error(error instanceof Error ? error.message : "An unexpected error occurred.");
         }
-    }, [initialData, updateLink, form, onOpenChange]);
+    }, [updateLink, onOpenChange, initialData]);
 
     const handleClose = async (isOpen: boolean): Promise<void> => {
         if (!isOpen) {
@@ -74,19 +70,8 @@ export function LinkEditDialog({ open, onOpenChange, initialData }: LinkFormDial
                         Update your link details below
                     </DialogDescription>
                 </DialogHeader>
-                <Form {...form}>
-                    <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-4"
-                    >
-                        <EditForm form={form} />
-                        <DialogFooter>
-                            <Button type="submit" disabled={isLoading}>
-                                {isLoading ? "Saving..." : "Save"}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+
+                <LinkForm onOpenChange={onOpenChange} onSubmit={handleSubmit} initialData={initialData} isLoading={isLoading} />
             </DialogContent>
         </Dialog>
     )

@@ -3,7 +3,6 @@ import ErrorPage from "@/pages/ErrorPage.tsx";
 import DashboardPage from "@/pages/Dashboard/DashboardPage.tsx";
 import LoginPage from "@/pages/LoginPage.tsx";
 import DashboardRootLayout from "@/components/dashboard/rootlayout/DashboardRootLayout.tsx";
-import WorkAndProgressPage from "@/pages/WorkAndProgressPage.tsx";
 import {ProfileSettingsPage} from "@/pages/Dashboard/ProfileSettingsPage.tsx";
 import UsersPage from "@/pages/Dashboard/UsersPage.tsx";
 import LinktreePage from "@/pages/Dashboard/LinktreePage.tsx";
@@ -12,6 +11,7 @@ import authenticatedLoader from "@/loader/authenticatedLoader.ts";
 import protectedLoader from "@/loader/protectedLoader.ts";
 import AnalyticsPage from "@/pages/Dashboard/AnalyticsPage.tsx";
 import ApiKeysPage from "@/pages/Dashboard/ApiKeysPage.tsx";
+import TodoPage from "@/pages/Dashboard/TodoPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -48,7 +48,7 @@ export const appRouter = createBrowserRouter([
             },
             {
                 path: 'todos',
-                element: <WorkAndProgressPage/>
+                element: <TodoPage/>
             }
         ]
     },

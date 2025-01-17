@@ -1,4 +1,38 @@
+import {UserFormSchema, UserTypeSchema} from "@/shemas/UserSchema.ts";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {useForm} from "react-hook-form";
+import {splitAvatarUrl} from "@/lib/utils.ts";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card.tsx";
+import {Separator} from "@radix-ui/react-select";
+import {Button} from "@/components/ui/button.tsx";
+import {Label} from "@/components/ui/label.tsx";
+import {Input} from "@/components/ui/input.tsx";
+import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
+
 export function ProfileSettingsPage() {
+    const { getUser } = useAuthenticatedUserStore();
+    const user: UserTypeSchema = getUser();
+
+    const form = useForm<UserTypeSchema>({
+        resolver: zodResolver(UserFormSchema),
+        defaultValues: {
+            email: user.email,
+        },
+    });
+
+    const onSubmit = async (data: UserTypeSchema) => {
+        try {
+            // Here you would typically send the data to your backend
+            console.log('Form data submitted:', data);
+            // Update the user state with the new data
+            // You can add logic here to show a success message
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            // You can add logic here to show an error message
+        }
+    };
+
     return (
         <div className="flex w-full min-h-screen bg-gray-900 text-white">
             <aside className="w-1/5 p-4 bg-gray-800">
@@ -23,73 +57,62 @@ export function ProfileSettingsPage() {
                 </nav>
             </aside>
             <main className="flex-1 p-8">
-                <h2 className="text-xl font-bold">Profile</h2>
-                <p className="text-sm text-gray-400">This is how others will see you on the site.</p>
-                <form className="mt-6 space-y-6">
-                    <div>
-                        <label htmlFor="username" className="block text-sm font-medium">
-                            Username
-                        </label>
-                        <input
-                            type="text"
-                            id="username"
-                            defaultValue="shadcn"
-                            className="w-full p-2 mt-1 bg-gray-800 border border-gray-700 rounded"
+                <form onSubmit={form.handleSubmit(onSubmit)} className="container mx-auto px-4 py-8">
+                <Card className="max-w-2xl mx-auto">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-bold">Profile Settings</CardTitle>
+                        <CardDescription>Manage your account settings.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="flex items-center space-x-4">
+                            <Avatar className="w-20 h-20">
+                                <AvatarImage src={splitAvatarUrl(user.avatarUrl)} alt={user.email}/>
+                                <AvatarFallback>{user.email[0].toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <Button variant="outline" type="button">Change Avatar</Button>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="userId">User ID</Label>
+                            <Input id="userId" value={user.userId} readOnly />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                {...form.register('email')}
+                            />
+                            {form.formState.errors.email && (
+                                <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
+                            )}
+                        </div>
+                        <Separator />
+                        {/*                    <div className="space-y-2">
+                        <Label htmlFor="password">New Password</Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            {...form.register('password')}
                         />
-                        <p className="mt-1 text-sm text-gray-400">
-                            This is your public display name. It can be your real name or a pseudonym. You can only change this once
-                            every 30 days.
-                        </p>
-                    </div>
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium">
-                            Email
-                        </label>
-                        <select id="email" className="w-full p-2 mt-1 bg-gray-800 border border-gray-700 rounded">
-                            <option>Select a verified email to display</option>
-                        </select>
-                        <p className="mt-1 text-sm text-gray-400">
-                            You can manage verified email addresses in your email settings.
-                        </p>
-                    </div>
-                    <div>
-                        <label htmlFor="bio" className="block text-sm font-medium">
-                            Bio
-                        </label>
-                        <textarea
-                            id="bio"
-                            className="w-full p-2 mt-1 bg-gray-800 border border-gray-700 rounded"
-                            defaultValue="I own a computer."
-                        />
-                        <p className="mt-1 text-sm text-gray-400">
-                            You can @mention other users and organizations to link to them.
-                        </p>
-                    </div>
-                    <div>
-                        <label htmlFor="urls" className="block text-sm font-medium">
-                            URLs
-                        </label>
-                        <input
-                            type="text"
-                            id="urls"
-                            className="w-full p-2 mt-1 bg-gray-800 border border-gray-700 rounded"
-                            defaultValue="https://shadcn.com"
-                        />
-                        <input
-                            type="text"
-                            id="urls"
-                            className="w-full p-2 mt-1 bg-gray-800 border border-gray-700 rounded"
-                            defaultValue="http://twitter.com/shadcn"
-                        />
-                        <button type="button" className="px-4 py-2 mt-2 text-sm text-white bg-gray-700 rounded">
-                            Add URL
-                        </button>
-                    </div>
-                    <button type="submit" className="px-4 py-2 text-sm text-white bg-blue-600 rounded">
-                        Update profile
-                    </button>
-                </form>
-            </main>
+                        {form.formState.errors.password && (
+                            <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
+                        )}
+                    </div>*/}
+                        <Separator />
+                        <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">Account created: {new Date(user.createdAt).toLocaleString()}</p>
+                            {user.updatedAt && (
+                                <p className="text-sm text-muted-foreground">Last updated: {new Date(user.updatedAt).toLocaleString()}</p>
+                            )}
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit">Save Changes</Button>
+                    </CardFooter>
+                </Card>
+            </form>
+
+
+        </main>
         </div>
     )
 }
