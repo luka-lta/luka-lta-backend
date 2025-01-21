@@ -25,14 +25,14 @@ interface TodoFormProps {
 const defaultValues: Partial<TodoTypeSchema> = {
     title: "",
     description: "",
-    status: "todo",
+    status: "open",
     priority: "medium",
     dueDate: undefined,
 };
 
 function TodoForm({initialData, onSubmit, isLoading, onOpenChange}: TodoFormProps) {
     const priorities: TodoPriority[] = ["low", "medium", "high"];
-    const statuses: TodoStatus[] = ["todo", "in-progress", "done"];
+    const statuses: TodoStatus[] = ["open", "in_progress", "completed", "archived"];
 
     const form = useForm<TodoTypeSchema>({
         resolver: zodResolver(TodoFormSchema),

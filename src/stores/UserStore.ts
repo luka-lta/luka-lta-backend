@@ -2,7 +2,7 @@ import {UserTypeSchema} from "@/shemas/UserSchema.ts";
 import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 import {create} from "zustand";
 
-const endpoint = 'https://api.luka-lta.dev/api/v1';
+const endpoint = import.meta.env.VITE_API_URL;
 
 interface UserStore {
     users: UserTypeSchema[];

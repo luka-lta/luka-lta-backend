@@ -23,6 +23,8 @@ const initialState: AuthenticatedUserState = {
     user: null,
 };
 
+const endpoint = import.meta.env.VITE_API_URL;
+
 export const useAuthenticatedUserStore = create<AuthenticatedUserState & AuthenticatedUserActions>()(
     persist(
         (set, get) => ({
@@ -33,7 +35,8 @@ export const useAuthenticatedUserStore = create<AuthenticatedUserState & Authent
                 try {
                     const parsedJwt = jwtDecode(jwt);
                     return 'exp' in parsedJwt && parsedJwt.exp ? parsedJwt.exp > Math.floor(Date.now() / 1000) : false;
-                } catch (e) {
+                } catch (error) {
+                    console.error("Error parsing JWT:", error);
                     return false;
                 }
             },
@@ -44,7 +47,7 @@ export const useAuthenticatedUserStore = create<AuthenticatedUserState & Authent
             getUser: () => get().user,
             login: async (email: string, password: string) => {
                 try {
-                    const response = await fetch(`https://api.luka-lta.dev/api/v1/auth`, {
+                    const response = await fetch(`${endpoint}/auth`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email, password }),

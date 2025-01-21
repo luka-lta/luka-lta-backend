@@ -5,7 +5,7 @@ export const TodoSchema = z.object({
     ownerId: z.number(),
     title: z.string().min(2),
     description: z.string().optional().nullable(),
-    status: z.enum(["todo", "in-progress", "done", "all"]).default("todo"),
+    status: z.enum(["open", "in_progress", "completed", "archived", "all"]).default("open"),
     priority: z.enum(["low", "medium", "high", "all"]).default("medium"),
     dueDate: z.string().optional().nullable(),
     createdAt: z.string().optional().nullable(),

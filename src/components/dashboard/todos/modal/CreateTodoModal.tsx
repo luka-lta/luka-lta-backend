@@ -9,6 +9,7 @@ import {TodoFormSchema, TodoTypeSchema} from "@/shemas/TodoSchema.ts";
 import {toast} from "sonner";
 import {useCallback} from "react";
 import TodoForm from "@/components/dashboard/todos/form/TodoForm.tsx";
+import {useTodoStore} from "@/stores/TodoStore.ts";
 
 type FormData = typeof TodoFormSchema._type
 
@@ -18,17 +19,18 @@ interface CreateTodoModalProps {
 }
 
 export function CreateTodoModal({ open, setOpen }: CreateTodoModalProps) {
-    const isLoading = false;
+    const { isLoading, fetchTodos, addTodo } = useTodoStore();
 
     const handleSubmit = useCallback(async (data: TodoTypeSchema) => {
         const sanitizedData = Object.fromEntries(
             Object.entries(data).map(([key, value]) => [key, value === "" ? null : value])
         ) as FormData;
 
-        console.log(sanitizedData);
+        await addTodo(sanitizedData);
+        await fetchTodos();
         toast.success("Todo created successfully!");
         setOpen(false);
-    }, [setOpen]);
+    }, [addTodo, fetchTodos, setOpen]);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

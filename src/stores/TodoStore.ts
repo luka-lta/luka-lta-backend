@@ -1,38 +1,38 @@
-import {create} from 'zustand'
-import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
+import {TodoTypeSchema} from "@/shemas/TodoSchema.ts";
+import {create} from "zustand";
 import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 
-const endpoint = import.meta.env.VITE_API_URL + '/linkCollection';
+const endpoint = import.meta.env.VITE_API_URL;
 
-interface LinkTreeStore {
-    links: LinkItemTypeSchema[];
+interface TodoStore {
+    todos: TodoTypeSchema[];
     isLoading: boolean;
     error: string | null;
-    fetchLinks: () => Promise<void>;
-    updateLink: (id: number, updatedData: Partial<LinkItemTypeSchema>) => Promise<void>;
-    deleteLink: (id: number) => Promise<void>;
-    addLink: (newLink: Partial<LinkItemTypeSchema>) => Promise<void>;
+    fetchTodos: () => Promise<void>;
+    updateTodo: (id: number, updatedData: Partial<TodoTypeSchema>) => Promise<void>;
+    deleteTodo: (id: number) => Promise<void>;
+    addTodo: (newTodo: Partial<TodoTypeSchema>) => Promise<void>;
     triggerFetch: () => void;
 }
 
-export const useLinkStore = create<LinkTreeStore>((set) => ({
-    links: [],
+export const useTodoStore = create<TodoStore>((set) => ({
+    todos: [],
     isLoading: false,
     error: null,
 
-    fetchLinks: async () => {
+    fetchTodos: async () => {
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + '/', {
+            const response = await fetch(endpoint + '/todo/', {
                 headers: {
                     Authorization: `${jwt}`,
                 },
             });
-            if (!response.ok) throw new Error('Failed to load links');
+            if (!response.ok) throw new Error('Failed to load todos');
             const data = await response.json();
-            const links: LinkItemTypeSchema[] = data.links;
-            set({ links, isLoading: false });
+            const todos: TodoTypeSchema[] = data.todos;
+            set({ todos, isLoading: false });
         } catch (error: unknown) {
             if (error instanceof Error) {
                 set({ error: error.message, isLoading: false });
@@ -40,11 +40,11 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         }
     },
 
-    updateLink: async (id, updatedData) => {
+    updateTodo: async (id, updatedData) => {
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + `/${id}`, {
+            const response = await fetch(endpoint + `/todo/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -52,12 +52,12 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
                 },
                 body: JSON.stringify(updatedData),
             });
-            if (!response.ok) throw new Error('Failed to update link');
-            const updatedLink: LinkItemTypeSchema = await response.json();
+            if (!response.ok) throw new Error('Failed to update todo');
+            const updatedTodo: TodoTypeSchema = await response.json();
 
             set((state) => ({
-                links: state.links.map((link) =>
-                    link.id === id ? { ...link, ...updatedLink } : link
+                todos: state.todos.map((todo) =>
+                    todo.id === id ? {...todo, ...updatedTodo} : todo
                 ),
                 isLoading: false,
             }));
@@ -68,20 +68,19 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         }
     },
 
-    deleteLink: async (id) => {
+    deleteTodo: async (id) => {
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + `/${id}`, {
+            const response = await fetch(endpoint + `/todo/${id}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `${jwt}`,
                 },
             });
-            if (!response.ok) throw new Error('Failed to delete link');
-
+            if (!response.ok) throw new Error('Failed to delete todo');
             set((state) => ({
-                links: state.links.filter((link) => link.id !== id),
+                todos: state.todos.filter((todo) => todo.id !== id),
                 isLoading: false,
             }));
         } catch (error: unknown) {
@@ -91,23 +90,23 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
         }
     },
 
-    addLink: async (newLink) => {
+    addTodo: async (newTodo) => {
         set({ isLoading: true, error: null });
         const { jwt } = useAuthenticatedUserStore.getState();
         try {
-            const response = await fetch(endpoint + '/', {
+            const response = await fetch(endpoint + '/todo/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `${jwt}`,
                 },
-                body: JSON.stringify(newLink),
+                body: JSON.stringify(newTodo),
             });
-            if (!response.ok) throw new Error('Failed to add new link');
-            const addedLink: LinkItemTypeSchema = await response.json();
-
+            if (!response.ok) throw new Error('Failed to add todo');
+            const data  = await response.json();
+            const addedTodo: TodoTypeSchema = data.todo;
             set((state) => ({
-                links: [...state.links, addedLink],
+                todos: [...state.todos, addedTodo],
                 isLoading: false,
             }));
         } catch (error: unknown) {
@@ -116,11 +115,9 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
             }
         }
     },
+
     triggerFetch: () => {
-        const fetchLinks = useLinkStore.getState().fetchLinks;
-        fetchLinks();
+        set({ isLoading: true, error: null });
     },
+
 }));
-
-export default useLinkStore;
-

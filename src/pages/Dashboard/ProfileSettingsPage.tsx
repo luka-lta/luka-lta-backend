@@ -12,14 +12,19 @@ import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 
 export function ProfileSettingsPage() {
     const { getUser } = useAuthenticatedUserStore();
-    const user: UserTypeSchema = getUser();
+    const user: UserTypeSchema | null = getUser();
 
     const form = useForm<UserTypeSchema>({
         resolver: zodResolver(UserFormSchema),
         defaultValues: {
-            email: user.email,
+            email: user?.email,
         },
     });
+
+    if (!user) {
+        return <p>No user found!</p>;
+    }
+
 
     const onSubmit = async (data: UserTypeSchema) => {
         try {

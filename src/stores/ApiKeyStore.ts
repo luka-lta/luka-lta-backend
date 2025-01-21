@@ -2,7 +2,7 @@ import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
 import {create} from "zustand";
 import {ApiKeyTypeSchema} from "@/shemas/ApiKeySchema.ts";
 
-const endpoint = 'https://api.luka-lta.dev/api/v1';
+const endpoint = import.meta.env.VITE_API_URL;
 
 interface ApiKeyStore {
     apiKeys: ApiKeyTypeSchema[];

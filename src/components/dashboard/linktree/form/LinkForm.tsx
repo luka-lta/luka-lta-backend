@@ -20,7 +20,7 @@ const defaultValues: Partial<LinkItemTypeSchema> = {
     displayname: "",
     description: "",
     url: "",
-    iconName: "",
+    iconName: "FaLink",
     isActive: true,
 };
 

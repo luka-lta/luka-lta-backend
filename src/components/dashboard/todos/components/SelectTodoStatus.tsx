@@ -16,7 +16,7 @@ interface TodoStatusProps {
 }
 
 function SelectTodoStatus({setStatusFilter, statusFilter}: TodoStatusProps) {
-    const statuses: TodoStatus[] = ["todo", "in-progress", "done"];
+    const statuses: TodoStatus[] = ["open", "in_progress", "completed", "archived"];
 
     const handleStatusChange = (status: TodoStatus) => {
         setStatusFilter(status);
