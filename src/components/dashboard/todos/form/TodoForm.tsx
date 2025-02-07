@@ -24,7 +24,7 @@ interface TodoFormProps {
 
 const defaultValues: Partial<TodoTypeSchema> = {
     title: "",
-    description: "",
+    description: null,
     status: "open",
     priority: "medium",
     dueDate: undefined,

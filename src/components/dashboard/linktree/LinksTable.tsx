@@ -31,7 +31,7 @@ function LinksTable(
 
     const handleDragEnd = (event: DragEndEvent) => {
         const {active, over} = event;
-        if (!over) return; // Sicherstellen, dass `over` nicht null ist.
+        if (!over) return;
         if (active.id !== over.id) {
             const oldIndex = sortedLinks.findIndex(link => link.id === active.id);
             const newIndex = sortedLinks.findIndex(link => link.id === over.id);
@@ -42,6 +42,28 @@ function LinksTable(
             console.log(newLinks);
         }
     };
+
+    const renderLinkList = () => (
+        <TableBody>
+            <SortableContext items={sortedLinks.map(link => link.id)}
+                             strategy={verticalListSortingStrategy}>
+                {sortedLinks.map((link) => (
+                    <LinkItem
+                        key={link.id}
+                        link={link}
+                        onDelete={() => {
+                            setDeleteLinkId(link.id)
+                            setDeleteDialog(true)
+                        }}
+                        onEdit={() => {
+                            setEditingLink(link)
+                            setEdit(true)
+                        }}
+                    />
+                ))}
+            </SortableContext>
+        </TableBody>
+    );
 
     return (
         <>
@@ -73,25 +95,7 @@ function LinksTable(
                             ))}
                         </TableBody>
                     ) : sortedLinks.length > 0 ? (
-                        <TableBody>
-                            <SortableContext items={sortedLinks.map(link => link.id)}
-                                             strategy={verticalListSortingStrategy}>
-                                {sortedLinks.map((link) => (
-                                    <LinkItem
-                                        key={link.id}
-                                        link={link}
-                                        onDelete={() => {
-                                            setDeleteLinkId(link.id)
-                                            setDeleteDialog(true)
-                                        }}
-                                        onEdit={() => {
-                                            setEditingLink(link)
-                                            setEdit(true)
-                                        }}
-                                    />
-                                ))}
-                            </SortableContext>
-                        </TableBody>
+                        renderLinkList()
                     ) : (
                         <div className="text-center">
                             {error ? (

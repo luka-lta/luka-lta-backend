@@ -62,6 +62,10 @@ function UserItem({apiKey, handleDelete}: ApiKeyItemProps) {
                     {showFullKey ? <EyeOffIcon className="h-4 w-4"/> : <EyeIcon className="h-4 w-4"/>}
                 </Button>
             </TableCell>
+
+            <TableCell>
+                {apiKey.permissions.map(permission => permission.name).join(", ")}
+            </TableCell>
             <TableCell>
                 <Button variant="outline" className="mr-2">
                     Edit

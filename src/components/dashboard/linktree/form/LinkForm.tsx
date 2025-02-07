@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { LinkFormSchema, LinkItemTypeSchema } from "@/shemas/LinkSchema.ts";
-import { useEffect } from "react";
+import {useCallback, useEffect} from "react";
 import {DialogFooter} from "@/components/ui/dialog.tsx";
 
 interface LinkFormProps {
@@ -34,11 +34,16 @@ export function LinkForm({ initialData, onSubmit, isLoading, onOpenChange }: Lin
         if (initialData) {
             form.reset(initialData);
         }
+        if (!open) form.reset();
     }, [initialData, form]);
+
+    const handleSubmit = useCallback(async (values: LinkItemTypeSchema) => {
+        await onSubmit(values);
+    }, [onSubmit]);
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                 <FormField
                     control={form.control}
                     name="displayname"

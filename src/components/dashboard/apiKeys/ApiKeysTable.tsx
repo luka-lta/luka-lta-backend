@@ -9,7 +9,7 @@ export default function ApiKeysTable() {
 
     useEffect(() => {
         triggerFetch();
-    }, []);
+    }, [triggerFetch]);
 
     const handleDelete = async (id: number) => {
         if (confirm('Are you sure you want to delete this user?')) {
@@ -28,6 +28,7 @@ export default function ApiKeysTable() {
                         <TableHead>Created</TableHead>
                         <TableHead>Expires</TableHead>
                         <TableHead>Key</TableHead>
+                        <TableHead>Permissions</TableHead>
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -52,7 +53,7 @@ export default function ApiKeysTable() {
                         {error ? (
                             <p className="text-red-500">{error}</p>
                         ) : (
-                            <p className="text-red-500">No links found</p>
+                            <p className="text-red-500">No keys found</p>
                         )}
                     </div>
                 )}

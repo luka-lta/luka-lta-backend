@@ -53,7 +53,8 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
                 body: JSON.stringify(updatedData),
             });
             if (!response.ok) throw new Error('Failed to update link');
-            const updatedLink: LinkItemTypeSchema = await response.json();
+            const data = await response.json();
+            const updatedLink: LinkItemTypeSchema = data.link;
 
             set((state) => ({
                 links: state.links.map((link) =>
@@ -104,7 +105,8 @@ export const useLinkStore = create<LinkTreeStore>((set) => ({
                 body: JSON.stringify(newLink),
             });
             if (!response.ok) throw new Error('Failed to add new link');
-            const addedLink: LinkItemTypeSchema = await response.json();
+            const data = await response.json();
+            const addedLink: LinkItemTypeSchema = data.link;
 
             set((state) => ({
                 links: [...state.links, addedLink],

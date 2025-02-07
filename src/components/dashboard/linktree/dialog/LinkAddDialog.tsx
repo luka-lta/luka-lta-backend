@@ -1,6 +1,4 @@
 import useLinkStore from "@/stores/LinkStore.ts";
-import {useForm, UseFormReturn} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
 import {toast} from "sonner";
 import {
     Dialog,
@@ -9,8 +7,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog.tsx";
-import {useCallback, useEffect} from "react";
-import {LinkFormSchema, LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
+import {useCallback} from "react";
+import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
 import {LinkForm} from "@/components/dashboard/linktree/form/LinkForm.tsx";
 
 interface LinkFormDialogProps {
@@ -19,33 +17,19 @@ interface LinkFormDialogProps {
 }
 
 function LinkAddDialog({open, onOpenChange}: LinkFormDialogProps) {
-    const {addLink, isLoading} = useLinkStore();
-
-    const form: UseFormReturn<LinkItemTypeSchema> = useForm<LinkItemTypeSchema>({
-        resolver: zodResolver(LinkFormSchema),
-        defaultValues: {
-            displayname: "",
-            description: "",
-            url: "",
-            iconName: "",
-            isActive: true,
-        }
-    });
-
-    useEffect(() => {
-        if (!open) form.reset();
-    }, [open, form]);
+    const {addLink, fetchLinks, isLoading} = useLinkStore();
 
     const handleSubmit = useCallback(async (values: LinkItemTypeSchema) => {
         try {
             await addLink(values);
+            await fetchLinks();
             toast.success("Link created successfully!");
             onOpenChange(false);
         } catch (error) {
             console.error("Error creating link:", error);
             toast.error(error instanceof Error ? error.message : "An unexpected error occurred.");
         }
-    }, [addLink, onOpenChange]);
+    }, [addLink, fetchLinks, onOpenChange]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
