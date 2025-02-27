@@ -1,5 +1,5 @@
 import {Navigation} from "@/components/dashboard/rootlayout/types/SidebarTypes.ts";
-import {ChartSpline, ClipboardList, Home, KeySquare, ListTree, Plus, UsersIcon} from "lucide-react";
+import {ChartSpline, ClipboardList, Hammer, Home, KeySquare, ListTree, Plus, UsersIcon} from "lucide-react";
 
 export const navigation: Navigation = {
     user: {
@@ -54,6 +54,12 @@ export const navigation: Navigation = {
             title: "Todos",
             url: "todos",
             icon: ClipboardList,
+            dropdown: []
+        },
+        {
+            title: "Tools",
+            url: "tools",
+            icon: Hammer,
             dropdown: []
         }
     ]

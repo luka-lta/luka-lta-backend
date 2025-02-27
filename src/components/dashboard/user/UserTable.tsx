@@ -1,9 +1,11 @@
-import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import {useState} from "react";
 import UserItem from "@/components/dashboard/user/UserItem.tsx";
 import {UserTypeSchema} from "@/shemas/UserSchema.ts";
 import {ChevronDown, ChevronUp} from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog.tsx";
+import {ScrollArea} from "@/components/ui/scroll-area.tsx";
+import RowActions from "@/components/Row-actions.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];
@@ -39,33 +41,44 @@ export default function UserTable({users, deleteUser}: UserTableProps) {
 
     return (
         <>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Avatar</TableHead>
-                        <TableHead onClick={() => handleSort("email")} className="cursor-pointer">
-                            Email <SortIcon field="email" />
-                        </TableHead>
-                        <TableHead onClick={() => handleSort('createdAt')} className="cursor-pointer">
-                            Created <SortIcon field="createdAt" />
-                        </TableHead>
-                        <TableHead onClick={() => handleSort("updatedAt")} className="cursor-pointer">
-                            Updated <SortIcon field="updatedAt" />
-                        </TableHead>
-                        <TableHead>Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {sortedUsers.map((user) => (
-                        <UserItem
-                            key={user.userId}
-                            user={user}
-                            handleDelete={(id) => setDeleteUserId(id)}
-                            handleEdit={() => {}}
-                        />
-                    ))}
-                </TableBody>
-            </Table>
+            <ScrollArea className="rounded-md border p-3 max-h-[800px] overflow-y-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Avatar</TableHead>
+                            <TableHead onClick={() => handleSort("email")} className="cursor-pointer">
+                                Email <SortIcon field="email" />
+                            </TableHead>
+                            <TableHead onClick={() => handleSort('createdAt')} className="cursor-pointer">
+                                Created <SortIcon field="createdAt" />
+                            </TableHead>
+                            <TableHead onClick={() => handleSort("updatedAt")} className="cursor-pointer">
+                                Updated <SortIcon field="updatedAt" />
+                            </TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {sortedUsers.length > 0 ? (
+                            sortedUsers.map((user) => (
+                                <UserItem
+                                    key={user.userId}
+                                    user={user}
+                                    handleDelete={(id) => setDeleteUserId(id)}
+                                    handleEdit={() => {}}
+                                />
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={5} className="text-center">No users available</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </ScrollArea>
+
+            <RowActions rowsPerPage={10} totalRows={users.length} />
+
             <ConfirmDialog
                 isOpen={!!deleteUserId}
                 onClose={() => setDeleteUserId(null)}

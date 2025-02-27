@@ -6,6 +6,8 @@ import {
     ChartTooltipContent
 } from "@/components/ui/chart.tsx";
 import {Bar, BarChart, CartesianGrid, XAxis} from "recharts";
+import {Button} from "@/components/ui/button.tsx";
+import {RefreshCcw} from "lucide-react";
 
 const chartData = [
     {month: "January", clicks: 186, links: 80},
@@ -31,7 +33,13 @@ const chartConfig = {
 function ClicksChart() {
     return (
         <div className="flex h-full w-full flex-col p-4">
-            <h2 className="text-sm font-semibold text-gray-500">Clicks overview</h2>
+            <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-gray-500">Clicks overview</h2>
+                <Button variant='secondary' className="flex items-center justify-center p-3">
+                    <RefreshCcw/>
+                </Button>
+            </div>
+
             <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
                 <BarChart accessibilityLayer data={chartData}>
                     <CartesianGrid vertical={false}/>

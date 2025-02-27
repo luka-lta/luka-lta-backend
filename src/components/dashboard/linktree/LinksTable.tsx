@@ -1,17 +1,17 @@
 import {useMemo} from 'react';
 import useLinkStore from "@/stores/LinkStore.ts";
-import {Button} from "@/components/ui/button.tsx";
-import {Plus} from "lucide-react";
 import {arrayMove, SortableContext, verticalListSortingStrategy} from "@dnd-kit/sortable";
 import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
 import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import LinkItem from "@/components/dashboard/linktree/LinkItem.tsx";
 import {closestCenter, DndContext, DragEndEvent} from "@dnd-kit/core";
 import LinkSkeleton from "@/components/dashboard/linktree/LinkSkeleton.tsx";
+import RowActions from "@/components/Row-actions.tsx";
+import {ScrollArea} from "@/components/ui/scroll-area.tsx";
 
 interface LinktreePageProps {
+    links: LinkItemTypeSchema[] | undefined;
     setEdit: (edit: boolean) => void;
-    setCreate: (create: boolean) => void;
     setEditingLink: (link: LinkItemTypeSchema) => void;
     editingLink: LinkItemTypeSchema | undefined;
     setDeleteLinkId: (id: number) => void;
@@ -19,9 +19,9 @@ interface LinktreePageProps {
 }
 
 function LinksTable(
-    {setEdit, setCreate, setEditingLink, setDeleteLinkId, setDeleteDialog}: LinktreePageProps
+    {links, setEdit, setEditingLink, setDeleteLinkId, setDeleteDialog}: LinktreePageProps
 ) {
-    const {links, isLoading, error} = useLinkStore();
+    const {isLoading, error} = useLinkStore();
 
     const sortedLinks = useMemo(() => {
         if (!links) return [];
@@ -67,45 +67,44 @@ function LinksTable(
 
     return (
         <>
-            <Button disabled={!!error} onClick={() => setCreate(true)}>
-                <Plus className="mr-2 h-4 w-4"/>
-                Add Link
-            </Button>
-
             <DndContext
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
             >
+                <ScrollArea className="rounded-md border p-3 max-h-[800px] overflow-y-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Display Name</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead>URL</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Created On</TableHead>
+                                <TableHead>Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        {isLoading ? (
+                            <TableBody>
+                                {Array(5).fill(null).map((_, index) => (
+                                    <LinkSkeleton key={index}/>
+                                ))}
+                            </TableBody>
+                        ) : sortedLinks.length > 0 ? (
+                            renderLinkList()
+                        ) : (
+                            <div className="text-center">
+                                {error ? (
+                                    <p className="text-red-500">{error}</p>
+                                ) : (
+                                    <p className="text-red-500">No links found</p>
+                                )}
+                            </div>
+                        )}
+                    </Table>
 
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Display Name</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>URL</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Created On</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    {isLoading ? (
-                        <TableBody>
-                            {Array(5).fill(null).map((_, index) => (
-                                <LinkSkeleton key={index}/>
-                            ))}
-                        </TableBody>
-                    ) : sortedLinks.length > 0 ? (
-                        renderLinkList()
-                    ) : (
-                        <div className="text-center">
-                            {error ? (
-                                <p className="text-red-500">{error}</p>
-                            ) : (
-                                <p className="text-red-500">No links found</p>
-                            )}
-                        </div>
-                    )}
-                </Table>
+                </ScrollArea>
+
+                <RowActions rowsPerPage={10} totalRows={sortedLinks.length}/>
             </DndContext>
         </>
     );

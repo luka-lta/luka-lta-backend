@@ -12,6 +12,7 @@ import protectedLoader from "@/loader/protectedLoader.ts";
 import AnalyticsPage from "@/pages/Dashboard/AnalyticsPage.tsx";
 import ApiKeysPage from "@/pages/Dashboard/ApiKeysPage.tsx";
 import TodoPage from "@/pages/Dashboard/TodoPage.tsx";
+import ToolsPage from "@/pages/Dashboard/ToolsPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -49,6 +50,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'todos',
                 element: <TodoPage/>
+            },
+            {
+                path: 'tools',
+                element: <ToolsPage/>
             }
         ]
     },

@@ -1,9 +1,9 @@
-import AddUserButton from "@/components/dashboard/user/button/AddUserButton.tsx";
 import UserTable from "@/components/dashboard/user/UserTable.tsx";
-import SearchBar from "@/components/dashboard/user/SearchBar.tsx";
+import SearchBar from "@/components/SearchBar.tsx";
 import useUserStore from "@/stores/UserStore.ts";
 import {useEffect, useState} from "react";
 import {UserTypeSchema} from "@/shemas/UserSchema.ts";
+import AddButton from "@/components/button/AddButton.tsx";
 
 function UsersPage() {
     const {users, triggerFetch, deleteUser} = useUserStore();
@@ -27,8 +27,8 @@ function UsersPage() {
         <div className="container mx-auto p-6 space-y-6">
             <h1 className="text-3xl font-bold">User Management</h1>
             <div className="flex justify-between items-center">
-                <SearchBar onSearch={handleSearch}/>
-                <AddUserButton/>
+                <SearchBar onSearch={handleSearch} placeholder='Search user...'/>
+                <AddButton onClick={() => undefined}/>
             </div>
             {filteredUsers.length > 0 && (
                 <UserTable deleteUser={deleteUser} users={filteredUsers}/>

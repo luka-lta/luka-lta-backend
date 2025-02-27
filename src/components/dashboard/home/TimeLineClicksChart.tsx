@@ -14,6 +14,8 @@ import {
     ChartTooltip,
     ChartTooltipContent
 } from "@/components/ui/chart.tsx";
+import {Button} from "@/components/ui/button.tsx";
+import {RefreshCcw} from "lucide-react";
 
 type ClickData = {
     timestamp: string;
@@ -66,25 +68,30 @@ const TimeLineClicksChart: React.FC<LineChartProps> = () => {
 
     return (
         <div className="flex h-full w-full flex-col p-4">
-            <h2 className="text-sm font-semibold text-gray-500">Clicks over time (Last 7 days)</h2>
+            <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-gray-500">Clicks over time (Last 7 days)</h2>
+                <Button variant='secondary' className="flex items-center justify-center p-3">
+                    <RefreshCcw/>
+                </Button>
+            </div>
             <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
                 <LineChart data={variedData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false}/>
                     <XAxis
                         dataKey="timestamp"
                         tickLine={false}
                         axisLine={true}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString("en-US", { weekday: "short" })}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString("en-US", {weekday: "short"})}
                     />
-                    <YAxis tickLine={false} axisLine={true} tickFormatter={(value) => `${value}`} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <YAxis tickLine={false} axisLine={true} tickFormatter={(value) => `${value}`}/>
+                    <ChartTooltip content={<ChartTooltipContent/>}/>
                     <Line
                         type="linear"
                         dataKey="clicks"
                         stroke="var(--color-clicks)"
                         strokeWidth={1}
-                        dot={{ fill: "var(--color-clicks)", strokeWidth: 2 }}
-                        activeDot={{ r: 8 }}
+                        dot={{fill: "var(--color-clicks)", strokeWidth: 2}}
+                        activeDot={{r: 8}}
                     />
                     <ChartTooltip content={<ChartTooltipContent/>}/>
                     <ChartLegend content={<ChartLegendContent/>}/>

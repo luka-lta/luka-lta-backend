@@ -6,9 +6,11 @@ import {LinkItemTypeSchema} from "@/shemas/LinkSchema.ts";
 import LinkDeleteDialog from "@/components/dashboard/linktree/dialog/LinkDeleteDialog.tsx";
 import useLinkStore from "@/stores/LinkStore.ts";
 import {toast} from "sonner";
+import SearchBar from "@/components/SearchBar.tsx";
+import AddButton from "@/components/button/AddButton.tsx";
 
 function LinktreePage() {
-    const {fetchLinks} = useLinkStore();
+    const {fetchLinks, links} = useLinkStore();
     const [editingLink, setEditingLink] = useState<LinkItemTypeSchema | undefined>()
     const [deleteLinkId, setDeleteLinkId] = useState<number>(0)
     const [edit, setEdit] = useState(false);
@@ -35,15 +37,25 @@ function LinktreePage() {
         }
     };
 
+    const handleSearch = (searchTerm: string) => {
+        console.log(searchTerm);
+    }
+
     return (
-        <div className="container mx-auto py-10 bg-muted/30 rounded-lg">
-            <h1 className="text-2xl font-bold mb-5">Linktree Management</h1>
+        <div className="container mx-auto p-6 space-y-6">
+            <h1 className="text-3xl font-bold">Linktree Management</h1>
+
+            <div className="flex justify-between items-center">
+                <SearchBar onSearch={handleSearch} placeholder='Search link...'/>
+                <AddButton onClick={() => setCreate(true)}/>
+            </div>
+
             <div className="mt-8">
                 <LinksTable
+                    links={links}
                     editingLink={editingLink}
                     setEditingLink={setEditingLink}
                     setEdit={setEdit}
-                    setCreate={setCreate}
                     setDeleteLinkId={setDeleteLinkId}
                     setDeleteDialog={setDeleteDialog}
                 />

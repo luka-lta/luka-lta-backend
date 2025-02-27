@@ -1,34 +1,24 @@
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink, PaginationNext,
-    PaginationPrevious
-} from "@/components/ui/pagination.tsx";
 import ApiKeysTable from "@/components/dashboard/apiKeys/ApiKeysTable.tsx";
+import SearchBar from "@/components/SearchBar.tsx";
+import AddButton from "@/components/button/AddButton.tsx";
 
 function ApiKeysPage() {
-    return (
-        <div className="container mx-auto py-10 bg-muted/50 rounded-lg">
-            <h1 className="text-2xl font-bold mb-5">Api-Key Management</h1>
-            <ApiKeysTable />
+    const handleSearch = (searchTerm: string) => {
+        console.log('Searching for:', searchTerm)
+    }
 
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious href="#" />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#">1</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#">2</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext href="#" />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+    const handleAdd = () => {
+        console.log('Adding new key...')
+    }
+
+    return (
+        <div className="container mx-auto p-6 space-y-6">
+            <h1 className="text-3xl font-bold">Api-Key Management</h1>
+            <div className="flex justify-between items-center">
+                <SearchBar onSearch={handleSearch} placeholder={'Search key...'}/>
+                <AddButton onClick={handleAdd} />
+            </div>
+            <ApiKeysTable/>
         </div>
     );
 }
