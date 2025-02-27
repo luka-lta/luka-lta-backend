@@ -1,36 +1,41 @@
 import AddUserButton from "@/components/dashboard/user/button/AddUserButton.tsx";
 import UserTable from "@/components/dashboard/user/UserTable.tsx";
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink, PaginationNext,
-    PaginationPrevious
-} from "@/components/ui/pagination.tsx";
+import SearchBar from "@/components/dashboard/user/SearchBar.tsx";
+import useUserStore from "@/stores/UserStore.ts";
+import {useEffect, useState} from "react";
+import {UserTypeSchema} from "@/shemas/UserSchema.ts";
 
 function UsersPage() {
-    return (
-        <div className="container mx-auto py-10 bg-muted/50 rounded-lg">
-            <h1 className="text-2xl font-bold mb-5">User Management</h1>
-            <AddUserButton/>
-            <UserTable />
+    const {users, triggerFetch, deleteUser} = useUserStore();
+    const [filteredUsers, setFilteredUsers] = useState<UserTypeSchema[]>([])
 
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious href="#" />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#">1</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationLink href="#">2</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext href="#" />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+    useEffect(() => {
+        triggerFetch();
+    }, []);
+
+    useEffect(() => {
+        setFilteredUsers(users);
+    }, [users]);
+
+
+    const handleSearch = (searchTerm: string) => {
+        const filtered = users.filter((user) => user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+        setFilteredUsers(filtered)
+    }
+
+    return (
+        <div className="container mx-auto p-6 space-y-6">
+            <h1 className="text-3xl font-bold">User Management</h1>
+            <div className="flex justify-between items-center">
+                <SearchBar onSearch={handleSearch}/>
+                <AddUserButton/>
+            </div>
+            {filteredUsers.length > 0 && (
+                <UserTable deleteUser={deleteUser} users={filteredUsers}/>
+            )}
+            {filteredUsers.length === 0 && (
+                <p className="justify-items-center">No users found</p>
+            )}
         </div>
     );
 }

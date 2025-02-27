@@ -1,20 +1,40 @@
 import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import useUserStore from "@/stores/UserStore.ts";
-import {useEffect} from "react";
+import {useState} from "react";
 import UserItem from "@/components/dashboard/user/UserItem.tsx";
+import {UserTypeSchema} from "@/shemas/UserSchema.ts";
+import {ChevronDown, ChevronUp} from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog.tsx";
 
-export default function UserTable() {
-    const {users, triggerFetch} = useUserStore();
+interface UserTableProps {
+    users: UserTypeSchema[];
+    deleteUser: (id: number) => void;
+}
 
-    useEffect(() => {
-        triggerFetch();
-    }, []);
+export default function UserTable({users, deleteUser}: UserTableProps) {
+    const [sortField, setSortField] = useState<keyof UserTypeSchema>("email")
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+    const [deleteUserId, setDeleteUserId] = useState<number | null>(null)
 
-    const handleDelete = async (id: number) => {
-        if (confirm('Are you sure you want to delete this user?')) {
-            console.log('Deleting user with id:', id)
-            // TODO: Implement delete user
+    const sortedUsers = [...users].sort((a, b) => {
+        // @ts-ignore
+        if (a[sortField] < b[sortField]) return sortDirection === "asc" ? -1 : 1
+        // @ts-ignore
+        if (a[sortField] > b[sortField]) return sortDirection === "asc" ? 1 : -1
+        return 0
+    })
+
+    const handleSort = (field: keyof UserTypeSchema) => {
+        if (field === sortField) {
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+        } else {
+            setSortField(field)
+            setSortDirection("asc")
         }
+    }
+
+    const SortIcon = ({field}: { field: keyof UserTypeSchema }) => {
+        if (field !== sortField) return null
+        return sortDirection === "asc" ? <ChevronUp className="ml-2 h-4 w-4"/> : <ChevronDown className="ml-2 h-4 w-4"/>
     }
 
     return (
@@ -23,22 +43,41 @@ export default function UserTable() {
                 <TableHeader>
                     <TableRow>
                         <TableHead>Avatar</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Updated</TableHead>
+                        <TableHead onClick={() => handleSort("email")} className="cursor-pointer">
+                            Email <SortIcon field="email" />
+                        </TableHead>
+                        <TableHead onClick={() => handleSort('createdAt')} className="cursor-pointer">
+                            Created <SortIcon field="createdAt" />
+                        </TableHead>
+                        <TableHead onClick={() => handleSort("updatedAt")} className="cursor-pointer">
+                            Updated <SortIcon field="updatedAt" />
+                        </TableHead>
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {users.map((user) => (
+                    {sortedUsers.map((user) => (
                         <UserItem
                             key={user.userId}
                             user={user}
-                            handleDelete={handleDelete}
+                            handleDelete={(id) => setDeleteUserId(id)}
+                            handleEdit={() => {}}
                         />
                     ))}
                 </TableBody>
             </Table>
+            <ConfirmDialog
+                isOpen={!!deleteUserId}
+                onClose={() => setDeleteUserId(null)}
+                onConfirm={async () => {
+                    if (deleteUserId) {
+                        await deleteUser(deleteUserId)
+                        setDeleteUserId(null)
+                    }
+                }}
+                title="Delete User"
+                message="Are you sure you want to delete this user? This action cannot be undone."
+            />
         </>
     )
 }
