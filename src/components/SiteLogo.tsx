@@ -2,7 +2,7 @@ import {Origami} from "lucide-react"
 import {Link} from "react-router-dom"
 import {cn} from "@/lib/utils"
 import {useSidebar} from "@/components/ui/sidebar"
-import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
+import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
 
 interface SiteLogoProps {
     className?: string

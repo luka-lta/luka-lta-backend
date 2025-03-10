@@ -1,5 +1,5 @@
 import {Link} from "react-router-dom";
-import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
+import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
 
 function ErrorPage() {
     const { isAuthenticated } = useAuthenticatedUserStore();

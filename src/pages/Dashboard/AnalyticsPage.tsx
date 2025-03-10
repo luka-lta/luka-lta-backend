@@ -1,10 +1,8 @@
-import AnalyticsItem from "@/components/dashboard/analytics/AnalyticsItem.tsx";
+import Analytics from "@/feature/analytics";
 
 function AnalyticsPage() {
     return (
-        <div>
-            <AnalyticsItem />
-        </div>
+        <Analytics />
     );
 }
 

@@ -1,6 +1,6 @@
 import {TodoTypeSchema} from "@/shemas/TodoSchema.ts";
 import {create} from "zustand";
-import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
+import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
 
 const endpoint = import.meta.env.VITE_API_URL;
 

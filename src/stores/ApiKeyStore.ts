@@ -1,4 +1,4 @@
-import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
+import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
 import {create} from "zustand";
 import {ApiKeyTypeSchema} from "@/shemas/ApiKeySchema.ts";
 

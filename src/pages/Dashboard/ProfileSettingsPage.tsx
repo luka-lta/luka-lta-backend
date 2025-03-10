@@ -8,7 +8,7 @@ import {Separator} from "@radix-ui/react-select";
 import {Button} from "@/components/ui/button.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
-import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
+import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
 
 export function ProfileSettingsPage() {
     const { getUser } = useAuthenticatedUserStore();

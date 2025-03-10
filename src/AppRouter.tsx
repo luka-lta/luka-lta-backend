@@ -6,13 +6,14 @@ import DashboardRootLayout from "@/components/dashboard/rootlayout/DashboardRoot
 import {ProfileSettingsPage} from "@/pages/Dashboard/ProfileSettingsPage.tsx";
 import UsersPage from "@/pages/Dashboard/UsersPage.tsx";
 import LinktreePage from "@/pages/Dashboard/LinktreePage.tsx";
-import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
+import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
 import authenticatedLoader from "@/loader/authenticatedLoader.ts";
 import protectedLoader from "@/loader/protectedLoader.ts";
 import AnalyticsPage from "@/pages/Dashboard/AnalyticsPage.tsx";
 import ApiKeysPage from "@/pages/Dashboard/ApiKeysPage.tsx";
 import TodoPage from "@/pages/Dashboard/TodoPage.tsx";
 import ToolsPage from "@/pages/Dashboard/ToolsPage.tsx";
+import DetailLinktree from "@/feature/linktree/childPages/detail/DetailLinktree.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -37,7 +38,16 @@ export const appRouter = createBrowserRouter([
             },
             {
                 path: 'linktree',
-                element: <LinktreePage/>
+                children: [
+                    {
+                        path: '',
+                        element: <LinktreePage/>
+                    },
+                    {
+                        path: ':linkId',
+                        element: <DetailLinktree/>
+                    }
+                ]
             },
             {
                 path: 'api-keys',

@@ -26,7 +26,7 @@ import {
 import {NavItem} from "@/components/dashboard/rootlayout/types/SidebarTypes.ts";
 import {navigation} from "@/components/dashboard/rootlayout/items/NavigationItems.ts";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
-import {useAuthenticatedUserStore} from "@/stores/AuthUserStore.ts";
+import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
 
 export default function DashboardSideBar() {
     const location = useLocation();
