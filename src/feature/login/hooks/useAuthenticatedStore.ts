@@ -1,8 +1,8 @@
 import {create} from "zustand";
 import {createJSONStorage, persist} from "zustand/middleware";
-import {UserTypeSchema} from "@/shemas/UserSchema.ts";
 import {jwtDecode} from "jwt-decode";
 import {LoginSchema} from "@/feature/login/schema/loginSchema.ts";
+import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
 
 interface AuthenticatedUserState {
     jwt: string | null;

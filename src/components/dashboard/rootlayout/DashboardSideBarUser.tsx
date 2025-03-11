@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {NavLink} from "react-router-dom"
 import {SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar} from "@/components/ui/sidebar.tsx";
-import {UserTypeSchema} from "@/shemas/UserSchema.ts";
 import {splitAvatarUrl} from "@/lib/utils.ts";
+import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
 
 interface NavUserProps {
     user: UserTypeSchema;

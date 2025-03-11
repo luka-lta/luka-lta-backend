@@ -1,4 +1,3 @@
-import {UserFormSchema, UserTypeSchema} from "@/shemas/UserSchema.ts";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
 import {splitAvatarUrl} from "@/lib/utils.ts";
@@ -9,6 +8,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
+import {UserFormSchema, UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
 
 export function ProfileSettingsPage() {
     const { getUser } = useAuthenticatedUserStore();

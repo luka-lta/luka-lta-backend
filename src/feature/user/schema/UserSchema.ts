@@ -14,3 +14,8 @@ export const userListSchema = z.object({
     users: z.array(UserSchema),
     totalPages: z.number().default(999),
 });
+
+export const UserFormSchema = z.object({
+    email: UserSchema.shape.email,
+    password: z.string().min(8, "Password must be at least 8 characters long"),
+});
