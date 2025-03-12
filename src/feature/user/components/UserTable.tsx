@@ -12,6 +12,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
+import {useState} from "react";
+import CreateUserDialog from "@/feature/user/components/CreateUserDialog.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];
@@ -22,61 +24,68 @@ interface UserTableProps {
 
 function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
     const queryClient = useQueryClient();
+    const [newUser, setNewUser] = useState(false);
 
     return (
-        <div className='px-6'>
-            <DataTable
-                data={users}
-                header={[
-                    {label: 'Avatar'},
-                    {label: 'Email', sortName: 'email'},
-                    {label: 'Created At', sortName: 'created_at'},
-                    {label: 'Updated At', sortName: 'updated_at'},
-                    {label: ''},
-                ]}
-                maxPages={maxPages}
-                renderRow={(user) => {
-                    return (
-                        <TableRow key={user.userId}>
-                            <TableCell className="flex items-center space-x-2">
-                                <Avatar>
-                                    <AvatarImage src={splitAvatarUrl(user.avatarUrl)} alt={user.email}/>
-                                    <AvatarFallback>{user.email[0]}</AvatarFallback>
-                                </Avatar>
-                            </TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                                {formatDate(user.createdAt)}
-                            </TableCell>
-                            <TableCell>
-                                {user.updatedAt ? formatDate(user.updatedAt) : "Unknown"}
-                            </TableCell>
-                            <TableCell>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant={'ghost'}><EllipsisVertical/></Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem>
-                                            <Pencil/>
-                                            Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <Trash/>
-                                            Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
-                        </TableRow>
-                    );
-                }}
-                onFilterChange={setFilterData}
-                onCreateNew={() => alert('Create new user')}
-                loading={loading}
-                onRefetchData={() => queryClient.invalidateQueries({queryKey: ['users', 'list']})}
-            />
-        </div>
+        <>
+            {newUser && (
+                <CreateUserDialog onClose={() => setNewUser(false)}/>
+            )}
+
+            <div className='px-6'>
+                <DataTable
+                    data={users}
+                    header={[
+                        {label: 'Avatar'},
+                        {label: 'Email', sortName: 'email'},
+                        {label: 'Created At', sortName: 'created_at'},
+                        {label: 'Updated At', sortName: 'updated_at'},
+                        {label: ''},
+                    ]}
+                    maxPages={maxPages}
+                    renderRow={(user) => {
+                        return (
+                            <TableRow key={user.userId}>
+                                <TableCell className="flex items-center space-x-2">
+                                    <Avatar>
+                                        <AvatarImage src={splitAvatarUrl(user.avatarUrl)} alt={user.email}/>
+                                        <AvatarFallback>{user.email[0]}</AvatarFallback>
+                                    </Avatar>
+                                </TableCell>
+                                <TableCell>{user.email}</TableCell>
+                                <TableCell>
+                                    {formatDate(user.createdAt)}
+                                </TableCell>
+                                <TableCell>
+                                    {user.updatedAt ? formatDate(user.updatedAt) : "Unknown"}
+                                </TableCell>
+                                <TableCell>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant={'ghost'}><EllipsisVertical/></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem>
+                                                <Pencil/>
+                                                Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
+                                                <Trash/>
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                        );
+                    }}
+                    onFilterChange={setFilterData}
+                    onCreateNew={() => setNewUser(true)}
+                    loading={loading}
+                    onRefetchData={() => queryClient.invalidateQueries({queryKey: ['users', 'list']})}
+                />
+            </div>
+        </>
     );
 }
 

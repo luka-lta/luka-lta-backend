@@ -18,6 +18,7 @@ import {
 import {useQueryClient} from "@tanstack/react-query";
 import {useState} from "react";
 import {CreateLinkDialog} from "@/feature/linktree/components/dialog/CreateLinkDialog.tsx";
+import EditLinkDialog from "@/feature/linktree/components/dialog/EditLinkDialog.tsx";
 
 interface LinktreeTableProps {
     links: LinkItemTypeSchema[];
@@ -30,9 +31,14 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const [newLink, setNewLink] = useState(false);
+    const [editLink, setEditLink] = useState<null | LinkItemTypeSchema>(null);
 
     return (
         <>
+            {(editLink !== null) && (
+                <EditLinkDialog link={editLink} onClose={() => setEditLink(null)}/>
+            )}
+
             {newLink && (
                 <CreateLinkDialog onClose={() => setNewLink(false)}/>
             )}
@@ -90,7 +96,10 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                                                 <Button variant={'ghost'}><EllipsisVertical/></Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                <DropdownMenuItem>
+                                                <DropdownMenuItem onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    setEditLink(link)}
+                                                }>
                                                     <Pencil/>
                                                     Edit
                                                 </DropdownMenuItem>
