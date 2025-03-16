@@ -43,6 +43,10 @@ export const appRouter = createBrowserRouter([
                 element: <UsersPage/>
             },
             {
+                path: 'preview-access',
+                element: <ErrorPage/>,
+            },
+            {
                 path: 'linktree',
                 children: [
                     {
