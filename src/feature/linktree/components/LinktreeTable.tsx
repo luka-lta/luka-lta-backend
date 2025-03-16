@@ -19,6 +19,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import {useState} from "react";
 import {CreateLinkDialog} from "@/feature/linktree/components/dialog/CreateLinkDialog.tsx";
 import EditLinkDialog from "@/feature/linktree/components/dialog/EditLinkDialog.tsx";
+import DeleteLinkDialog from "@/feature/linktree/components/dialog/DeleteLinkDialog.tsx";
 
 interface LinktreeTableProps {
     links: LinkItemTypeSchema[];
@@ -32,11 +33,16 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
     const navigate = useNavigate();
     const [newLink, setNewLink] = useState(false);
     const [editLink, setEditLink] = useState<null | LinkItemTypeSchema>(null);
+    const [deleteLink, setDeleteLink] = useState<null | number>(null);
 
     return (
         <>
             {(editLink !== null) && (
                 <EditLinkDialog link={editLink} onClose={() => setEditLink(null)}/>
+            )}
+
+            {(deleteLink !== null) && (
+                <DeleteLinkDialog onClose={() => setDeleteLink(null)} linkId={deleteLink}/>
             )}
 
             {newLink && (
@@ -98,12 +104,17 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                                             <DropdownMenuContent>
                                                 <DropdownMenuItem onClick={(event) => {
                                                     event.stopPropagation();
-                                                    setEditLink(link)}
+                                                    setEditLink(link)
+                                                }
                                                 }>
                                                     <Pencil/>
                                                     Edit
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem>
+                                                <DropdownMenuItem onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    setDeleteLink(link.id)
+                                                }
+                                                }>
                                                     <Trash/>
                                                     Delete
                                                 </DropdownMenuItem>
