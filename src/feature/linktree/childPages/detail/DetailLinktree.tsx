@@ -74,6 +74,7 @@ function DetailLinktree() {
             </div>
 
             <h1>Clicks</h1>
+            <p className="text-muted-foreground">Shows the current clicks from other Persons</p>
             <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
             <DetailClickChart/>
             </div>

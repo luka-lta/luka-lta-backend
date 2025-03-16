@@ -97,6 +97,7 @@ function CreateApiKeyDialog({onClose}: CreateApiKeyDialogProps) {
                             placeholder='exmaple.com'
                             type={'text'}
                         />
+
                         <div className="flex flex-col items-start gap-2">
                             <div className="flex items-center gap-2">
                                 <Label htmlFor="apikey-permissions-create-form"
