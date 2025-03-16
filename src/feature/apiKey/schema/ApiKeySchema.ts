@@ -11,7 +11,7 @@ export const ApiKeySchema = z.object({
     origin: z.string().url(),
     createdBy: z.number(),
     createdAt: z.string(),
-    expiresAt: z.string().date().nullable().optional(),
+    expiresAt: z.string().nullable().optional(),
     apiKey: z.string(),
     permissions: z.array(permissionSchema).optional().default([]),
 });

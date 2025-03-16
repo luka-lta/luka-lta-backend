@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {useState} from "react";
 import CreateUserDialog from "@/feature/user/components/CreateUserDialog.tsx";
+import EditUserDialog from "@/feature/user/components/EditUserDialog.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];
@@ -25,9 +26,14 @@ interface UserTableProps {
 function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
     const queryClient = useQueryClient();
     const [newUser, setNewUser] = useState(false);
+    const [editUser, setEditUser] = useState<null | UserTypeSchema>(null);
 
     return (
         <>
+            {(editUser !== null) && (
+                <EditUserDialog onClose={() => setEditUser(null)} user={editUser}/>
+            )}
+
             {newUser && (
                 <CreateUserDialog onClose={() => setNewUser(false)}/>
             )}
@@ -65,7 +71,10 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                                             <Button variant={'ghost'}><EllipsisVertical/></Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem onClick={(event) => {
+                                                event.stopPropagation();
+                                                setEditUser(user);
+                                            }}>
                                                 <Pencil/>
                                                 Edit
                                             </DropdownMenuItem>

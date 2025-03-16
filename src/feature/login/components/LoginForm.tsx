@@ -22,7 +22,7 @@ function LoginForm() {
         resolver: zodResolver(loginSchema),
         defaultValues,
     });
-    
+
     const handleLogin = async (data: LoginSchema) => {
         setIsLoading(true);
         try {
@@ -43,7 +43,7 @@ function LoginForm() {
     };
 
     const onSubmit: SubmitHandler<LoginSchema> = (data) => handleLogin(data);
-    
+
     return (
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div>
@@ -74,6 +74,19 @@ function LoginForm() {
                 >
                     {isLoading ? "Sigining in..." : "Sign In"}
                 </Button>
+            </div>
+
+            {/* Register Link */}
+            <div className="text-center">
+                <p className="text-sm text-gray-600">
+                    Don't have an account?{" "}
+                    <span
+                        className="text-indigo-600 hover:text-indigo-500 cursor-pointer font-medium"
+                        onClick={() => navigate("/register")}
+                    >
+                    Register here
+                  </span>
+                </p>
             </div>
         </form>
     );

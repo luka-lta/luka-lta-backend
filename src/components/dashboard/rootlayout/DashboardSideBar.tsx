@@ -5,7 +5,7 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarGroup,
-    SidebarGroupContent,
+    SidebarGroupContent, SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuAction,
@@ -70,48 +70,73 @@ export default function DashboardSideBar() {
         }
     };
 
+    const groupedNavItems = navigation.navMain.reduce<Record<string, NavItem[]>>((groups, item) => {
+        const groupKey = item.groupLabel || "default"
+        if (!groups[groupKey]) {
+            groups[groupKey] = []
+        }
+        groups[groupKey].push(item)
+        return groups
+    }, {})
+
+    // Get all unique group labels
+    const groupLabels = Object.keys(groupedNavItems).filter((label) => label !== "default")
+
+    // Render a navigation item
+    const renderNavItem = (navItem: NavItem) => (
+        <SidebarMenuItem key={navItem.title}>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                            isActive={
+                                navItem.url === "/dashboard"
+                                    ? currentPage === "/dashboard"
+                                    : currentPage.startsWith(`/dashboard/${navItem.url}`)
+                            }
+                            asChild
+                        >
+                            <NavLink to={navItem.url}>
+                                <navItem.icon />
+                                <span>{navItem.title}</span>
+                            </NavLink>
+                        </SidebarMenuButton>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" align="center">
+                        {navItem.title}
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+            {loadDropdownActions(navItem)}
+        </SidebarMenuItem>
+    )
+
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader className="pt-5 items-center">
-                <SiteLogo/>
-            </ SidebarHeader>
+                <SiteLogo />
+            </SidebarHeader>
             <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {
-                                navigation.navMain.map((navItem) => (
-                                    <SidebarMenuItem key={navItem.title}>
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <SidebarMenuButton
-                                                        isActive={
-                                                            navItem.url === '/dashboard' ? currentPage === '/dashboard' : currentPage.startsWith(`/dashboard/${navItem.url}`)
-                                                        }
-                                                        asChild>
-                                                        <NavLink to={navItem.url}>
-                                                            <navItem.icon/>
-                                                            <span>{navItem.title}</span>
-                                                        </NavLink>
-                                                    </SidebarMenuButton>
-                                                </TooltipTrigger>
-                                                <TooltipContent side="right" align="center">
-                                                    {navItem.title}
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                        {loadDropdownActions(navItem)}
-                                    </SidebarMenuItem>
-                                ))
-                            }
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                {/* Render default items (without group label) first */}
+                {groupedNavItems["default"] && groupedNavItems["default"].length > 0 && (
+                    <SidebarGroup>
+                        <SidebarGroupContent>
+                            <SidebarMenu>{groupedNavItems["default"].map(renderNavItem)}</SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                )}
+
+                {/* Render each group with its label */}
+                {groupLabels.map((groupLabel) => (
+                    <SidebarGroup key={groupLabel}>
+                        <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>{groupedNavItems[groupLabel].map(renderNavItem)}</SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                ))}
             </SidebarContent>
-            <SidebarFooter>
-                {user && <NavUser user={user} />}
-            </SidebarFooter>
+            <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
         </Sidebar>
     )
 }
