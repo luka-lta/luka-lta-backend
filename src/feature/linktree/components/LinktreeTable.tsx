@@ -6,8 +6,8 @@ import {EllipsisVertical, Pencil, Trash} from "lucide-react";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 import CustomFaIcon from "@/components/CustomFaIcon.tsx";
 import {Link, useNavigate} from "react-router-dom";
-import {Badge, badgeVariants} from "@/components/ui/badge.tsx";
-import {formatDate} from "@/lib/utils.ts";
+import {Badge} from "@/components/ui/badge.tsx";
+import {cn, formatDate} from "@/lib/utils.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {
     DropdownMenu,
@@ -19,6 +19,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import {useState} from "react";
 import {CreateLinkDialog} from "@/feature/linktree/components/dialog/CreateLinkDialog.tsx";
 import EditLinkDialog from "@/feature/linktree/components/dialog/EditLinkDialog.tsx";
+import DeleteLinkDialog from "@/feature/linktree/components/dialog/DeleteLinkDialog.tsx";
 
 interface LinktreeTableProps {
     links: LinkItemTypeSchema[];
@@ -32,11 +33,16 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
     const navigate = useNavigate();
     const [newLink, setNewLink] = useState(false);
     const [editLink, setEditLink] = useState<null | LinkItemTypeSchema>(null);
+    const [deleteLink, setDeleteLink] = useState<null | number>(null);
 
     return (
         <>
             {(editLink !== null) && (
                 <EditLinkDialog link={editLink} onClose={() => setEditLink(null)}/>
+            )}
+
+            {(deleteLink !== null) && (
+                <DeleteLinkDialog onClose={() => setDeleteLink(null)} linkId={deleteLink}/>
             )}
 
             {newLink && (
@@ -56,8 +62,6 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                     ]}
                     maxPages={maxPages}
                     renderRow={(link) => {
-                        const badgeVariant = link.isActive ? "default" : "destructive";
-
                         return (
                             <TableRow key={link.id} onClick={() => navigate(`/dashboard/linktree/${link.id}`)}>
                                 <TooltipProvider>
@@ -83,7 +87,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                                         </Link>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge className={badgeVariants({variant: badgeVariant})}>
+                                        <Badge variant={"default"} className={cn("ml-2 bg-red-500 text-white", link.isActive && "bg-green-500 text-black")}>
                                             {link.isActive ? "Active" : "Inactive"}
                                         </Badge>
                                     </TableCell>
@@ -98,12 +102,17 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                                             <DropdownMenuContent>
                                                 <DropdownMenuItem onClick={(event) => {
                                                     event.stopPropagation();
-                                                    setEditLink(link)}
+                                                    setEditLink(link)
+                                                }
                                                 }>
                                                     <Pencil/>
                                                     Edit
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem>
+                                                <DropdownMenuItem onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    setDeleteLink(link.id)
+                                                }
+                                                }>
                                                     <Trash/>
                                                     Delete
                                                 </DropdownMenuItem>

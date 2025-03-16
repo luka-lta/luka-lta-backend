@@ -15,6 +15,7 @@ import TodoPage from "@/pages/Dashboard/TodoPage.tsx";
 import ToolsPage from "@/pages/Dashboard/ToolsPage.tsx";
 import DetailLinktree from "@/feature/linktree/childPages/detail/DetailLinktree.tsx";
 import RegisterPage from "@/pages/RegisterPage.tsx";
+import PreviewAccessPage from "@/pages/Dashboard/PreviewAccessPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -41,6 +42,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'users',
                 element: <UsersPage/>
+            },
+            {
+                path: 'preview-access',
+                element: <PreviewAccessPage/>,
             },
             {
                 path: 'linktree',
