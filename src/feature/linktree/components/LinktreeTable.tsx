@@ -53,7 +53,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                 <DataTable
                     data={links}
                     header={[
-                        {label: 'Display Name', sortName: 'display_name'},
+                        {label: 'Display Name', sortName: 'displayname'},
                         {label: 'Description'},
                         {label: 'URL'},
                         {label: 'Status', sortName: 'is_active'},
