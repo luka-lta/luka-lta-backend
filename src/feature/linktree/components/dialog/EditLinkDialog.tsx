@@ -1,10 +1,3 @@
-import React from 'react';
-import {z} from "zod";
-import {SubmitHandler, useForm} from "react-hook-form";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {FetchWrapper} from "@/lib/fetchWrapper.ts";
-import {toast} from "sonner";
 import {
     Dialog,
     DialogContent,
@@ -14,14 +7,20 @@ import {
     DialogTitle
 } from "@/components/ui/dialog.tsx";
 import {TextInput} from "@/components/form/TextInput.tsx";
-import {Switch} from "@/components/ui/switch.tsx";
 import {Label} from "@/components/ui/label.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
-import {linkData} from "@/feature/linktree/schema/LinktreeSchema.ts";
+import {Switch} from "@/components/ui/switch.tsx";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
+import {Button} from "@/components/ui/button.tsx";
+import {linkData, LinkItemTypeSchema} from "@/feature/linktree/schema/LinktreeSchema.ts";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {SubmitHandler, useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
+import {FetchWrapper} from "@/lib/fetchWrapper.ts";
+import {toast} from "sonner";
 
-const linkCreateSchema = z.object({
+const linkEditSchema = z.object({
     displayname: z.string().min(1),
     description: z.string().nullable().default(null),
     url: z.string().url(),
@@ -29,21 +28,29 @@ const linkCreateSchema = z.object({
     iconName: z.string().nullable().default(null),
 })
 
-type CreateLinkDialogProps = {
+type EditLinkDialogProps = {
+    link: LinkItemTypeSchema,
     onClose: () => void,
 }
 
-export const CreateLinkDialog: React.FC<CreateLinkDialogProps> = ({onClose}) => {
+function EditLinkDialog({onClose, link}: EditLinkDialogProps) {
     const queryClient = useQueryClient();
 
     const form = useForm<linkData>({
-        resolver: zodResolver(linkCreateSchema),
+        resolver: zodResolver(linkEditSchema),
+        defaultValues: {
+            displayname: link.displayname,
+            description: link.description ?? '',
+            url: link.url,
+            isActive: link.isActive,
+            iconName: link.iconName ?? '',
+        }
     });
 
-    const createLink = useMutation({
+    const editLink = useMutation({
         mutationFn: async ({displayname, description, iconName, isActive, url}: linkData) => {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            await fetchWrapper.post('/linkCollection/', {
+            await fetchWrapper.put(`/linkCollection/${link.id}`, {
                 displayname,
                 description,
                 iconName,
@@ -53,10 +60,10 @@ export const CreateLinkDialog: React.FC<CreateLinkDialogProps> = ({onClose}) => 
         },
         onSuccess: () => {
             onClose();
-            toast.success('Link created successfully!');
+            toast.success('Link edited successfully!');
         },
         onError: (error) => {
-            toast.error('Failed to create link');
+            toast.error('Failed to edit link');
             console.error(error);
         },
         onSettled: () => {
@@ -66,9 +73,9 @@ export const CreateLinkDialog: React.FC<CreateLinkDialogProps> = ({onClose}) => 
                 });
             }, 500)
         }
-    })
+    });
 
-    const onSubmit: SubmitHandler<linkData> = (data) => createLink.mutate(data);
+    const onSubmit: SubmitHandler<linkData> = (data) => editLink.mutate(data);
 
     return (
         <Dialog open={true} onOpenChange={(open) => {
@@ -130,18 +137,18 @@ export const CreateLinkDialog: React.FC<CreateLinkDialogProps> = ({onClose}) => 
                             />
                         </div>
 
-                        {createLink.error && (
+                        {editLink.error && (
                             <Alert variant='destructive'>
-                                <AlertTitle>Error, failed to create link!</AlertTitle>
-                                <AlertDescription>{createLink.error.message}</AlertDescription>
+                                <AlertTitle>Error, failed to edit link!</AlertTitle>
+                                <AlertDescription>{editLink.error.message}</AlertDescription>
                             </Alert>
                         )}
                     </div>
                     <DialogFooter>
-                        {createLink.isPending ? (
-                            <Button className="w-[100%]" disabled>Creating link...</Button>
+                        {editLink.isPending ? (
+                            <Button className="w-[100%]" disabled>Editing link...</Button>
                         ) : (
-                            <Button className="w-[100%]" type='submit'>Create Link</Button>
+                            <Button className="w-[100%]" type='submit'>Editing Link</Button>
                         )}
                     </DialogFooter>
                 </form>
@@ -150,3 +157,4 @@ export const CreateLinkDialog: React.FC<CreateLinkDialogProps> = ({onClose}) => 
     );
 }
 
+export default EditLinkDialog;

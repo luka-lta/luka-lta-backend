@@ -53,7 +53,7 @@ export class FetchWrapper {
         return this.request(endpoint, 'GET', undefined, headers);
     }
 
-    post(endpoint: string, body: unknown, headers?: HeadersInit): Promise<ApiSchema> {
+    post(endpoint: string, body?: unknown, headers?: HeadersInit): Promise<ApiSchema> {
         return this.request(endpoint, 'POST', body, headers);
     }
 

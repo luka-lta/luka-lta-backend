@@ -11,6 +11,7 @@ interface NavItem {
     url: string;
     icon: LucideIcon;
     tooltip?: string;
+    groupLabel?: string;
     dropdown: DropdownItem[];
 }
 

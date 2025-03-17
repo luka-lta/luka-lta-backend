@@ -3,6 +3,7 @@ import {Tooltip, TooltipTrigger, TooltipContent, TooltipProvider} from "@/compon
 import {Badge} from "@/components/ui/badge.tsx";
 import {Calendar, Clock, ExternalLink, Hash} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
+import {cn} from "@/lib/utils.ts";
 
 interface LinkDetailsProps {
     link: LinkItemTypeSchema;
@@ -29,8 +30,7 @@ function LinkDetails({ link }: LinkDetailsProps) {
             <div className="p-5 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold truncate">{link.displayname || "Untitled Link"}</h2>
-                    {/*{  TODO: Eventuell grün und rot machen }*/}
-                    <Badge variant={link.isActive ? "default" : "destructive"} className="ml-2">
+                    <Badge variant={"default"} className={cn("ml-2 bg-red-500 text-white", link.isActive && "bg-green-500 text-black")}>
                         {link.isActive ? "Active" : "Inactive"}
                     </Badge>
                 </div>

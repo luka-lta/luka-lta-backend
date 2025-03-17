@@ -11,6 +11,14 @@ export const LinkItemSchema = z.object({
     displayOrder: z.number().int().nonnegative('Display order must be a positive number'),
 })
 
+export type linkData = {
+    displayname: string,
+    description: string,
+    url: string,
+    isActive: boolean,
+    iconName?: string,
+}
+
 export type LinkItemTypeSchema = z.infer<typeof LinkItemSchema>
 
 export const linkListSchema = z.object({
