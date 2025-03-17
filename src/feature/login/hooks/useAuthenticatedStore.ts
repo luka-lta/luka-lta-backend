@@ -64,7 +64,7 @@ export const useAuthenticatedUserStore = create<AuthenticatedUserState & Authent
                     }
 
                     const responseData = await response.json();
-                    const jwt = responseData.data.jwt;
+                    const jwt = responseData.data.token;
                     const user = responseData.data.user;
                     set({ jwt, user });
                 } catch (error) {
