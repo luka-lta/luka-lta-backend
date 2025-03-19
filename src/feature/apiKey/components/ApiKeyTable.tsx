@@ -4,6 +4,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import ApiKeyItem from "@/feature/apiKey/components/ApiKeyItem.tsx";
 import {useState} from "react";
 import CreateApiKeyDialog from "@/feature/apiKey/components/CreateApiKeyDialog.tsx";
+import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 
 interface ApiKeyTableProps {
     apiKeys: ApiKeyTypeSchema[];
@@ -43,6 +44,9 @@ function ApiKeyTable({apiKeys, maxPages, loading, setFilterData}: ApiKeyTablePro
                     onCreateNew={() => setNewKey(true)}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['apikey', 'list']})}
                     loading={loading}
+                    customFilter={[
+                        <SearchFilter name={'origin'} key={'search'}/>,
+                    ]}
                 />
             </div>
         </>
