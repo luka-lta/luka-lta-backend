@@ -20,6 +20,7 @@ import {useState} from "react";
 import {CreateLinkDialog} from "@/feature/linktree/components/dialog/CreateLinkDialog.tsx";
 import EditLinkDialog from "@/feature/linktree/components/dialog/EditLinkDialog.tsx";
 import DeleteLinkDialog from "@/feature/linktree/components/dialog/DeleteLinkDialog.tsx";
+import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 
 interface LinktreeTableProps {
     links: LinkItemTypeSchema[];
@@ -127,6 +128,9 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                     onCreateNew={() => setNewLink(true)}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['linktree', 'list']})}
                     loading={loading}
+                    customFilter={[
+                        <SearchFilter name={'displayname'} key={'search'}/>,
+                    ]}
                 />
             </div>
         </>
