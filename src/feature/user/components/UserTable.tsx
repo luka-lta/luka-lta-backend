@@ -15,6 +15,7 @@ import {
 import {useState} from "react";
 import CreateUserDialog from "@/feature/user/components/CreateUserDialog.tsx";
 import EditUserDialog from "@/feature/user/components/EditUserDialog.tsx";
+import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];
@@ -92,6 +93,9 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                     onCreateNew={() => setNewUser(true)}
                     loading={loading}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['users', 'list']})}
+                    customFilter={[
+                        <SearchFilter name={'email'} key={'search'} />
+                    ]}
                 />
             </div>
         </>
