@@ -16,6 +16,7 @@ import ToolsPage from "@/pages/Dashboard/ToolsPage.tsx";
 import DetailLinktree from "@/feature/linktree/childPages/detail/DetailLinktree.tsx";
 import RegisterPage from "@/pages/RegisterPage.tsx";
 import PreviewAccessPage from "@/pages/Dashboard/PreviewAccessPage.tsx";
+import PermissionsPage from "@/pages/Dashboard/PermissionsPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -75,6 +76,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'tools',
                 element: <ToolsPage/>
+            },
+            {
+                path: 'permissions',
+                element: <PermissionsPage/>
             }
         ]
     },

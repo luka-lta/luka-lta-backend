@@ -1,5 +1,16 @@
 import {Navigation} from "@/components/dashboard/rootlayout/types/SidebarTypes.ts";
-import {ChartSpline, ClipboardList, Eye, Hammer, Home, KeySquare, ListTree, Plus, UsersIcon} from "lucide-react";
+import {
+    ChartSpline,
+    ClipboardList,
+    Eye,
+    Hammer,
+    Home,
+    KeySquare,
+    ListTree,
+    Plus,
+    ShieldHalfIcon,
+    UsersIcon
+} from "lucide-react";
 
 export const navigation: Navigation = {
     user: {
@@ -18,7 +29,7 @@ export const navigation: Navigation = {
             title: "Users",
             url: "users",
             icon: UsersIcon,
-            groupLabel: "User Management",
+            groupLabel: "Access Management",
             dropdown: [
                 {
                     title: "Create User",
@@ -31,7 +42,7 @@ export const navigation: Navigation = {
             title: "Preview Access",
             url: "preview-access",
             icon: Eye,
-            groupLabel: "User Management",
+            groupLabel: "Access Management",
             dropdown: []
         },
         {
@@ -50,7 +61,15 @@ export const navigation: Navigation = {
         {
             title: "Api-Keys",
             url: "api-keys",
+            groupLabel: "Access Management",
             icon: KeySquare,
+            dropdown: []
+        },
+        {
+            title: "Permissions",
+            url: "permissions",
+            groupLabel: "Access Management",
+            icon: ShieldHalfIcon,
             dropdown: []
         },
         {

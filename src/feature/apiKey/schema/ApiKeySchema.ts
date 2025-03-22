@@ -1,10 +1,5 @@
 import {z} from "zod";
-
-const permissionSchema = z.object({
-    permissionId: z.number(),
-    name: z.string(),
-    description: z.string(),
-})
+import {permissionSchema} from "@/feature/permissions/schema/PermissionsSchema.ts";
 
 export const ApiKeySchema = z.object({
     id: z.number(),
