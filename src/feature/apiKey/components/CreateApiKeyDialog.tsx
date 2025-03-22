@@ -17,6 +17,8 @@ import {MultiSelect} from "@/components/ui/multi-select.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {CalendarInput} from "@/components/form/CalendarInput.tsx";
+import {useState} from "react";
+import CopyKeyDialog from "@/feature/apiKey/components/CopyKeyDialog.tsx";
 
 interface CreateApiKeyDialogProps {
     onClose: () => void;
@@ -43,6 +45,7 @@ const permissionsList = [
 
 function CreateApiKeyDialog({onClose}: CreateApiKeyDialogProps) {
     const queryClient = useQueryClient();
+    const [createdApiKey, setCreatedApiKey] = useState<string | null>(null)
 
     const form = useForm<createApiKeyData>({
         resolver: zodResolver(createApiKeySchema),
@@ -51,30 +54,34 @@ function CreateApiKeyDialog({onClose}: CreateApiKeyDialogProps) {
     const createApiKey = useMutation({
         mutationFn: async ({origin, permissions, expiresAt}: createApiKeyData) => {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            await fetchWrapper.post('/key/', {
+            return await fetchWrapper.post("/key/", {
                 origin,
                 permissions,
                 expiresAt,
-            })
+            }) // Assuming the API returns the created key
         },
-        onSuccess: () => {
-            onClose();
-            toast.success('Api-Key created successfully!');
+        onSuccess: (data) => {
+            toast.success("Api-Key created successfully!")
+            setCreatedApiKey(data.data.apiKey.apiKey)
+
+
+            setTimeout(() => {
+                queryClient.invalidateQueries({
+                    queryKey: ["apikey", "list"],
+                })
+            }, 500)
         },
         onError: (error) => {
             toast.error('Failed to create Api-Key');
             console.error(error);
-        },
-        onSettled: () => {
-            setTimeout(() => {
-                queryClient.invalidateQueries({
-                    queryKey: ['apikey', 'list'],
-                });
-            }, 500)
         }
     })
 
     const onSubmit: SubmitHandler<createApiKeyData> = (data) => createApiKey.mutate(data);
+
+    if (createdApiKey) {
+        return <CopyKeyDialog apiKey={createdApiKey} onClose={onClose}/>
+    }
 
     return (
         <Dialog open={true} onOpenChange={(open) => {

@@ -1,6 +1,6 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {
-    Dialog,
+    Dialog, DialogContent,
     DialogDescription,
     DialogFooter,
     DialogHeader,
@@ -46,26 +46,28 @@ function DeleteLinkDialog({onClose, linkId}: DeleteLinkDialogProps) {
                 onClose();
             }
         }}>
-            <DialogHeader>
-                <DialogTitle>Delete Link</DialogTitle>
-                <DialogDescription>Are you sure you want to delete this link?</DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-                {deleteLink.isPending ? (
-                    <Button className="w-[100%]" disabled>Deleting link...</Button>
-                ) : (
-                    <Button
-                        className="w-[100%]"
-                        type='button'
-                        onClick={() => deleteLink.mutate()}
-                    >
-                        Delete Link
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Delete Link</DialogTitle>
+                    <DialogDescription>Are you sure you want to delete this link?</DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    {deleteLink.isPending ? (
+                        <Button className="w-[100%]" disabled>Deleting link...</Button>
+                    ) : (
+                        <Button
+                            className="w-[100%]"
+                            type='button'
+                            onClick={() => deleteLink.mutate()}
+                        >
+                            Delete Link
+                        </Button>
+                    )}
+                    <Button className="w-[100%]" variant='secondary' onClick={onClose}>
+                        Cancel
                     </Button>
-                )}
-                <Button className="w-[100%]" variant='secondary' onClick={onClose}>
-                    Cancel
-                </Button>
-            </DialogFooter>
+                </DialogFooter>
+            </DialogContent>
         </Dialog>
     );
 }
