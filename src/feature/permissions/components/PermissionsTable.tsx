@@ -12,14 +12,14 @@ import {Button} from "@/components/ui/button.tsx";
 import {EllipsisVertical, Pencil, Trash} from "lucide-react";
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 
-interface UserTableProps {
+interface PermissionsTableProps {
     permissions: PermissionsTypeSchema[];
     maxPages: number;
     loading: boolean;
     setFilterData: (filterData: Record<string, string>) => void;
 }
 
-function PermissionsTable({permissions, maxPages, loading, setFilterData}: UserTableProps) {
+function PermissionsTable({permissions, maxPages, loading, setFilterData}: PermissionsTableProps) {
     const queryClient = useQueryClient();
 
     return (
