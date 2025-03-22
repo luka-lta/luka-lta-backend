@@ -37,7 +37,7 @@ function ApiKeyTable({apiKeys, maxPages, loading, setFilterData}: ApiKeyTablePro
                     maxPages={maxPages}
                     renderRow={(apiKey) => {
                         return (
-                            <ApiKeyItem apiKey={apiKey}/>
+                            <ApiKeyItem key={apiKey.id} apiKey={apiKey}/>
                         )
                     }}
                     onFilterChange={setFilterData}

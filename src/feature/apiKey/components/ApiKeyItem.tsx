@@ -34,7 +34,7 @@ function ApiKeyItem({apiKey}: ApiKeyItemProps) {
     const displayedKey = showFullKey ? apiKey.apiKey : `••••••••••••`
 
     return (
-        <TableRow key={apiKey.id}>
+        <TableRow>
             <TableCell>{apiKey.origin}</TableCell>
             <TableCell>{apiKey.createdBy}</TableCell>
             <TableCell>
