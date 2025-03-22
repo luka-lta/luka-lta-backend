@@ -28,7 +28,6 @@ function CopyKeyDialog({onClose, apiKey}: CopyKeyDialogProps) {
         });
     }, [apiKey]);
 
-
     return (
         <Dialog open={true} onOpenChange={(open) => {
             if (!open) {
