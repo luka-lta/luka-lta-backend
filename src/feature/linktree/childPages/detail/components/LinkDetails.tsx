@@ -1,7 +1,7 @@
 import { LinkItemTypeSchema } from "@/feature/linktree/schema/LinktreeSchema.ts";
 import {Tooltip, TooltipTrigger, TooltipContent, TooltipProvider} from "@/components/ui/tooltip";
 import {Badge} from "@/components/ui/badge.tsx";
-import {Calendar, Clock, ExternalLink, Hash} from "lucide-react";
+import {Calendar, Clock, ExternalLink, Hash, Tag} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {cn} from "@/lib/utils.ts";
 
@@ -37,7 +37,7 @@ function LinkDetails({ link }: LinkDetailsProps) {
 
                 <div className="space-y-3 flex-1">
                     <div className="flex items-center text-sm">
-                        <Hash className="h-4 w-4 mr-2 text-muted-foreground"/>
+                        <Tag className="h-4 w-4 mr-2 text-muted-foreground"/>
                         <span className="text-muted-foreground">Tag:</span>
                         <span className="font-medium ml-2 truncate">{link.clickTag}</span>
                     </div>
