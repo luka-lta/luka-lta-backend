@@ -2,6 +2,7 @@ import {z} from "zod";
 
 export const LinkItemSchema = z.object({
     id: z.number(),
+    clickTag: z.string().min(16),
     displayname: z.string().min(1, "Display name is required"),
     description: z.string().optional().nullable().default(null),
     url: z.string().url("Must be a valid URL"),
