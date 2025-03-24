@@ -54,6 +54,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                 <DataTable
                     data={links}
                     header={[
+                        {label: 'Click Tag'},
                         {label: 'Display Name', sortName: 'displayname'},
                         {label: 'Description'},
                         {label: 'URL'},
@@ -66,6 +67,9 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                         return (
                             <TableRow key={link.id} onClick={() => navigate(`/dashboard/linktree/${link.id}`)}>
                                 <TooltipProvider>
+                                    <TableCell>
+                                        {link.clickTag.toUpperCase()}
+                                    </TableCell>
                                     <TableCell className="flex items-center space-x-2">
                                         <Avatar>
                                             <AvatarFallback>

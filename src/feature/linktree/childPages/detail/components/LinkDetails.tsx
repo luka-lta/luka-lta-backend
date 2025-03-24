@@ -37,7 +37,13 @@ function LinkDetails({ link }: LinkDetailsProps) {
 
                 <div className="space-y-3 flex-1">
                     <div className="flex items-center text-sm">
-                        <Hash className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <Hash className="h-4 w-4 mr-2 text-muted-foreground"/>
+                        <span className="text-muted-foreground">Tag:</span>
+                        <span className="font-medium ml-2 truncate">{link.clickTag}</span>
+                    </div>
+
+                    <div className="flex items-center text-sm">
+                        <Hash className="h-4 w-4 mr-2 text-muted-foreground"/>
                         <span className="text-muted-foreground">ID:</span>
                         <span className="font-medium ml-2 truncate">{link.id}</span>
                     </div>
@@ -45,14 +51,14 @@ function LinkDetails({ link }: LinkDetailsProps) {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="flex items-center text-sm">
-                                <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                                <Calendar className="h-4 w-4 mr-2 text-muted-foreground"/>
                                 <span className="text-muted-foreground">Created:</span>
                                 <span className="font-medium ml-2">{getTimeAgo(link.createdOn)}</span>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
                             <div className="flex items-center">
-                                <Clock className="h-4 w-4 mr-2" />
+                                <Clock className="h-4 w-4 mr-2"/>
                                 {new Date(link.createdOn).toLocaleString()}
                             </div>
                         </TooltipContent>
@@ -60,11 +66,12 @@ function LinkDetails({ link }: LinkDetailsProps) {
 
                     {link.url && (
                         <div className="flex items-start text-sm mt-4">
-                            <ExternalLink className="h-4 w-4 mr-2 text-muted-foreground mt-0.5" />
+                            <ExternalLink className="h-4 w-4 mr-2 text-muted-foreground mt-0.5"/>
                             <div className="flex-1">
                                 <span className="text-muted-foreground">URL:</span>
                                 <div className="font-medium mt-1 break-all">
-                                    <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                    <a href={link.url} target="_blank" rel="noopener noreferrer"
+                                       className="text-primary hover:underline">
                                         {link.url}
                                     </a>
                                 </div>
@@ -75,8 +82,9 @@ function LinkDetails({ link }: LinkDetailsProps) {
 
                 {link.url && (
                     <div className="mt-auto pt-4">
-                        <Button variant="outline" size="sm" className="w-full" onClick={() => window.open(link.url, "_blank")}>
-                            <ExternalLink className="h-4 w-4 mr-2" />
+                        <Button variant="outline" size="sm" className="w-full"
+                                onClick={() => window.open(link.url, "_blank")}>
+                            <ExternalLink className="h-4 w-4 mr-2"/>
                             Visit Link
                         </Button>
                     </div>
