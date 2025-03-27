@@ -16,10 +16,6 @@ export const QueryErrorDisplay: React.FC<QueryErrorDisplayProps> = ({ query }) =
         }
 
         if (error instanceof Error) {
-            if (error.message.includes('No')) {
-                return 'No data found.';
-            }
-
             return error.message;
         }
         return 'An unknown error occurred, while fetching data.';

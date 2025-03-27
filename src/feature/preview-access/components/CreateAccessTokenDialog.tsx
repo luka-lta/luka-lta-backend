@@ -20,8 +20,11 @@ import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 import {Button} from "@/components/ui/button.tsx";
 
 const accessTokenCreateSchema = z.object({
-    maxUse: z.string().optional().default('1'),
-    isActive: z.boolean().optional().default(true),
+    maxUse: z.string()
+        .transform((val) => parseInt(val, 10))
+        .refine((val) => !isNaN(val) && val > 0, {message: "Max use must be a positive number"})
+        .optional()
+        .default('1'), isActive: z.boolean().optional().default(true),
 });
 
 type CreateAccessTokenDialogProps = {

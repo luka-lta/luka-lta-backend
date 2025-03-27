@@ -9,7 +9,7 @@ export const accessTokenSchema = z.object({
     createdAt: z.string(),
 })
 
-export const acccessTokenListSchema = z.object({
+export const accessTokenListSchema = z.object({
     tokens: z.array(accessTokenSchema),
     totalPages: z.number().default(999)
 })
