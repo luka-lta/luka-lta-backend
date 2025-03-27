@@ -14,6 +14,7 @@ export const QueryErrorDisplay: React.FC<QueryErrorDisplayProps> = ({ query }) =
             const errorList = error.errors.map(err => `- ${err.code}: ${err.message} (Path: "${err.path.join('.') || '.'}")`).join('.\n');
             return `Server returned invalid response! Schema validation failed, because of:\n${errorList}`;
         }
+
         if (error instanceof Error) {
             return error.message;
         }

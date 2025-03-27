@@ -1,5 +1,5 @@
-import { ReactElement, useDeferredValue, useEffect } from 'react'
-import { Table } from '../ui/table'
+import {ReactElement, useDeferredValue, useEffect} from 'react'
+import {Table} from '../ui/table'
 import {FilterWrapper} from "@/components/dataTable/filter/FilterWrapper.tsx";
 import {useDataTableFilter} from "@/components/dataTable/useDataTableFilter.ts";
 import {TableHeader} from "@/components/dataTable/TableHeader.tsx";
@@ -30,6 +30,7 @@ type DataTableProps<TData = unknown, TExtraFilter = Record<string, unknown>> = {
     onFilterChange: (filterData: DataTableFilter<TExtraFilter>) => void,
     onCreateNew: () => void,
     onRefetchData: () => void,
+    emptyState?: string,
 }
 
 export function DataTable<TData = unknown, TExtraFilter = Record<string, unknown>>({
@@ -42,6 +43,7 @@ export function DataTable<TData = unknown, TExtraFilter = Record<string, unknown
                                                                                        onRefetchData,
                                                                                        renderRow,
                                                                                        customFilter = [],
+                                                                                       emptyState,
                                                                                    }: DataTableProps<TData, TExtraFilter>) {
     const {
         filter,
@@ -69,6 +71,20 @@ export function DataTable<TData = unknown, TExtraFilter = Record<string, unknown
             />
 
             <div className="border rounded-lg max-h-[600px] overflow-auto">
+
+                {data.length === 0 && (
+                    <div className="flex items-center justify-center h-32">
+                        {loading ? (
+                            <TableBodyLoading
+                                header={header}
+                                rows={filter.pageSize}
+                            />
+                        ) : (
+                            <div>{emptyState ?? 'No data found'}</div>
+                        )}
+                    </div>
+                )}
+
                 <Table>
                     <TableHeader
                         header={header}
