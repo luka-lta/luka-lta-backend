@@ -36,7 +36,11 @@ function RegisterForm() {
             })
         },
         onSuccess: () => {
-            toast.success('User created successfully!');
+            toast.success('Registration successful');
+
+            setTimeout(() => {
+                navigate('/');
+            }, 2000);
         },
         onError: (error) => {
             toast.error('Failed to create User');
