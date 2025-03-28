@@ -8,5 +8,5 @@ export const chartColor = [
     "#2980B9", // Sky Blue
     "#27AE60", // Dark Green
     "#C0392B", // Dark Red
-    "#8E44AD", // Deep Violet
+    "#6C3483", // Deep Violet
 ];
