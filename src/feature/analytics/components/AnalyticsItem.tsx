@@ -25,7 +25,7 @@ interface ClicksListProps {
 }
 
 function AnalyticsItem({ clicks, loading }: ClicksListProps) {
-    const [timeRange, setTimeRange] = useState("90d")
+    const [timeRange, setTimeRange] = useState("30d")
 
     // Filter data based on selected time range
     const filteredData = useMemo(() => {
