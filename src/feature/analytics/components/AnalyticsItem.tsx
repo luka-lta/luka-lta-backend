@@ -27,6 +27,7 @@ interface ClicksListProps {
 function AnalyticsItem({ clicks, loading }: ClicksListProps) {
     const [timeRange, setTimeRange] = useState("90d")
 
+    // Filter data based on selected time range
     const filteredData = useMemo(() => {
         if (!clicks.length) return []
 
@@ -41,32 +42,64 @@ function AnalyticsItem({ clicks, loading }: ClicksListProps) {
         return clicks.filter((item) => new Date(item.click_date) >= startDate)
     }, [clicks, timeRange])
 
+    // Get unique display names
     const displayNames = useMemo(() => {
         if (!clicks.length) return []
         return [...new Set(clicks.map((click) => click.displayname))]
     }, [clicks])
 
+    // Transform data for the chart
     const chartData = useMemo(() => {
         if (!filteredData.length) return []
 
+        // Get date range
+        const dateRange = new Set<string>()
+        const startDate = new Date()
+        const endDate = new Date()
+
+        // Determine date range based on timeRange
+        let daysToSubtract = 90
+        if (timeRange === "30d") daysToSubtract = 30
+        else if (timeRange === "7d") daysToSubtract = 7
+
+        startDate.setDate(endDate.getDate() - daysToSubtract)
+
+        // Generate all dates in the range
+        const currentDate = new Date(startDate)
+        while (currentDate <= endDate) {
+            const dateStr = currentDate.toISOString().split("T")[0]
+            dateRange.add(dateStr)
+            currentDate.setDate(currentDate.getDate() + 1)
+        }
+
         // Group by date
-        const groupedByDate = filteredData.reduce(
-            (acc, click) => {
-                if (!acc[click.click_date]) {
-                    acc[click.click_date] = {}
-                }
-                acc[click.click_date][click.displayname] = click.total_clicks
-                return acc
-            },
-            {} as Record<string, Record<string, number>>,
-        )
+        const groupedByDate: Record<string, Record<string, number>> = {}
 
-        return Object.entries(groupedByDate).map(([date, values]) => ({
-            date,
-            ...values,
-        }))
-    }, [filteredData])
+        // Initialize all dates with zero values for all display names
+        dateRange.forEach((date) => {
+            groupedByDate[date] = {}
+            displayNames.forEach((name) => {
+                groupedByDate[date][name] = 0
+            })
+        })
 
+        // Fill in actual data
+        filteredData.forEach((click) => {
+            if (groupedByDate[click.click_date]) {
+                groupedByDate[click.click_date][click.displayname] = click.total_clicks
+            }
+        })
+
+        // Convert to array format for the chart and sort by date
+        return Object.entries(groupedByDate)
+            .map(([date, values]) => ({
+                date,
+                ...values,
+            }))
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    }, [filteredData, timeRange, displayNames])
+
+    // Create chart config dynamically based on display names
     const chartConfig = useMemo(() => {
         const config: Record<string, { label: string; color: string }> = {}
 
