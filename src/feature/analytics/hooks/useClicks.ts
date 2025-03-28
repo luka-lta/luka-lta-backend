@@ -18,7 +18,7 @@ export function useClicks() {
             }
 
             const date = new Date();
-            date.setDate(date.getDate() - 7);
+            date.setDate(date.getDate() - 92);
 
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
             const response = await fetchWrapper.get(`/click/?startDate=${date.toISOString().split('T')[0]}`);
