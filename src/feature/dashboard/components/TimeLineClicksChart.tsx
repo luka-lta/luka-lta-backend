@@ -1,11 +1,5 @@
-import React from 'react';
-import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-} from 'recharts';
+"use client"
+
 import {
     ChartConfig,
     ChartContainer,
@@ -13,92 +7,114 @@ import {
     ChartLegendContent,
     ChartTooltip,
     ChartTooltipContent
-} from "@/components/ui/chart.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {RefreshCcw} from "lucide-react";
+} from "@/components/ui/chart"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts"
+import { Button } from "@/components/ui/button"
+import { useQueryClient } from "@tanstack/react-query"
+import { RefreshButton } from "@/components/button/RefreshButton"
+import type { ClicksDailyTypeSchema } from "@/feature/dashboard/schema/ClickSummarySchema"
+import {chartColor} from "@/feature/dashboard/chartColor.ts";
 
-type ClickData = {
-    timestamp: string;
-    clicks: number;
-};
-
-interface LineChartProps {
-    data: ClickData[];
+interface TimeLineClicksChartProps {
+    clicksDaily: ClicksDailyTypeSchema[] | string
 }
 
-const chartConfig = {
-    clicks: {
-        label: "Clicks",
-        color: "#7D3C98",
-    },
-} satisfies ChartConfig;
+const TimeLineClicksChart: React.FC<TimeLineClicksChartProps> = ({ clicksDaily }) => {
+    const queryClient = useQueryClient()
 
-const TimeLineClicksChart: React.FC<LineChartProps> = () => {
-    const today = new Date();
+    if (typeof clicksDaily === "string") {
+        return (
+            <div className="p-6">
+                <div className="mb-5">
+                    <div className="flex items-center gap-2 mb-2">
+                        <h1 className="text-2xl font-semibold">Clicks Overview</h1>
+                        <RefreshButton
+                            onRefresh={() => queryClient.invalidateQueries({ queryKey: ["summary", "click", "list"] })}
+                        />
+                    </div>
+                    <div className="text-gray-500">No data available</div>
+                </div>
+            </div>
+        )
+    }
 
-    const getRandomDate = () => {
-        const randomOffset = Math.floor(Math.random() * 7);
-        const randomDate = new Date();
-        randomDate.setDate(today.getDate() - randomOffset);
-        return randomDate.toISOString().split('T')[0];
-    };
+    // Get unique dates and displaynames
+    const uniqueDates = Array.from(new Set(clicksDaily.map((item) => item.date)))
+    const uniqueDisplayNames = Array.from(new Set(clicksDaily.map((item) => item.displayname)))
 
-    // Funktion, um Klickzahlen zufällig zu variieren
-    const getRandomVariation = (value: number) => {
-        const variation = Math.floor(Math.random() * 21) - 10;
-        return Math.max(value + variation, 0);
-    };
+    // Generate chart data with total clicks per date for each displayname
+    const chartData = uniqueDates.map((date) => {
+        const dateData: Record<string, string | number> = { date }
 
-    // Generiere zufällige Daten für die letzten sieben Tage
-    const generateRandomData = () => {
-        const randomData: ClickData[] = [];
-        for (let i = 0; i < 7; i++) {
-            const timestamp = getRandomDate();
-            const clicks = Math.floor(Math.random() * 500) + 1;
-            randomData.push({
-                timestamp,
-                clicks: getRandomVariation(clicks),
-            });
+        uniqueDisplayNames.forEach((name) => {
+            const entry = clicksDaily.find(
+                (item) => item.date === date && item.displayname === name
+            )
+            dateData[name] = entry ? entry.total_clicks : 0
+        })
+
+        return dateData
+    })
+
+    const colorMap: Record<string, string> = {}
+    uniqueDisplayNames.forEach((name, index) => {
+        colorMap[name] = chartColor[index % chartColor.length]
+    })
+
+    const chartConfig: ChartConfig = {}
+    uniqueDisplayNames.forEach((name, index) => {
+        chartConfig[name] = {
+            label: name,
+            color: chartColor[index % chartColor.length],
         }
-        return randomData;
-    };
-
-    // Erstelle zufällige Daten
-    const variedData = generateRandomData();
+    })
 
     return (
         <div className="flex h-full w-full flex-col p-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-500">Clicks over time (Last 7 days)</h2>
-                <Button variant='secondary' className="flex items-center justify-center p-3">
-                    <RefreshCcw/>
+                <h2 className="text-sm font-semibold text-gray-500">Clicks over time</h2>
+                <Button variant="secondary" className="flex items-center justify-center p-3">
+                    <RefreshButton
+                        onRefresh={() => queryClient.invalidateQueries({ queryKey: ["summary", "click", "list"] })}
+                    />
                 </Button>
             </div>
-            <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                <LineChart data={variedData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                    <XAxis
-                        dataKey="timestamp"
-                        tickLine={false}
-                        axisLine={true}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString("en-US", {weekday: "short"})}
-                    />
-                    <YAxis tickLine={false} axisLine={true} tickFormatter={(value) => `${value}`}/>
-                    <ChartTooltip content={<ChartTooltipContent/>}/>
-                    <Line
-                        type="linear"
-                        dataKey="clicks"
-                        stroke="var(--color-clicks)"
-                        strokeWidth={1}
-                        dot={{fill: "var(--color-clicks)", strokeWidth: 2}}
-                        activeDot={{r: 8}}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent/>}/>
-                    <ChartLegend content={<ChartLegendContent/>}/>
-                </LineChart>
-            </ChartContainer>
-        </div>
-    );
-};
 
-export default TimeLineClicksChart;
+            {chartData.length > 0 ? (
+                <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                    <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis
+                            dataKey="date"
+                            tickLine={false}
+                            tickMargin={10}
+                            axisLine={true}
+                            tickFormatter={(value) => new Date(value).toLocaleDateString("en-US", { weekday: "short" })}
+                        />
+                        <YAxis tickLine={false} axisLine={true} tickFormatter={(value) => `${value}`} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartLegend content={<ChartLegendContent />} />
+
+                        {uniqueDisplayNames.map((name) => (
+                            <Line
+                                key={name}
+                                type="monotone"
+                                dataKey={name}
+                                stroke={colorMap[name]}
+                                strokeWidth={2}
+                                dot={{ fill: colorMap[name], strokeWidth: 2 }}
+                                activeDot={{ r: 8 }}
+                            />
+                        ))}
+                    </LineChart>
+                </ChartContainer>
+            ) : (
+                <div className="flex items-center justify-center h-[200px] w-full">
+                    <p className="text-gray-500">No click data available</p>
+                </div>
+            )}
+        </div>
+    )
+}
+
+export default TimeLineClicksChart
