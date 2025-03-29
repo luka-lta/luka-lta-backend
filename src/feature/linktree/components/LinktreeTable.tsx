@@ -18,7 +18,7 @@ import {
 import {useQueryClient} from "@tanstack/react-query";
 import {useState} from "react";
 import {CreateLinkDialog} from "@/feature/linktree/components/dialog/CreateLinkDialog.tsx";
-import EditLinkDialog from "@/feature/linktree/components/dialog/EditLinkDialog.tsx";
+import EditLinkSheet from "@/feature/linktree/components/sheet/EditLinkSheet.tsx";
 import DeleteLinkDialog from "@/feature/linktree/components/dialog/DeleteLinkDialog.tsx";
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 
@@ -39,7 +39,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
     return (
         <>
             {(editLink !== null) && (
-                <EditLinkDialog link={editLink} onClose={() => setEditLink(null)}/>
+                <EditLinkSheet link={editLink} onClose={() => setEditLink(null)}/>
             )}
 
             {(deleteLink !== null) && (

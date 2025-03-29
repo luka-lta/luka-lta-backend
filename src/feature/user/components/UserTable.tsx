@@ -15,8 +15,8 @@ import {
 import {useState} from "react";
 import CreateUserDialog from "@/feature/user/components/CreateUserDialog.tsx";
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
-import EditUserSheet from "@/feature/user/components/EditUserSheet.tsx";
-import InfoUserSheet from "@/feature/user/components/InfoUserSheet.tsx";
+import EditUserSheet from "@/feature/user/components/sheet/EditUserSheet.tsx";
+import InfoUserSheet from "@/feature/user/components/sheet/InfoUserSheet.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];

@@ -1,11 +1,11 @@
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import type { UserTypeSchema } from "../schema/UserSchema"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { formatDate } from "@/lib/utils"
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet.tsx"
+import type { UserTypeSchema } from "../../schema/UserSchema.ts"
+import { Input } from "@/components/ui/input.tsx"
+import { Label } from "@/components/ui/label.tsx"
+import { Button } from "@/components/ui/button.tsx"
+import { formatDate } from "@/lib/utils.ts"
 import { CalendarDays, Mail, Shield, User } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "@/components/ui/separator.tsx"
 
 interface InfoUserSheetProps {
     user: UserTypeSchema

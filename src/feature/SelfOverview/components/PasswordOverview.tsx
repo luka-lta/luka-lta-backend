@@ -8,6 +8,7 @@ import { Lock, RefreshCw, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { FetchWrapper } from "@/lib/fetchWrapper.ts";
+import {Separator} from "@/components/ui/separator.tsx";
 
 const passwordSchema = z.object({
     password: z.string().min(8, "Password must be at least 8 characters"),
@@ -63,6 +64,8 @@ function PasswordOverview() {
                     <p className="text-muted-foreground text-sm">
                         Create a new strong password to secure your account
                     </p>
+
+                    <Separator className="mt-5" />
                 </div>
 
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
