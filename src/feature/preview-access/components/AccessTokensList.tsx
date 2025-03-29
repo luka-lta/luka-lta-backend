@@ -36,6 +36,7 @@ function AccessTokensList({accessTokens, maxPages, loading, setFilterData}: Acce
                     data={accessTokens}
                     header={[
                         {label: 'Token', sortName: 'token'},
+                        {label: 'Created by'},
                         {label: 'Max Uses'},
                         {label: 'Usages'},
                         {label: 'Status', sortName: 'status'},
@@ -46,6 +47,7 @@ function AccessTokensList({accessTokens, maxPages, loading, setFilterData}: Acce
                         return (
                             <TableRow key={accessToken.token}>
                                 <TableCell>{accessToken.token}</TableCell>
+                                <TableCell>{accessToken.createdBy.email}</TableCell>
                                 <TableCell>{accessToken.maxUse}</TableCell>
                                 <TableCell>{accessToken.used}</TableCell>
                                 <TableCell>

@@ -1,11 +1,12 @@
 import {z} from "zod";
+import {UserSchema} from "@/feature/user/schema/UserSchema.ts";
 
 export const accessTokenSchema = z.object({
     token: z.string().max(6),
     maxUse: z.number(),
     used: z.number(),
     isActive: z.boolean(),
-    createdBy: z.number(),
+    createdBy: UserSchema,
     createdAt: z.string(),
 })
 
