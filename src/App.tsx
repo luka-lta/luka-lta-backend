@@ -4,6 +4,7 @@ import ErrorPage from "@/pages/ErrorPage.tsx";
 import {RouterProvider} from "react-router-dom";
 import {ThemeProvider} from "@/assets/providers/ThemeProvider.tsx";
 import {Toaster} from "sonner";
+import { Analytics } from "@vercel/analytics/react"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 
 const queryClient = new QueryClient({
@@ -23,6 +24,7 @@ function App() {
                     <RouterProvider router={appRouter} />
                     <Toaster richColors />
                 </Suspense>
+                <Analytics/>
             </QueryClientProvider>
         </ThemeProvider>
     );

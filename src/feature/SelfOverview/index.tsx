@@ -11,6 +11,14 @@ function SelfOverview() {
     const [activeTab, setActiveTab] = useState("profile");
     const [selfUser] = useSelfUser();
 
+    if (selfUser.isLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (selfUser.isError) {
+        return <div>Error: {selfUser.error.message}</div>;
+    }
+
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-6">
             <div className="space-y-1">

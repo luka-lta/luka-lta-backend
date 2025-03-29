@@ -11,6 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FetchWrapper } from "@/lib/fetchWrapper.ts";
 import { toast } from "sonner";
 import { Pencil, Upload } from "lucide-react";
+import {Separator} from "@/components/ui/separator.tsx";
 
 const userUpdateSchema = z.object({
     username: z.string().min(3, { message: "Username must be at least 3 characters long" }),
@@ -100,6 +101,7 @@ function ProfileOverview({ user }: ProfileOverviewProps) {
                         <p className="text-muted-foreground text-sm">
                             Update your account details
                         </p>
+                        <Separator className="mt-5" />
                     </div>
 
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

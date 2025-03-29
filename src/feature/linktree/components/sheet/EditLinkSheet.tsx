@@ -12,6 +12,9 @@ import {z} from "zod";
 import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 import {toast} from "sonner";
 import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet.tsx";
+import {Separator} from "@/components/ui/separator.tsx";
+import {Card, CardContent} from "@/components/ui/card.tsx";
+import {IdCard, Tag} from "lucide-react";
 
 const linkEditSchema = z.object({
     displayname: z.string().min(1),
@@ -26,7 +29,7 @@ type EditLinkDialogProps = {
     onClose: () => void,
 }
 
-function EditLinkDialog({onClose, link}: EditLinkDialogProps) {
+function EditLinkSheet({onClose, link}: EditLinkDialogProps) {
     const queryClient = useQueryClient();
 
     const form = useForm<linkData>({
@@ -80,45 +83,68 @@ function EditLinkDialog({onClose, link}: EditLinkDialogProps) {
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <SheetHeader>
                         <SheetTitle>Edit Link</SheetTitle>
-                        <SheetDescription>Edit a new Link for linktree</SheetDescription>
+                        <SheetDescription>Make changes to your link</SheetDescription>
                     </SheetHeader>
-                    <div className='grid gap-6 py-6'>
-                        <TextInput
-                            name={'displayname'}
-                            id={'link-displayname-create-form'}
-                            label={'Display Name'}
-                            form={form}
-                            placeholder='My link'
-                            type={'text'}
-                        />
 
-                        <div className="flex flex-col items-start gap-2">
-                            <Label htmlFor="link-description-creat-form">Description</Label>
-                            <Textarea
-                                id={'link-description-creat-form'}
-                                placeholder={'Link description'}
-                                {...form.register('description')}
-                                onChange={(e) => form.setValue('description', e.target.value)}
+                    <Separator className='mt-3' />
+
+                    <div className='py-6 space-y-6'>
+                        <Card className="border-dashed">
+                            <CardContent className="p-4">
+                                <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-2">
+                                    <Tag className="h-4 w-4" />
+                                    <span>
+                                      Click Tag: <span className="font-mono">{link.clickTag}</span>
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                    <IdCard className="h-4 w-4" />
+                                    <span>ID: {link.id}</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-medium text-muted-foreground">Link Information</h3>
+
+                            <TextInput
+                                name={'displayname'}
+                                id={'link-displayname-create-form'}
+                                label={'Display Name'}
+                                form={form}
+                                placeholder='My link'
+                                type={'text'}
+                            />
+
+                            <div className="flex flex-col items-start gap-2">
+                                <Label htmlFor="link-description-creat-form">Description</Label>
+                                <Textarea
+                                    id={'link-description-creat-form'}
+                                    placeholder={'Link description'}
+                                    {...form.register('description')}
+                                    onChange={(e) => form.setValue('description', e.target.value)}
+                                />
+                            </div>
+
+                            <TextInput
+                                name={'url'}
+                                id={'link-url-create-form'}
+                                label={'URL'}
+                                form={form}
+                                placeholder='https://mylink.com/'
+                                type={'url'}
+                            />
+
+                            <TextInput
+                                name={'iconName'}
+                                id={'link-iconName-create-form'}
+                                label={'Icon'}
+                                form={form}
+                                placeholder='FaGithub'
+                                type={'text'}
                             />
                         </div>
 
-                        <TextInput
-                            name={'url'}
-                            id={'link-url-create-form'}
-                            label={'URL'}
-                            form={form}
-                            placeholder='https://mylink.com/'
-                            type={'url'}
-                        />
-
-                        <TextInput
-                            name={'iconName'}
-                            id={'link-iconName-create-form'}
-                            label={'Icon'}
-                            form={form}
-                            placeholder='FaGithub'
-                            type={'text'}
-                        />
 
                         <div className="flex flex-col items-start gap-2">
                             <Label htmlFor="active">Active</Label>
@@ -150,4 +176,4 @@ function EditLinkDialog({onClose, link}: EditLinkDialogProps) {
     );
 }
 
-export default EditLinkDialog;
+export default EditLinkSheet;
