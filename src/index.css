@@ -77,3 +77,43 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Standard Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  /* Hintergrund der Scrollbar */
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: var(--radius);
+  }
+
+  /* Scrollbar-Griff */
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: var(--radius);
+    border: 2px solid hsl(var(--muted));
+  }
+
+  /* Hover-Effekt für den Scrollbar-Griff */
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--ring));
+  }
+
+  /* Dark Mode Anpassungen */
+  .dark ::-webkit-scrollbar-track {
+    background: hsl(var(--secondary));
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: hsl(var(--input));
+    border: 2px solid hsl(var(--secondary));
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+}

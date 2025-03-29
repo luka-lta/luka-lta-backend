@@ -14,7 +14,7 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar.tsx"
 import SiteLogo from "@/components/SiteLogo"
-import {NavUser} from "@/components/dashboard/rootlayout/DashboardSideBarUser"
+import {NavUser} from "@/components/dashboard/rootlayout/footer/DashboardSideBarUser.tsx"
 import {NavLink, useLocation} from "react-router-dom"
 import {useEffect, useState} from "react";
 import {
@@ -31,7 +31,7 @@ import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedS
 export default function DashboardSideBar() {
     const location = useLocation();
     const [currentPage, setCurrentPage] = useState(location.pathname);
-    const { getUser } = useAuthenticatedUserStore();
+    const {getUser} = useAuthenticatedUserStore();
     const user = getUser();
 
 
@@ -97,7 +97,7 @@ export default function DashboardSideBar() {
                             asChild
                         >
                             <NavLink to={navItem.url}>
-                                <navItem.icon />
+                                <navItem.icon/>
                                 <span>{navItem.title}</span>
                             </NavLink>
                         </SidebarMenuButton>
@@ -114,7 +114,7 @@ export default function DashboardSideBar() {
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader className="pt-5 items-center">
-                <SiteLogo />
+                <SiteLogo/>
             </SidebarHeader>
             <SidebarContent>
                 {/* Render default items (without group label) first */}
@@ -136,7 +136,11 @@ export default function DashboardSideBar() {
                     </SidebarGroup>
                 ))}
             </SidebarContent>
-            <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
+            <SidebarFooter>
+                <SidebarMenu>
+                    {user && <NavUser user={user}/>}
+                </SidebarMenu>
+            </SidebarFooter>
         </Sidebar>
     )
 }

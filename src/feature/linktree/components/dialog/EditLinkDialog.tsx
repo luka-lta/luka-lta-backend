@@ -1,11 +1,3 @@
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog.tsx";
 import {TextInput} from "@/components/form/TextInput.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
@@ -19,6 +11,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
 import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 import {toast} from "sonner";
+import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet.tsx";
 
 const linkEditSchema = z.object({
     displayname: z.string().min(1),
@@ -78,17 +71,17 @@ function EditLinkDialog({onClose, link}: EditLinkDialogProps) {
     const onSubmit: SubmitHandler<linkData> = (data) => editLink.mutate(data);
 
     return (
-        <Dialog open={true} onOpenChange={(open) => {
+        <Sheet open={true} onOpenChange={(open) => {
             if (!open) {
                 onClose();
             }
         }}>
-            <DialogContent>
+            <SheetContent>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <DialogHeader>
-                        <DialogTitle>Create Link</DialogTitle>
-                        <DialogDescription>Create a new Link for linktree</DialogDescription>
-                    </DialogHeader>
+                    <SheetHeader>
+                        <SheetTitle>Edit Link</SheetTitle>
+                        <SheetDescription>Edit a new Link for linktree</SheetDescription>
+                    </SheetHeader>
                     <div className='grid gap-6 py-6'>
                         <TextInput
                             name={'displayname'}
@@ -144,16 +137,16 @@ function EditLinkDialog({onClose, link}: EditLinkDialogProps) {
                             </Alert>
                         )}
                     </div>
-                    <DialogFooter>
-                        {editLink.isPending ? (
+                    <SheetFooter>
+                        {editLink.isPending || form.formState.isDirty ? (
                             <Button className="w-[100%]" disabled>Editing link...</Button>
                         ) : (
                             <Button className="w-[100%]" type='submit'>Editing Link</Button>
                         )}
-                    </DialogFooter>
+                    </SheetFooter>
                 </form>
-            </DialogContent>
-        </Dialog>
+            </SheetContent>
+        </Sheet>
     );
 }
 
