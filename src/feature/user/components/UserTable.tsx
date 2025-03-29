@@ -3,7 +3,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import {DataTable} from "@/components/dataTable/DataTable.tsx";
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
-import {formatDate, splitAvatarUrl} from "@/lib/utils.ts";
+import {splitAvatarUrl} from "@/lib/utils.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {EllipsisVertical, Pencil, Trash} from "lucide-react";
 import {
@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {useState} from "react";
 import CreateUserDialog from "@/feature/user/components/CreateUserDialog.tsx";
-import EditUserDialog from "@/feature/user/components/EditUserDialog.tsx";
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
+import EditUserSheet from "@/feature/user/components/EditUserSheet.tsx";
+import InfoUserSheet from "@/feature/user/components/InfoUserSheet.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];
@@ -28,11 +29,16 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
     const queryClient = useQueryClient();
     const [newUser, setNewUser] = useState(false);
     const [editUser, setEditUser] = useState<null | UserTypeSchema>(null);
+    const [infoUser, setInfoUser] = useState<null | UserTypeSchema>(null);
 
     return (
         <>
             {(editUser !== null) && (
-                <EditUserDialog onClose={() => setEditUser(null)} user={editUser}/>
+                <EditUserSheet onClose={() => setEditUser(null)} user={editUser}/>
+            )}
+
+            {(infoUser !== null) && (
+                <InfoUserSheet user={infoUser} onClose={() => setInfoUser(null)}/>
             )}
 
             {newUser && (
@@ -44,27 +50,35 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                     data={users}
                     header={[
                         {label: 'Avatar'},
+                        {label: 'Username', sortName: 'username'},
                         {label: 'Email', sortName: 'email'},
-                        {label: 'Created At', sortName: 'created_at'},
-                        {label: 'Updated At', sortName: 'updated_at'},
+                        {label: 'Role', sortName: 'role'},
+                        {label: 'Status', sortName: 'is_active'},
+                        {label: 'Last active', sortName: 'last_active'},
                         {label: ''},
                     ]}
                     maxPages={maxPages}
                     renderRow={(user) => {
                         return (
-                            <TableRow key={user.userId}>
+                            <TableRow key={user.userId} onClick={() => setInfoUser(user)}>
                                 <TableCell className="flex items-center space-x-2">
                                     <Avatar>
                                         <AvatarImage src={splitAvatarUrl(user.avatarUrl)} alt={user.email}/>
                                         <AvatarFallback>{user.email[0]}</AvatarFallback>
                                     </Avatar>
                                 </TableCell>
+                                <TableCell>
+                                    TODO
+                                </TableCell>
                                 <TableCell>{user.email}</TableCell>
                                 <TableCell>
-                                    {formatDate(user.createdAt)}
+                                    TODO
                                 </TableCell>
                                 <TableCell>
-                                    {user.updatedAt ? formatDate(user.updatedAt) : "Unknown"}
+                                    TODO
+                                </TableCell>
+                                <TableCell>
+                                    TODO
                                 </TableCell>
                                 <TableCell>
                                     <DropdownMenu>
@@ -94,7 +108,7 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                     loading={loading}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['users', 'list']})}
                     customFilter={[
-                        <SearchFilter name={'email'} key={'search'} />
+                        <SearchFilter name={'email'} key={'search'}/>
                     ]}
                 />
             </div>

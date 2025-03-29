@@ -116,7 +116,7 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
                         )}
                     </div>
                     <DialogFooter>
-                        {createUser.isPending ? (
+                        {createUser.isPending || form.formState.isDirty ? (
                             <Button className="w-[100%]" disabled>Creating user...</Button>
                         ) : (
                             <Button className="w-[100%]" type='submit'>Create User</Button>

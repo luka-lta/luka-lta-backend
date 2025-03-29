@@ -3,7 +3,6 @@ import ErrorPage from "@/pages/ErrorPage.tsx";
 import DashboardPage from "@/pages/Dashboard/DashboardPage.tsx";
 import LoginPage from "@/pages/LoginPage.tsx";
 import DashboardRootLayout from "@/components/dashboard/rootlayout/DashboardRootLayout.tsx";
-import {ProfileSettingsPage} from "@/pages/Dashboard/ProfileSettingsPage.tsx";
 import UsersPage from "@/pages/Dashboard/UsersPage.tsx";
 import LinktreePage from "@/pages/Dashboard/LinktreePage.tsx";
 import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
@@ -17,6 +16,7 @@ import DetailLinktree from "@/feature/linktree/childPages/detail/DetailLinktree.
 import RegisterPage from "@/pages/RegisterPage.tsx";
 import PreviewAccessPage from "@/pages/Dashboard/PreviewAccessPage.tsx";
 import PermissionsPage from "@/pages/Dashboard/PermissionsPage.tsx";
+import SelfOverviewPage from "@/pages/Dashboard/SelfOverviewPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -80,13 +80,12 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'permissions',
                 element: <PermissionsPage/>
+            },
+            {
+                path: 'self/settings',
+                element: <SelfOverviewPage/>
             }
         ]
-    },
-    {
-        path: '/dashboard/settings',
-        loader: protectedLoader,
-        element: <ProfileSettingsPage/>
     },
     {
         path: "logout",

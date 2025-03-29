@@ -14,6 +14,7 @@ export default function SiteLogo({className, collapsed: collapsedProp}: SiteLogo
 
     const sidebarContext = (() => {
         try {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
             return useSidebar()
         } catch {
             return null
