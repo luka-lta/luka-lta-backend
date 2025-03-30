@@ -67,7 +67,7 @@ function RegisterForm() {
                 id={'username-register-form'}
                 label={'Username'}
                 form={form}
-                type={'username'}
+                type={'text'}
             />
 
             <TextInput

@@ -71,8 +71,6 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
         }
     })
 
-    console.log(form.getFieldState('username'));
-
     const onSubmit: SubmitHandler<userData> = (data) => createUser.mutate(data);
 
     return (
