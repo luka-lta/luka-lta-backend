@@ -3,7 +3,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import {DataTable} from "@/components/dataTable/DataTable.tsx";
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
-import {splitAvatarUrl} from "@/lib/utils.ts";
+import {cn, formatDate, splitAvatarUrl} from "@/lib/utils.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {EllipsisVertical, Pencil, Trash} from "lucide-react";
 import {
@@ -17,6 +17,7 @@ import CreateUserDialog from "@/feature/user/components/CreateUserDialog.tsx";
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 import EditUserSheet from "@/feature/user/components/sheet/EditUserSheet.tsx";
 import InfoUserSheet from "@/feature/user/components/sheet/InfoUserSheet.tsx";
+import {Badge} from "@/components/ui/badge.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];
@@ -68,17 +69,19 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                                     </Avatar>
                                 </TableCell>
                                 <TableCell>
-                                    TODO
+                                    {user.username}
                                 </TableCell>
                                 <TableCell>{user.email}</TableCell>
                                 <TableCell>
                                     TODO
                                 </TableCell>
                                 <TableCell>
-                                    TODO
+                                    <Badge variant={"default"} className={cn("ml-2 bg-red-500 text-white", user.isActive && "bg-green-500 text-black")}>
+                                        {user.isActive ? "Active" : "Inactive"}
+                                    </Badge>
                                 </TableCell>
                                 <TableCell>
-                                    TODO
+                                    {user.lastActive ? formatDate(user.lastActive.toString()) : "N/A"}
                                 </TableCell>
                                 <TableCell>
                                     <DropdownMenu>

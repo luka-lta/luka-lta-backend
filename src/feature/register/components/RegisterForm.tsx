@@ -14,6 +14,7 @@ import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 
 export type registerData = {
     email: string,
+    username: string,
     password: string,
     repeatPassword: string,
     previewToken: string,
@@ -27,10 +28,11 @@ function RegisterForm() {
     })
 
     const registerUser = useMutation({
-        mutationFn: async ({email, password, previewToken}: registerData) => {
+        mutationFn: async ({email, username, password, previewToken}: registerData) => {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
             await fetchWrapper.post('/register', {
                 email,
+                username,
                 password,
                 previewToken,
             })
@@ -60,6 +62,14 @@ function RegisterForm() {
 
     return (
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <TextInput
+                name={'username'}
+                id={'username-register-form'}
+                label={'Username'}
+                form={form}
+                type={'text'}
+            />
+
             <TextInput
                 name={'email'}
                 id={'email-register-form'}
