@@ -21,6 +21,7 @@ interface CreateUserDialogProps {
 }
 
 const userCreateSchema = z.object({
+    username: z.string().min(3, "Username must be at least 3 characters long"),
     email: z.string().email(),
     password: z.string().min(8, "Password must be at least 8 characters long"),
     repeatPassword: z.string().min(8, "Password must be at least 8 characters long"),
@@ -31,6 +32,7 @@ const userCreateSchema = z.object({
     })
 
 export type userData = {
+    username: string,
     email: string,
     password: string,
     repeatPassword: string,
@@ -44,9 +46,10 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
     });
 
     const createUser = useMutation({
-        mutationFn: async ({email, password}: userData) => {
+        mutationFn: async ({username, email, password}: userData) => {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
             await fetchWrapper.post('/user/', {
+                username,
                 email,
                 password,
             })
@@ -67,6 +70,8 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
             }, 500)
         }
     })
+
+    console.log(form.getFieldState('username'));
 
     const onSubmit: SubmitHandler<userData> = (data) => createUser.mutate(data);
 
@@ -89,6 +94,15 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
                             label={'Email'}
                             form={form}
                             placeholder='peter@mail.com'
+                            type={'text'}
+                        />
+
+                        <TextInput
+                            name={'username'}
+                            id={'user-username-create-form'}
+                            label={'Username'}
+                            form={form}
+                            placeholder='e.xample'
                             type={'text'}
                         />
 
@@ -116,7 +130,7 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
                         )}
                     </div>
                     <DialogFooter>
-                        {createUser.isPending || form.formState.isDirty ? (
+                        {createUser.isPending ? (
                             <Button className="w-[100%]" disabled>Creating user...</Button>
                         ) : (
                             <Button className="w-[100%]" type='submit'>Create User</Button>

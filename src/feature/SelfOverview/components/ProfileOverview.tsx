@@ -35,6 +35,7 @@ function ProfileOverview({ user }: ProfileOverviewProps) {
     const form = useForm<userUpdateData>({
         resolver: zodResolver(userUpdateSchema),
         defaultValues: {
+            username: user?.username,
             email: user?.email,
             avatarUrl: user?.avatarUrl ?? '',
         }

@@ -3,9 +3,10 @@ import type { UserTypeSchema } from "../../schema/UserSchema.ts"
 import { Input } from "@/components/ui/input.tsx"
 import { Label } from "@/components/ui/label.tsx"
 import { Button } from "@/components/ui/button.tsx"
-import { formatDate } from "@/lib/utils.ts"
+import {cn, formatDate} from "@/lib/utils.ts"
 import { CalendarDays, Mail, Shield, User } from "lucide-react"
 import { Separator } from "@/components/ui/separator.tsx"
+import {Badge} from "@/components/ui/badge.tsx";
 
 interface InfoUserSheetProps {
     user: UserTypeSchema
@@ -41,7 +42,7 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="user-username-info-form">Username</Label>
-                                <Input id="user-username-info-form" disabled value={"Placeholder"} />
+                                <Input id="user-username-info-form" disabled value={user.username} />
                             </div>
 
                             <div className="space-y-2">
@@ -81,9 +82,9 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                                 <Label htmlFor="user-status-info-form">Status</Label>
                                 <div className="flex items-center gap-2">
                                     <Input id="user-status-info-form" disabled value={"Active"} />
-{/*
-                                    <Badge variant={user.status === "active" ? "success" : "secondary"}>{user.status || "Active"}</Badge>
-*/}
+                                    <Badge variant={"default"} className={cn("ml-2 bg-red-500 text-white", user.isActive && "bg-green-500 text-black")}>
+                                        {user.isActive ? "Active" : "Inactive"}
+                                    </Badge>
                                 </div>
                             </div>
                         </div>
@@ -116,7 +117,7 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                                 <Input
                                     id="user-last-active-info-form"
                                     disabled
-                                    value={"N/A"}
+                                    value={user.lastActive ? formatDate(user.lastActive.toString()) : "N/A"}
                                 />
                             </div>
                         </div>

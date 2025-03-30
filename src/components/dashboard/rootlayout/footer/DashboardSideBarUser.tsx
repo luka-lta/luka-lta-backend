@@ -35,7 +35,7 @@ export function NavUser({user}: NavUserProps) {
                             <AvatarFallback className="rounded-lg"><strong>?</strong></AvatarFallback>
                         </Avatar>
                         <div className="grid flex-1 text-left text-sm leading-tight">
-                            <span className="truncate font-medium">PlaceholderName</span>
+                            <span className="truncate font-medium">{user.username}</span>
                             <span className="truncate text-xs text-muted-foreground">
                               {user.email}
                             </span>
