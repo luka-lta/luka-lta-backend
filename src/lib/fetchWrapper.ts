@@ -37,10 +37,11 @@ export class FetchWrapper {
 
         try {
             const response = await fetch(`${this.baseUrl}${endpoint}`, config);
-            if (!response.ok) {
-                throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
-            }
             const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message ?? 'An unexpected error occurred');
+            }
 
             return ApiResponseSchema.parse(data);
         } catch (error) {

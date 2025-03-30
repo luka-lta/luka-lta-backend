@@ -59,7 +59,22 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
             toast.success('User created successfully!');
         },
         onError: (error) => {
-            toast.error('Failed to create User');
+            const errorMessage = error.message;
+            if (errorMessage.includes('email')) {
+                form.setError('email', {
+                    type: 'manual',
+                    message: errorMessage,
+                });
+            }
+
+            if (errorMessage.includes('username')) {
+                form.setError('username', {
+                    type: 'manual',
+                    message: errorMessage,
+                });
+            }
+
+            toast.error('Failed to create user');
             console.error(error);
         },
         onSettled: () => {
@@ -120,7 +135,7 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
                             type={'password'}
                         />
 
-                        {createUser.error && (
+                        {createUser.error && !form.formState.errors.email && !form.formState.errors.username && (
                             <Alert variant='destructive'>
                                 <AlertTitle>Error, failed to create user!</AlertTitle>
                                 <AlertDescription>{createUser.error.message}</AlertDescription>
