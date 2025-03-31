@@ -110,7 +110,7 @@ function CreateApiKeyDialog({onClose}: CreateApiKeyDialogProps) {
 
                         {createApiKey.error && (
                             <Alert variant='destructive'>
-                                <AlertTitle>Error, failed to create link!</AlertTitle>
+                                <AlertTitle>Error, failed to create Api-Key!</AlertTitle>
                                 <AlertDescription>{createApiKey.error.message}</AlertDescription>
                             </Alert>
                         )}
