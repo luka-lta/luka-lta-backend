@@ -65,8 +65,22 @@ function EditUserSheet({ onClose, user }: EditUserDialogProps) {
             toast.success("User edited successfully!")
         },
         onError: (error) => {
-            toast.error("Failed to edit user")
-            console.error(error)
+            const errorMessage = error.message;
+            if (errorMessage.includes('email')) {
+                form.setError('email', {
+                    type: 'manual',
+                    message: errorMessage,
+                });
+            }
+
+            if (errorMessage.includes('username')) {
+                form.setError('username', {
+                    type: 'manual',
+                    message: errorMessage,
+                });
+            }
+
+            toast.error(error.message)
         },
         onSettled: () => {
             setTimeout(() => {

@@ -17,7 +17,7 @@ import {Card, CardContent} from "@/components/ui/card.tsx";
 import {IdCard, Tag} from "lucide-react";
 
 const linkEditSchema = z.object({
-    displayname: z.string().min(1),
+    displayname: z.string().nonempty().min(1).max(255),
     description: z.string().nullable().default(null),
     url: z.string().url(),
     isActive: z.boolean().default(true),
@@ -59,6 +59,15 @@ function EditLinkSheet({onClose, link}: EditLinkDialogProps) {
             toast.success('Link edited successfully!');
         },
         onError: (error) => {
+            const errorMessage = error.message;
+
+            if (errorMessage.includes('Icon')) {
+                form.setError('iconName', {
+                    type: 'manual',
+                    message: errorMessage
+                });
+            }
+
             toast.error('Failed to edit link');
             console.error(error);
         },

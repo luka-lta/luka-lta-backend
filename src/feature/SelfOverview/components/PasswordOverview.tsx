@@ -42,10 +42,8 @@ function PasswordOverview() {
             });
             form.reset();
         },
-        onError: () => {
-            toast.error("Failed to update password", {
-                description: "Please try again later",
-            });
+        onError: (error) => {
+            toast.error(error.message);
         }
     });
 

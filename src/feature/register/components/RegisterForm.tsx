@@ -7,10 +7,9 @@ import {TextInput} from "@/components/form/TextInput.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {useNavigate} from "react-router-dom";
 import {REGEXP_ONLY_DIGITS_AND_CHARS} from "input-otp"
-import {InputOTP, InputOTPGroup, InputOTPSlot} from "@/components/ui/input-otp.tsx";
-import {Label} from "@/components/ui/label.tsx";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 import {FetchWrapper} from "@/lib/fetchWrapper.ts";
+import {OtpInput} from "@/components/form/OtpInput.tsx";
 
 export type registerData = {
     email: string,
@@ -45,7 +44,29 @@ function RegisterForm() {
             }, 2000);
         },
         onError: (error) => {
-            toast.error('Failed to create User');
+            const errorMessage = error.message;
+            if (errorMessage.includes('email')) {
+                form.setError('email', {
+                    type: 'manual',
+                    message: errorMessage,
+                });
+            }
+
+            if (errorMessage.includes('username')) {
+                form.setError('username', {
+                    type: 'manual',
+                    message: errorMessage,
+                });
+            }
+
+            if (errorMessage.includes('token')) {
+                form.setError('previewToken', {
+                    type: 'manual',
+                    message: errorMessage,
+                });
+            }
+
+            toast.error('Registration failed');
             console.error(error);
         }
     })
@@ -95,36 +116,25 @@ function RegisterForm() {
             />
 
             <div className="space-y-2">
-                {/* TODO: Error show */}
-                <Label htmlFor='previewToken-register-form'>Preview Token</Label>
-                <div className="flex justify-center">
-                    <InputOTP
-                        id={'previewToken-register-form'}
-                        maxLength={6}
-                        pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
-                        value={form.watch("previewToken")}
-                        onChange={handleOTPChange}
-                    >
-                        <InputOTPGroup>
-                            <InputOTPSlot index={0}/>
-                            <InputOTPSlot index={1}/>
-                            <InputOTPSlot index={2}/>
-                            <InputOTPSlot index={3}/>
-                            <InputOTPSlot index={4}/>
-                            <InputOTPSlot index={5}/>
-                        </InputOTPGroup>
-                    </InputOTP>
-                </div>
+                <OtpInput
+                    name={'previewToken'}
+                    id={'previewToken-register-form'}
+                    maxLength={6}
+                    label={'Preview Token'}
+                    form={form}
+                    pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                    value={form.watch("previewToken")}
+                    onChange={handleOTPChange}
+                />
             </div>
 
-            {registerUser.error && (
+            {registerUser.error && !form.formState.errors.previewToken && (
                 <Alert variant='destructive'>
                     <AlertTitle>Error, failed to create user!</AlertTitle>
                     <AlertDescription>{registerUser.error.message}</AlertDescription>
                 </Alert>
             )}
 
-            {/* Submit-Button */}
             <div>
                 <Button
                     type="submit"
