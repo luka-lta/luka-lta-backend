@@ -18,6 +18,7 @@ import {CalendarInput} from "@/components/form/CalendarInput.tsx";
 import {useState} from "react";
 import CopyKeyDialog from "@/feature/apiKey/components/CopyKeyDialog.tsx";
 import {PermissionsSelector} from "@/components/dashboard/PermissionsSelector.tsx";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 
 interface CreateApiKeyDialogProps {
     onClose: () => void;
@@ -64,7 +65,7 @@ function CreateApiKeyDialog({onClose}: CreateApiKeyDialogProps) {
             }, 500)
         },
         onError: (error) => {
-            toast.error('Failed to create Api-Key');
+            toast.error(error.message);
             console.error(error);
         }
     })
@@ -106,6 +107,13 @@ function CreateApiKeyDialog({onClose}: CreateApiKeyDialogProps) {
                             form={form}
                             placeholder={'Select Expiry Date'}
                         />
+
+                        {createApiKey.error && (
+                            <Alert variant='destructive'>
+                                <AlertTitle>Error, failed to create link!</AlertTitle>
+                                <AlertDescription>{createApiKey.error.message}</AlertDescription>
+                            </Alert>
+                        )}
                     </div>
                     <DialogFooter>
                         {createApiKey.isPending ? (

@@ -74,8 +74,7 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
                 });
             }
 
-            toast.error('Failed to create user');
-            console.error(error);
+            toast.error(error.message);
         },
         onSettled: () => {
             setTimeout(() => {

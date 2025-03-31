@@ -9,6 +9,7 @@ import {
 import {Button} from "@/components/ui/button.tsx";
 import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 import {toast} from "sonner";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 
 interface DeleteLinkDialogProps {
     onClose: () => void;
@@ -28,7 +29,7 @@ function DeleteLinkDialog({onClose, linkId}: DeleteLinkDialogProps) {
             toast.success('Link deleted successfully!');
         },
         onError: (error) => {
-            toast.error('Failed to delete link');
+            toast.error(error.message);
             console.error(error);
         },
         onSettled: () => {
@@ -52,6 +53,13 @@ function DeleteLinkDialog({onClose, linkId}: DeleteLinkDialogProps) {
                     <DialogDescription>Are you sure you want to delete this link?</DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
+                    {deleteLink.error && (
+                        <Alert variant='destructive'>
+                            <AlertTitle>Error, failed to create link!</AlertTitle>
+                            <AlertDescription>{deleteLink.error.message}</AlertDescription>
+                        </Alert>
+                    )}
+
                     {deleteLink.isPending ? (
                         <Button className="w-[100%]" disabled>Deleting link...</Button>
                     ) : (

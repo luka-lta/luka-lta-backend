@@ -80,8 +80,7 @@ function EditUserSheet({ onClose, user }: EditUserDialogProps) {
                 });
             }
 
-            toast.error("Failed to edit user")
-            console.error(error)
+            toast.error(error.message)
         },
         onSettled: () => {
             setTimeout(() => {

@@ -10,7 +10,11 @@ export function useClickSummary() {
             const response = await fetchWrapper.get(`/click/summary/`);
 
             return summaryListSchema.parse(response.data);
-        }
+        },
+        refetchInterval: 300000, // 5 Minuten in Millisekunden
+        refetchIntervalInBackground: true, // Auch im Hintergrund aktualisieren
+        staleTime: 300000, // Daten sind 5 Minuten aktuell
+        refetchOnWindowFocus: true // Bei Tab-Wechsel aktualisieren
     })
 
     return [queryData] as const;

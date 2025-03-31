@@ -22,7 +22,7 @@ import {Textarea} from "@/components/ui/textarea.tsx";
 import {linkData} from "@/feature/linktree/schema/LinktreeSchema.ts";
 
 const linkCreateSchema = z.object({
-    displayname: z.string().min(1),
+    displayname: z.string().nonempty().min(1).max(255),
     description: z.string().nullable().default(null),
     url: z.string().url(),
     isActive: z.boolean().default(true),
@@ -56,7 +56,16 @@ export const CreateLinkDialog: React.FC<CreateLinkDialogProps> = ({onClose}) => 
             toast.success('Link created successfully!');
         },
         onError: (error) => {
-            toast.error('Failed to create link');
+            const errorMessage = error.message;
+
+            if (errorMessage.includes('Icon')) {
+                form.setError('iconName', {
+                    type: 'manual',
+                    message: errorMessage
+                });
+            }
+
+            toast.error(errorMessage);
             console.error(error);
         },
         onSettled: () => {

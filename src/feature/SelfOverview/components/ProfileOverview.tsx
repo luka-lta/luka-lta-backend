@@ -57,10 +57,22 @@ function ProfileOverview({ user }: ProfileOverviewProps) {
             });
         },
         onError: (error) => {
-            toast.error('Failed to update profile', {
-                description: 'Please try again later',
-            });
-            console.error(error);
+            const errorMessage = error.message;
+            if (errorMessage.includes('email')) {
+                form.setError('email', {
+                    type: 'manual',
+                    message: errorMessage,
+                });
+            }
+
+            if (errorMessage.includes('username')) {
+                form.setError('username', {
+                    type: 'manual',
+                    message: errorMessage,
+                });
+            }
+
+            toast.error(error.message);
         },
         onSettled: () => {
             setTimeout(() => {
