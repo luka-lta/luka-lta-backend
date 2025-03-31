@@ -17,6 +17,7 @@ import RegisterPage from "@/pages/RegisterPage.tsx";
 import PreviewAccessPage from "@/pages/Dashboard/PreviewAccessPage.tsx";
 import PermissionsPage from "@/pages/Dashboard/PermissionsPage.tsx";
 import SelfOverviewPage from "@/pages/Dashboard/SelfOverviewPage.tsx";
+import ServicesPage from "@/pages/Dashboard/ServicesPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -80,6 +81,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'permissions',
                 element: <PermissionsPage/>
+            },
+            {
+                path: 'admin',
+                element: <ServicesPage/>
             },
             {
                 path: 'self/settings',

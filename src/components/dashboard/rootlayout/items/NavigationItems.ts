@@ -1,7 +1,7 @@
 import {Navigation} from "@/components/dashboard/rootlayout/types/SidebarTypes.ts";
 import {
     ChartSpline,
-    ClipboardList,
+    ClipboardList, DatabaseZap,
     Eye,
     Hammer,
     Home,
@@ -23,6 +23,12 @@ export const navigation: Navigation = {
             title: "Home",
             url: "/dashboard",
             icon: Home,
+            dropdown: []
+        },
+        {
+            title: "Admin",
+            url: "admin",
+            icon: DatabaseZap,
             dropdown: []
         },
         {
