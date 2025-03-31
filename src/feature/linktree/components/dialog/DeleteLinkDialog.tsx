@@ -55,7 +55,7 @@ function DeleteLinkDialog({onClose, linkId}: DeleteLinkDialogProps) {
                 <DialogFooter>
                     {deleteLink.error && (
                         <Alert variant='destructive'>
-                            <AlertTitle>Error, failed to create link!</AlertTitle>
+                            <AlertTitle>Error, failed to delete link!</AlertTitle>
                             <AlertDescription>{deleteLink.error.message}</AlertDescription>
                         </Alert>
                     )}
