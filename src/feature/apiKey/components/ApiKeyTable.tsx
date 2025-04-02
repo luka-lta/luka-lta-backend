@@ -22,7 +22,7 @@ function ApiKeyTable({apiKeys, maxPages, loading, setFilterData}: ApiKeyTablePro
             {newKey && (
                 <CreateApiKeyDialog onClose={() => setNewKey(false)}/>
             )}
-            <div className='px-6'>
+            <div className='space-y-4'>
                 <DataTable
                     data={apiKeys}
                     header={[

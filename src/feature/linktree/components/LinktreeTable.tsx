@@ -50,7 +50,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                 <CreateLinkDialog onClose={() => setNewLink(false)}/>
             )}
 
-            <div className='px-6'>
+            <div className='space-y-4'>
                 <DataTable
                     data={links}
                     header={[

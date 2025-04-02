@@ -3,6 +3,7 @@ import {useClicks} from "./hooks/useClicks";
 import {Badge} from "@/components/ui/badge.tsx";
 import {AlertTriangle} from "lucide-react";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
+import {Main} from "@/components/layout/main.tsx";
 
 function Analytics() {
     const [clicks, setFilterData] = useClicks();
@@ -24,12 +25,13 @@ function Analytics() {
     }
 
     return (
-        <>
-            <div className='p-6'>
-                <div className='mb-5'>
-                    <div className='flex items-center gap-2 mb-2'>
-                        <h1 className='text-2xl font-semibold'>Clicks</h1>
-                    </div>
+        <Main>
+            <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+                <div>
+                    <h2 className='text-2xl font-bold tracking-tight'>Clicks</h2>
+                    <p className='text-muted-foreground'>
+                        Analyze your clicks here.
+                    </p>
                 </div>
             </div>
 
@@ -40,7 +42,7 @@ function Analytics() {
                     setFilterData={setFilterData}
                 />
             </div>
-        </>
+        </Main>
     );
 }
 

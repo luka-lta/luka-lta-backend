@@ -1,9 +1,9 @@
 
-import SelfOverview from "@/feature/SelfOverview";
+import Settings from "@/feature/SelfOverview";
 
 function SelfOverviewPage() {
     return (
-        <SelfOverview />
+        <Settings />
     );
 }
 

@@ -1,71 +1,61 @@
-import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
-import { TabsTrigger } from "@/components/ui/tabs.tsx";
-import { useState } from "react";
-import ProfileOverview from "@/feature/SelfOverview/components/ProfileOverview.tsx";
-import PasswordOverview from "@/feature/SelfOverview/components/PasswordOverview.tsx";
-import { useSelfUser } from "@/feature/SelfOverview/hooks/useUserList.ts";
-import { Card } from "@/components/ui/card";
-import {Lock, User} from "lucide-react";
+import {Bell, Compass, Palette, User, Wrench} from "lucide-react";
+import {Main} from "@/components/layout/main.tsx";
+import {Separator} from "@/components/ui/separator.tsx";
+import SidebarNav from "@/feature/SelfOverview/components/sidebar-nav.tsx";
+import {Outlet} from "react-router-dom";
 
-function SelfOverview() {
-    const [activeTab, setActiveTab] = useState("profile");
-    const [selfUser] = useSelfUser();
-
-    if (selfUser.isLoading) {
-        return <div>Loading...</div>;
-    }
-
-    if (selfUser.isError) {
-        return <div>Error: {selfUser.error.message}</div>;
-    }
-
+function Settings() {
     return (
-        <div className="max-w-4xl mx-auto p-6 space-y-6">
-            <div className="space-y-1">
-                <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
-                <p className="text-muted-foreground">
-                    Manage your profile information and password settings
+        <Main fixed>
+            <div className='space-y-0.5'>
+                <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
+                    Settings
+                </h1>
+                <p className='text-muted-foreground'>
+                    Manage your account settings.
                 </p>
             </div>
-
-            <Card className="p-6">
-                <Tabs
-                    defaultValue="profile"
-                    value={activeTab}
-                    onValueChange={setActiveTab}
-                    className="space-y-6"
-                >
-                    {/* Tabs Navigation */}
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="profile" className="data-[state=active]:bg-primary/10">
-                            <span className="flex items-center gap-2">
-                                <User className="h-4 w-4" />
-                                Profile
-                            </span>
-                        </TabsTrigger>
-                        <TabsTrigger value="password" className="data-[state=active]:bg-primary/10">
-                            <span className="flex items-center gap-2">
-                                <Lock className="h-4 w-4" />
-                                Password
-                            </span>
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="profile">
-                        <Card className="p-6 border-none shadow-none">
-                            <ProfileOverview user={selfUser.data?.user ?? undefined} />
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="password">
-                        <Card className="p-6 border-none shadow-none">
-                            <PasswordOverview />
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-            </Card>
-        </div>
+            <Separator className='my-4 lg:my-6'/>
+            <div
+                className='flex flex-1 flex-col space-y-2 overflow-hidden md:space-y-2 lg:flex-row lg:space-x-12 lg:space-y-0'>
+                <aside className='top-0 lg:sticky lg:w-1/5'>
+                    <SidebarNav items={sidebarNavItems}/>
+                </aside>
+                <div className='flex w-full overflow-y-hidden p-1 pr-4'>
+                    <Outlet/>
+                </div>
+            </div>
+        </Main>
     );
 }
 
-export default SelfOverview;
+const sidebarNavItems = [
+    {
+        title: 'Profile',
+        icon: <User size={18}/>,
+        href: '/dashboard/settings',
+    },
+    {
+        title: 'Account',
+        icon: <Wrench size={18}/>,
+        href: '/dashboard/settings/account',
+    },
+    {
+        title: 'Appearance',
+        icon: <Palette size={18}/>,
+        href: '/dashboard/settings/appearance',
+    },
+    {
+        title: 'Notifications',
+        icon: <Bell size={18}/>,
+        href: '/dashboard/settings/notifications',
+    },
+    {
+        title: 'Display',
+        icon: <Compass size={18}/>,
+        href: '/dashboard/settings/display',
+    },
+]
+
+
+export default Settings;

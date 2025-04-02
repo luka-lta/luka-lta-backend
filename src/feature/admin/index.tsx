@@ -1,19 +1,12 @@
-import ServicesCard from "@/feature/admin/components/ServicesCard.tsx";
-import ReportsCard from "@/feature/admin/components/ReportsCard.tsx";
+import {Main} from "@/components/layout/main.tsx";
 
 function Admin() {
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <h1>Admin Dashboard</h1>
-            <div className="grid auto-rows-min gap-4 md:grid-cols-2">
-                <div className="aspect-video">
-                    <ReportsCard/>
-                </div>
-                <div className="aspect-video rounded-xl bg-muted/50">
-                    <ServicesCard/>
-                </div>
+        <Main>
+            <div className='mb-2 flex items-center justify-between space-y-2'>
+                <h1 className='text-2xl font-bold tracking-tight'>Admin-Dashboard</h1>
             </div>
-        </div>
+        </Main>
     );
 }
 

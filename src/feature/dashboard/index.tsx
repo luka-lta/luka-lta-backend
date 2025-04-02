@@ -6,6 +6,7 @@ import {useClickSummary} from "./hooks/useClickSummary";
 import {Badge} from "@/components/ui/badge.tsx";
 import {AlertTriangle} from "lucide-react";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
+import {Main} from "@/components/layout/main.tsx";
 
 function Dashboard() {
     const [clickSummary] = useClickSummary();
@@ -27,7 +28,16 @@ function Dashboard() {
     }
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <Main>
+            <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+                <div>
+                    <h2 className='text-2xl font-bold tracking-tight'>Dashboard</h2>
+                    <p className='text-muted-foreground'>
+                        Welcome to the dashboard.
+                    </p>
+                </div>
+            </div>
+
             <h1>Informations</h1>
             <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                 <div className="aspect-video rounded-xl bg-muted/50">
@@ -40,11 +50,13 @@ function Dashboard() {
                     <TimeLineClicksChart clicksDaily={clickSummary.data?.summary.clicksDaily ?? 'N/A'}/>
                 </div>
             </div>
-            <h1>AuditLog</h1>
-            <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
-                <AuditLog/>
+            <div className='mt-5'>
+                <h1>AuditLog</h1>
+                <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+                    <AuditLog/>
+                </div>
             </div>
-        </div>
+        </Main>
     );
 }
 
