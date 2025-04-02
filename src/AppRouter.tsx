@@ -2,7 +2,6 @@ import {createBrowserRouter, redirect} from "react-router-dom";
 import ErrorPage from "@/pages/ErrorPage.tsx";
 import DashboardPage from "@/pages/Dashboard/DashboardPage.tsx";
 import LoginPage from "@/pages/LoginPage.tsx";
-import DashboardRootLayout from "@/components/dashboard/rootlayout/DashboardRootLayout.tsx";
 import UsersPage from "@/pages/Dashboard/UsersPage.tsx";
 import LinktreePage from "@/pages/Dashboard/LinktreePage.tsx";
 import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
@@ -17,7 +16,8 @@ import RegisterPage from "@/pages/RegisterPage.tsx";
 import PreviewAccessPage from "@/pages/Dashboard/PreviewAccessPage.tsx";
 import PermissionsPage from "@/pages/Dashboard/PermissionsPage.tsx";
 import SelfOverviewPage from "@/pages/Dashboard/SelfOverviewPage.tsx";
-import ServicesPage from "@/pages/Dashboard/ServicesPage.tsx";
+import AdminPage from "@/pages/Dashboard/AdminPage.tsx";
+import DashboardLayout from "@/components/layout/dashboard-layout.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -34,7 +34,7 @@ export const appRouter = createBrowserRouter([
     },
     {
         path: '/dashboard',
-        element: <DashboardRootLayout/>,
+        element: <DashboardLayout/>,
         loader: protectedLoader,
         children: [
             {
@@ -84,7 +84,7 @@ export const appRouter = createBrowserRouter([
             },
             {
                 path: 'admin',
-                element: <ServicesPage/>
+                element: <AdminPage/>
             },
             {
                 path: 'self/settings',

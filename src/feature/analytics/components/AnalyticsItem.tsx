@@ -191,7 +191,7 @@ function AnalyticsItem({ clicks, loading }: ClicksListProps) {
                                             day: "numeric",
                                         })
                                     }
-                                    indicator="line"
+                                    indicator="dashed"
                                 />
                             }
                         />
@@ -199,7 +199,7 @@ function AnalyticsItem({ clicks, loading }: ClicksListProps) {
                             <Area
                                 key={name}
                                 dataKey={name}
-                                type="linear"
+                                type="step"
                                 fill={`url(#fill-${name})`}
                                 stroke={`hsl(var(--chart-${(index % 12) + 1}))`}
                                 strokeWidth={2}
