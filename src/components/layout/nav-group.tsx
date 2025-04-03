@@ -62,9 +62,7 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
         <SidebarMenuItem>
             <SidebarMenuButton
                 asChild
-/*
                 isActive={checkIsActive(href, item)}
-*/
                 tooltip={item.title}
             >
                 <Link to={item.url} onClick={() => setOpenMobile(false)}>
