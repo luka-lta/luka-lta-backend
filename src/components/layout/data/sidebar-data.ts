@@ -1,8 +1,7 @@
 import { type SidebarData } from '../types'
 import {
-    Bell,
     ChartSpline,
-    ClipboardList, Compass,
+    ClipboardList,
     DatabaseZap,
     Eye,
     Hammer,
@@ -102,16 +101,6 @@ export const sidebarData: SidebarData = {
                             url: '/dashboard/settings/appearance',
                             icon: Palette,
                         },
-                        {
-                            title: 'Notifications',
-                            url: '/dashboard/settings/notifications',
-                            icon: Bell
-                        },
-                        {
-                            title: 'Display',
-                            url: '/dashboard/settings/display',
-                            icon: Compass
-                        }
                     ]
                 },
             ],

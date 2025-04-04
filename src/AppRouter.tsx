@@ -20,6 +20,7 @@ import DashboardLayout from "@/components/layout/dashboard-layout.tsx";
 import Settings from "@/feature/SelfOverview";
 import SettingsProfile from "@/feature/SelfOverview/profile";
 import ComingSoon from "@/components/coming-soon.tsx";
+import SettingsAppearance from "@/feature/SelfOverview/appearance";
 
 export const appRouter = createBrowserRouter([
     {
@@ -95,6 +96,10 @@ export const appRouter = createBrowserRouter([
                     {
                         path: '',
                         element: <SettingsProfile/>
+                    },
+                    {
+                        path: 'appearance',
+                        element: <SettingsAppearance/>
                     },
                     {
                         path: '*',

@@ -1,4 +1,4 @@
-import {Bell, Compass, Palette, User, Wrench} from "lucide-react";
+import {Palette, User, Wrench} from "lucide-react";
 import {Main} from "@/components/layout/main.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
 import SidebarNav from "@/feature/SelfOverview/components/sidebar-nav.tsx";
@@ -44,17 +44,7 @@ const sidebarNavItems = [
         title: 'Appearance',
         icon: <Palette size={18}/>,
         href: '/dashboard/settings/appearance',
-    },
-    {
-        title: 'Notifications',
-        icon: <Bell size={18}/>,
-        href: '/dashboard/settings/notifications',
-    },
-    {
-        title: 'Display',
-        icon: <Compass size={18}/>,
-        href: '/dashboard/settings/display',
-    },
+    }
 ]
 
 
