@@ -31,7 +31,7 @@ function AccessTokensList({accessTokens, maxPages, loading, setFilterData}: Acce
             {newToken && (
                 <CreateAccessTokenDialog onClose={() => setNewToken(false)}/>
             )}
-            <div className='px-6'>
+            <div className='space-y-4'>
                 <DataTable
                     data={accessTokens}
                     header={[

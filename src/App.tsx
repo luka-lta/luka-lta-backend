@@ -6,6 +6,7 @@ import {Toaster} from "sonner";
 import {Analytics} from "@vercel/analytics/react"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ThemeProvider} from "@/context/theme-context.tsx";
+import {FontProvider} from "@/context/font-context.tsx";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -32,10 +33,12 @@ function App() {
     return (
         <ThemeProvider defaultTheme="system" storageKey="ui-theme">
             <QueryClientProvider client={queryClient}>
-                <Suspense fallback={<ErrorPage/>}>
-                    <RouterProvider router={appRouter}/>
-                    <Toaster richColors/>
-                </Suspense>
+                <FontProvider>
+                    <Suspense fallback={<ErrorPage/>}>
+                        <RouterProvider router={appRouter}/>
+                        <Toaster richColors/>
+                    </Suspense>
+                </FontProvider>
                 <Analytics/>
             </QueryClientProvider>
         </ThemeProvider>

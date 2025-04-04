@@ -1,4 +1,4 @@
-import {RefreshButton} from "@/components/button/RefreshButton.tsx";
+import {RefreshButton} from "@/components/refresh-button.tsx";
 import {useQueryClient} from "@tanstack/react-query";
 
 interface TotalClicksProps {

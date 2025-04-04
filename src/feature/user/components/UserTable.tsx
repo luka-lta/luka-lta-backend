@@ -46,7 +46,7 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                 <CreateUserDialog onClose={() => setNewUser(false)}/>
             )}
 
-            <div className='px-6'>
+            <div className='space-y-4'>
                 <DataTable
                     data={users}
                     header={[

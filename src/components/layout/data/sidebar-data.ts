@@ -7,9 +7,9 @@ import {
     Hammer,
     Home,
     KeySquare,
-    ListTree, Settings,
-    ShieldHalfIcon,
-    UsersIcon
+    ListTree, Palette, Settings,
+    ShieldHalfIcon, UserCog,
+    UsersIcon, Wrench
 } from "lucide-react";
 
 export const sidebarData: SidebarData = {
@@ -85,7 +85,23 @@ export const sidebarData: SidebarData = {
                 {
                     title: 'Settings',
                     icon: Settings,
-                    url: '/dashboard/self/settings',
+                    items: [
+                        {
+                            title: 'Profile',
+                            url: '/dashboard/settings',
+                            icon: UserCog,
+                        },
+                        {
+                            title: 'Account',
+                            url: '/dashboard/settings/account',
+                            icon: Wrench
+                        },
+                        {
+                            title: 'Appearance',
+                            url: '/dashboard/settings/appearance',
+                            icon: Palette,
+                        },
+                    ]
                 },
             ],
         },

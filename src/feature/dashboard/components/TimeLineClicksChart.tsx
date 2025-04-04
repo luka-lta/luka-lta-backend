@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/chart"
 import {LineChart, Line, XAxis, YAxis, CartesianGrid} from "recharts"
 import {useQueryClient} from "@tanstack/react-query"
-import {RefreshButton} from "@/components/button/RefreshButton"
+import {RefreshButton} from "@/components/refresh-button.tsx"
 import type {ClicksDailyTypeSchema} from "@/feature/dashboard/schema/ClickSummarySchema"
 import {chartColor} from "@/feature/dashboard/chartColor.ts"
 import {useEffect, useState} from "react"

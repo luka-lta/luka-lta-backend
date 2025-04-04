@@ -23,7 +23,7 @@ function PermissionsTable({permissions, maxPages, loading, setFilterData}: Permi
     const queryClient = useQueryClient();
 
     return (
-        <div className='px-6'>
+        <div className='space-y-4'>
             <DataTable
                 data={permissions}
                 header={[
