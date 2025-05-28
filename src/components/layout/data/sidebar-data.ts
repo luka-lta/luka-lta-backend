@@ -2,7 +2,6 @@ import { type SidebarData } from '../types'
 import {
     ChartSpline,
     ClipboardList,
-    DatabaseZap,
     Eye,
     Hammer,
     Home,
@@ -21,11 +20,6 @@ export const sidebarData: SidebarData = {
                     title: 'Home',
                     url: '/dashboard',
                     icon: Home,
-                },
-                {
-                    title: "Admin",
-                    url: '/dashboard/admin',
-                    icon: DatabaseZap,
                 },
                 {
                     title: "Todos",

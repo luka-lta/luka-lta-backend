@@ -50,6 +50,37 @@ export class FetchWrapper {
         }
     }
 
+    public async formDataRequest(
+        endpoint: string,
+        body: FormData,
+    ): Promise<ApiSchema> {
+        const { jwt } = useAuthenticatedUserStore.getState();
+        const headers: HeadersInit = {
+            'Authorization': jwt ?? '',
+
+        }
+
+        const config: RequestInit = {
+            'method': 'POST',
+            headers: headers,
+            body: body,
+        };
+
+        try {
+            const response = await fetch(`${this.baseUrl}${endpoint}`, config);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message ?? 'An unexpected error occurred');
+            }
+
+            return ApiResponseSchema.parse(data);
+        } catch (error) {
+            console.error('Fetch error:', error);
+            throw error;
+        }
+    }
+
     get(endpoint: string, headers?: HeadersInit): Promise<ApiSchema> {
         return this.request(endpoint, 'GET', undefined, headers);
     }
