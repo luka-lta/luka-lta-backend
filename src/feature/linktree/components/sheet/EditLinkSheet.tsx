@@ -173,10 +173,10 @@ function EditLinkSheet({onClose, link}: EditLinkDialogProps) {
                         )}
                     </div>
                     <SheetFooter>
-                        {editLink.isPending || form.formState.isDirty ? (
+                        {editLink.isPending ? (
                             <Button className="w-[100%]" disabled>Editing link...</Button>
                         ) : (
-                            <Button className="w-[100%]" type='submit'>Editing Link</Button>
+                            <Button className="w-[100%]" type='submit'>Edit Link</Button>
                         )}
                     </SheetFooter>
                 </form>

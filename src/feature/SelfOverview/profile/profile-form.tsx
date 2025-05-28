@@ -7,11 +7,12 @@ import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 import {toast} from "sonner";
+import {useRef} from "react";
 
 const userUpdateSchema = z.object({
     username: z.string().min(3, {message: "Username must be at least 3 characters long"}),
     email: z.string().email({message: "Please enter a valid email address"}),
-    avatarUrl: z.string().optional(),
+    avatarFile: z.instanceof(FileList).optional(),
 });
 
 interface userUpdateData {
@@ -26,6 +27,7 @@ interface ProfileOverviewProps {
 
 function ProfileForm({user}: ProfileOverviewProps) {
     const queryClient = useQueryClient();
+    const formRef = useRef<HTMLFormElement>(null);
 
     const form = useForm<userUpdateData>({
         resolver: zodResolver(userUpdateSchema),
@@ -37,14 +39,12 @@ function ProfileForm({user}: ProfileOverviewProps) {
     });
 
     const updateSelf = useMutation({
-        mutationFn: async ({email, avatarUrl, username}: userUpdateData) => {
+        mutationFn: async () => {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            await fetchWrapper.put(`/self/`, {
-                userId: user?.userId,
-                username,
-                email,
-                avatarUrl,
-            });
+
+            const formData = new FormData(formRef.current!);
+
+            await fetchWrapper.formDataRequest(`/self/`, formData);
         },
         onSuccess: () => {
             toast.success('Profile updated successfully!', {
@@ -78,10 +78,10 @@ function ProfileForm({user}: ProfileOverviewProps) {
         }
     });
 
-    const onSubmit: SubmitHandler<userUpdateData> = (data) => updateSelf.mutate(data);
+    const onSubmit: SubmitHandler<userUpdateData> = () => updateSelf.mutate();
 
     return (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <TextInput
                 name="username"
                 id="username-self-overview-update"

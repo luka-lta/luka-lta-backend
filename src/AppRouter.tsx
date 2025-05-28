@@ -15,7 +15,6 @@ import DetailLinktree from "@/feature/linktree/childPages/detail/DetailLinktree.
 import RegisterPage from "@/pages/RegisterPage.tsx";
 import PreviewAccessPage from "@/pages/Dashboard/PreviewAccessPage.tsx";
 import PermissionsPage from "@/pages/Dashboard/PermissionsPage.tsx";
-import AdminPage from "@/pages/Dashboard/AdminPage.tsx";
 import DashboardLayout from "@/components/layout/dashboard-layout.tsx";
 import Settings from "@/feature/SelfOverview";
 import SettingsProfile from "@/feature/SelfOverview/profile";
@@ -84,10 +83,6 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'permissions',
                 element: <PermissionsPage/>
-            },
-            {
-                path: 'admin',
-                element: <AdminPage/>
             },
             {
                 path: 'settings',
