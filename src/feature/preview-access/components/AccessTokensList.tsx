@@ -14,6 +14,7 @@ import {Badge} from "@/components/ui/badge.tsx";
 import {cn} from "@/lib/utils.ts";
 import {useState} from "react";
 import CreateAccessTokenDialog from "@/feature/preview-access/components/CreateAccessTokenDialog.tsx";
+import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 
 interface AccessTokensListProps {
     accessTokens: AccessTokenTypeSchema[];
@@ -82,6 +83,9 @@ function AccessTokensList({accessTokens, maxPages, loading, setFilterData}: Acce
                     onCreateNew={() => setNewToken(true)}
                     loading={loading}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['access', 'tokens', 'list']})}
+                    customFilter={[
+                        <SearchFilter name={'token'} key={'search'}/>,
+                    ]}
                 />
             </div>
         </>
