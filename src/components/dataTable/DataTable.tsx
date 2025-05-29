@@ -53,11 +53,11 @@ export function DataTable<TData = unknown, TExtraFilter = Record<string, unknown
         onSortingChange,
     } = useDataTableFilter();
 
-    const deferedFilter = useDeferredValue(filter as DataTableFilter<TExtraFilter>);
+    const deferredFilter = useDeferredValue(filter as DataTableFilter<TExtraFilter>);
     useEffect(() => {
-        onFilterChange(deferedFilter);
+        onFilterChange(deferredFilter);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [deferedFilter])
+    }, [deferredFilter]);
 
     return (
         <div className='max-h-[600px]'>
@@ -71,20 +71,6 @@ export function DataTable<TData = unknown, TExtraFilter = Record<string, unknown
             />
 
             <div className="border rounded-lg max-h-[600px] overflow-auto">
-
-                {data.length === 0 && (
-                    <div className="flex items-center justify-center h-32">
-                        {loading ? (
-                            <TableBodyLoading
-                                header={header}
-                                rows={filter.pageSize}
-                            />
-                        ) : (
-                            <div>{emptyState ?? 'No data found'}</div>
-                        )}
-                    </div>
-                )}
-
                 <Table>
                     <TableHeader
                         header={header}
@@ -97,6 +83,17 @@ export function DataTable<TData = unknown, TExtraFilter = Record<string, unknown
                             header={header}
                             rows={filter.pageSize}
                         />
+                    ) : data.length === 0 ? (
+                        <tbody>
+                        <tr>
+                            <td
+                                colSpan={header.length}
+                                className="text-center py-8 bg-zinc-900 text-red-600 hover:bg-zinc-900 h-32"
+                            >
+                                {emptyState ?? 'No data found'}
+                            </td>
+                        </tr>
+                        </tbody>
                     ) : (
                         <TableBody
                             data={data}
@@ -105,6 +102,7 @@ export function DataTable<TData = unknown, TExtraFilter = Record<string, unknown
                     )}
                 </Table>
             </div>
+
             <Pagination
                 maxPages={maxPages}
                 onUpdatePagination={onPaginationChange}
