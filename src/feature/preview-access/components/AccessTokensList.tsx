@@ -48,7 +48,7 @@ function AccessTokensList({accessTokens, maxPages, loading, setFilterData}: Acce
                         return (
                             <TableRow key={accessToken.token}>
                                 <TableCell>{accessToken.token}</TableCell>
-                                <TableCell>{accessToken.createdBy.email}</TableCell>
+                                <TableCell>{accessToken.createdBy.username}</TableCell>
                                 <TableCell>{accessToken.maxUse}</TableCell>
                                 <TableCell>{accessToken.used}</TableCell>
                                 <TableCell>

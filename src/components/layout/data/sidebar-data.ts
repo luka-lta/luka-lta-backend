@@ -1,7 +1,6 @@
 import { type SidebarData } from '../types'
 import {
     ChartSpline,
-    ClipboardList,
     Eye,
     Hammer,
     Home,
@@ -20,11 +19,6 @@ export const sidebarData: SidebarData = {
                     title: 'Home',
                     url: '/dashboard',
                     icon: Home,
-                },
-                {
-                    title: "Todos",
-                    url: '/dashboard/todos',
-                    icon: ClipboardList,
                 },
                 {
                     title: "Tools",

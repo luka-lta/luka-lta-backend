@@ -9,7 +9,6 @@ import authenticatedLoader from "@/loader/authenticatedLoader.ts";
 import protectedLoader from "@/loader/protectedLoader.ts";
 import AnalyticsPage from "@/pages/Dashboard/AnalyticsPage.tsx";
 import ApiKeysPage from "@/pages/Dashboard/ApiKeysPage.tsx";
-import TodoPage from "@/pages/Dashboard/TodoPage.tsx";
 import ToolsPage from "@/pages/Dashboard/ToolsPage.tsx";
 import DetailLinktree from "@/feature/linktree/childPages/detail/DetailLinktree.tsx";
 import RegisterPage from "@/pages/RegisterPage.tsx";
@@ -71,10 +70,6 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'analytics',
                 element: <AnalyticsPage/>
-            },
-            {
-                path: 'todos',
-                element: <TodoPage/>
             },
             {
                 path: 'tools',
