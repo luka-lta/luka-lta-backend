@@ -3,18 +3,28 @@ import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 import {BlogItemTypeSchema} from "@/feature/blogs/schema/BlogSchema.ts";
 import {CalendarIcon, EditIcon, MoreVerticalIcon, TrashIcon, UserIcon} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import { formatDate } from "date-fns";
+import {Badge} from "@/components/ui/badge.tsx";
+import BlogLoading from "@/feature/blogs/components/BlogLoading.tsx";
 
 interface BlogListProps {
     blogs: BlogItemTypeSchema[];
     loading: boolean;
-    setFilterData: (filterData: Record<string, string>) => void;
 }
 
-function BlogList({blogs, loading, setFilterData}: BlogListProps) {
+function BlogList({blogs, loading}: BlogListProps) {
     const navigate = useNavigate();
 
+    const getStatusColor = (isPublished: boolean) => {
+        return isPublished ? "default" : "secondary"
+    }
+
+    if (loading) {
+        return (
+            <BlogLoading />
+        )
+    }
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -24,7 +34,11 @@ function BlogList({blogs, loading, setFilterData}: BlogListProps) {
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <CardTitle className="text-lg line-clamp-2 mb-2">{blog.title}</CardTitle>
-                                <CardDescription className="line-clamp-3">This is an placholder</CardDescription>
+                                <CardDescription className="line-clamp-3">{blog.excerpt ? (
+                                    blog.excerpt
+                                ) : (
+                                    "No excerpt available"
+                                )}</CardDescription>
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -50,7 +64,7 @@ function BlogList({blogs, loading, setFilterData}: BlogListProps) {
                     <CardContent className="flex-1 flex flex-col justify-between">
                             <div className="mb-4">
                                 <img
-                                    src={ "/placeholder.svg"}
+                                    src={ "https://kzmqvc75wfnuk1px6i47.lite.vusercontent.net/placeholder.svg?height=200&width=400"}
                                     alt={blog.title}
                                     className="w-full h-32 object-cover rounded-md"
                                 />
@@ -74,22 +88,29 @@ function BlogList({blogs, loading, setFilterData}: BlogListProps) {
                             <div className="flex items-center justify-between text-sm text-muted-foreground">
                                 <div className="flex items-center gap-1">
                                     <UserIcon className="w-3 h-3" />
-                                    {blog.userId}
+                                    {blog.user.username}
                                 </div>
-{/*
-                                <Badge variant={getStatusColor(blog.status)}>{blog.status}</Badge>
-*/}
+
+                                <Badge variant={getStatusColor(blog.isPublished)}>{blog.isPublished ? (
+                                    <span className="text-xs">Published</span>
+                                ) : (
+                                    <span className="text-xs">Draft</span>
+                                )}</Badge>
+
                             </div>
 
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                 <div className="flex items-center gap-1">
                                     <CalendarIcon className="w-3 h-3" />
-                                    {blog.isPublished
-                                        ? 'Published'
-                                        : blog.updatedAt
-                                            ? `Updated ${formatDate(blog.updatedAt, 'dd.MM.yyyy')}`
-                                            : 'Not updated yet'}
-
+                                    {blog.isPublished ? (
+                                        <Link to={`https://luka-lta.dev/blog/${blog.blogId}`}>
+                                            Published on {formatDate(blog.createdAt, 'dd.MM.yyyy')}
+                                        </Link>
+                                    ) : blog.updatedAt ? (
+                                        `Updated ${formatDate(blog.updatedAt, 'dd.MM.yyyy')}`
+                                    ) : (
+                                        'Not updated yet'
+                                    )}
                                 </div>
                             </div>
 

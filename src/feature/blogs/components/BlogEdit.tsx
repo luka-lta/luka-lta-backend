@@ -11,26 +11,25 @@ import {Label} from "@/components/ui/label.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {Input} from '@/components/ui/input';
 import {Textarea} from "@/components/ui/textarea.tsx";
-import {useBlog} from "@/feature/blogs/hooks/useBlog.ts";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import {useBlog} from "@/feature/blogs/hooks/useBlog.ts";
 
 function BlogEdit() {
-    const params = useParams()
-    const blogId: string = params.blogId as unknown as string
-    const [blog] = useBlog(blogId);
-    const currentPost = blog.data?.blog ?? {
-        id: blogId,
-        title: '',
-        excerpt: '',
-        content: '',
-        status: 'draft',
-        isPublished: false,
-        tags: [],
-    }
+    const {blogId} = useParams()
     const [isPreview, setIsPreview] = useState(false)
+    const [blog] = useBlog(blogId ?? '');
+
+    const currentPost = blog.data?.blog ?? {
+        id: '',
+        title: '',
+        content: '',
+        excerpt: '',
+        userId: '',
+        isPublished: false,
+    }
 
     if (blog.error) {
         return (
@@ -50,7 +49,7 @@ function BlogEdit() {
 
     return (
         <Main>
-            <div className="container mx-auto py-8 px-4 max-w-6xl">
+            <div className="container mx-auto py-8 px-4 max-w-7xl">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
                         <Button variant="outline" onClick={() => window.history.back()}>
@@ -60,7 +59,7 @@ function BlogEdit() {
                         <div>
                             <h1 className="text-3xl font-bold">{"Edit Post"}</h1>
                             <p className="text-muted-foreground">
-                                {"Edit your existing blog post"}
+                                {currentPost ? "Edit your existing blog post" : "Create and publish your blog post"}
                             </p>
                         </div>
                     </div>
@@ -108,8 +107,10 @@ function BlogEdit() {
                                             <Textarea
                                                 id="excerpt"
                                                 placeholder="Write a brief excerpt or summary..."
-                                                /*                                                value={currentPost.excerpt}
-                                                                                                onChange={(e) => handleInputChange("excerpt", e.target.value)}*/
+                                                value={currentPost.excerpt ?? ''}
+                                                /*
+                                                                                                                                                onChange={(e) => handleInputChange("excerpt", e.target.value)}
+                                                */
                                                 rows={3}
                                             />
                                         </div>

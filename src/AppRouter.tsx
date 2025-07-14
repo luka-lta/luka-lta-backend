@@ -96,6 +96,10 @@ export const appRouter = createBrowserRouter([
                     {
                         path: ':blogId',
                         element: <BlogEdit />,
+                    },
+                    {
+                        path: '/new',
+                        element: <BlogEdit />,
                     }
                 ]
             },
