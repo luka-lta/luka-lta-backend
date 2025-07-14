@@ -13,7 +13,7 @@ function Permissions() {
             <div className='p-6'>
                 <div className='mb-5'>
                     <div className='flex items-center gap-2 mb-2'>
-                        <h1 className='text-2xl font-semibold'>Users</h1>
+                        <h1 className='text-2xl font-semibold'>Permissions</h1>
                         <Badge variant='secondary' className='bg-zinc-900 text-red-600 hover:bg-zinc-900'>
                             <AlertTriangle/>
                         </Badge>
