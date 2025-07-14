@@ -75,7 +75,7 @@ export function NavUser({
                         <DropdownMenuSeparator/>
                         <DropdownMenuGroup>
                             <DropdownMenuItem asChild>
-                                <Link to='/dashboard/self/settings'>
+                                <Link to='/dashboard/settings'>
                                     <BadgeCheck/>
                                     Account
                                 </Link>
