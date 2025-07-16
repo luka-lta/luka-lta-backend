@@ -8,7 +8,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import {Bar, BarChart, CartesianGrid, XAxis} from "recharts"
+import {Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis} from "recharts"
 import {useQueryClient} from "@tanstack/react-query"
 import {RefreshButton} from "@/components/refresh-button.tsx"
 import type {ClicksMonthlyTypeSchema} from "@/feature/dashboard/schema/ClickSummarySchema"
@@ -86,13 +86,7 @@ function ClicksChart({clicksMonthly}: ClicksChartProps) {
     })
 
     return (
-        <div className="flex h-full w-full flex-col p-4">
-            <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-500">Clicks overview (last 5 months)</h2>
-                <RefreshButton
-                    onRefresh={() => queryClient.invalidateQueries({queryKey: ["summary", "click", "list"]})}/>
-            </div>
-
+        <ResponsiveContainer width='100%' height={350}>
             {chartData.length > 0 ? (
                 <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
                     <BarChart accessibilityLayer data={chartData}>
@@ -101,7 +95,14 @@ function ClicksChart({clicksMonthly}: ClicksChartProps) {
                             dataKey="month"
                             tickLine={false}
                             tickMargin={10}
-                            axisLine={true}
+                            axisLine={false}
+                        />
+                        <YAxis
+                            stroke='#888888'
+                            fontSize={12}
+                            tickLine={false}
+                            axisLine={false}
+                            tickFormatter={(value) => Number.isInteger(value) ? `${value}` : ''}
                         />
                         <ChartTooltip content={<ChartTooltipContent/>}/>
                         <ChartLegend content={<ChartLegendContent/>}/>
@@ -122,7 +123,7 @@ function ClicksChart({clicksMonthly}: ClicksChartProps) {
                     <p className="text-gray-500">No click data available</p>
                 </div>
             )}
-        </div>
+        </ResponsiveContainer>
     )
 }
 

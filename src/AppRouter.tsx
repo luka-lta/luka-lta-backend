@@ -7,7 +7,6 @@ import LinktreePage from "@/pages/Dashboard/LinktreePage.tsx";
 import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
 import authenticatedLoader from "@/loader/authenticatedLoader.ts";
 import protectedLoader from "@/loader/protectedLoader.ts";
-import AnalyticsPage from "@/pages/Dashboard/AnalyticsPage.tsx";
 import ApiKeysPage from "@/pages/Dashboard/ApiKeysPage.tsx";
 import ToolsPage from "@/pages/Dashboard/ToolsPage.tsx";
 import DetailLinktree from "@/feature/linktree/childPages/detail/DetailLinktree.tsx";
@@ -66,10 +65,6 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'api-keys',
                 element: <ApiKeysPage/>
-            },
-            {
-                path: 'analytics',
-                element: <AnalyticsPage/>
             },
             {
                 path: 'tools',

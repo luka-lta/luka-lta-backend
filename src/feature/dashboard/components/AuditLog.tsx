@@ -70,7 +70,7 @@ function AuditLog() {
 
 
     return (
-        <ScrollArea className="rounded-md border p-4 max-h-[400px] overflow-y-auto">
+        <ScrollArea className="space-y-8 rounded-md max-h-[400px] overflow-y-auto">
             <Table>
                 <TableHeader>
                     <TableRow>

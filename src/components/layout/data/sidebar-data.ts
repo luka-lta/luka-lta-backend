@@ -1,10 +1,8 @@
 import { type SidebarData } from '../types'
 import {
-    ChartSpline,
     Eye,
     Hammer,
-    Home,
-    KeySquare,
+    KeySquare, LayoutDashboardIcon,
     ListTree, Palette, Settings,
     ShieldHalfIcon, UserCog,
     UsersIcon, Wrench
@@ -16,9 +14,9 @@ export const sidebarData: SidebarData = {
             title: 'General',
             items: [
                 {
-                    title: 'Home',
+                    title: 'Dashboard',
                     url: '/dashboard',
-                    icon: Home,
+                    icon: LayoutDashboardIcon,
                 },
                 {
                     title: "Tools",
@@ -59,11 +57,6 @@ export const sidebarData: SidebarData = {
                     title: "Linktree",
                     icon: ListTree,
                     url: '/dashboard/linktree',
-                },
-                {
-                    title: "Analytics",
-                    icon: ChartSpline,
-                    url: '/dashboard/analytics',
                 },
             ],
         },

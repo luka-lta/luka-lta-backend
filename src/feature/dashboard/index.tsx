@@ -1,12 +1,12 @@
-import TotalClicks from "@/feature/dashboard/components/TotalClicks.tsx";
-import ClicksChart from "@/feature/dashboard/components/ClicksChart.tsx";
-import TimeLineClicksChart from "@/feature/dashboard/components/TimeLineClicksChart.tsx";
-import AuditLog from "@/feature/dashboard/components/AuditLog.tsx";
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {useClickSummary} from "./hooks/useClickSummary";
 import {Badge} from "@/components/ui/badge.tsx";
 import {AlertTriangle} from "lucide-react";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import {Main} from "@/components/layout/main.tsx";
+import Overview from "@/feature/dashboard/components/Overview.tsx";
+import Analytics from "@/feature/dashboard/components/analytics/Analytics.tsx";
 
 function Dashboard() {
     const [clickSummary] = useClickSummary();
@@ -29,33 +29,38 @@ function Dashboard() {
 
     return (
         <Main>
-            <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
-                <div>
-                    <h2 className='text-2xl font-bold tracking-tight'>Dashboard</h2>
-                    <p className='text-muted-foreground'>
-                        Welcome to the dashboard.
-                    </p>
+            <div className='mb-2 flex items-center justify-between space-y-2'>
+                <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
+                <div className='flex items-center space-x-2'>
+                    <Button>Download</Button>
                 </div>
             </div>
-
-            <h1>Informations</h1>
-            <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div className="aspect-video rounded-xl bg-muted/50">
-                    <TotalClicks totalClicks={clickSummary.data?.summary.totalClicks ?? 'N/A'}/>
+            <Tabs
+                orientation='vertical'
+                defaultValue='overview'
+                className='space-y-4'
+            >
+                <div className='w-full overflow-x-auto pb-2'>
+                    <TabsList>
+                        <TabsTrigger value='overview'>Overview</TabsTrigger>
+                        <TabsTrigger value='analytics'>
+                            Analytics
+                        </TabsTrigger>
+                        <TabsTrigger value='reports' disabled>
+                            Reports
+                        </TabsTrigger>
+                        <TabsTrigger value='notifications' disabled>
+                            Notifications
+                        </TabsTrigger>
+                    </TabsList>
                 </div>
-                <div className="aspect-video rounded-xl bg-muted/50">
-                    <ClicksChart clicksMonthly={clickSummary.data?.summary.clicksMonthly ?? 'N/A'}/>
-                </div>
-                <div className="aspect-video rounded-xl bg-muted/50">
-                    <TimeLineClicksChart clicksDaily={clickSummary.data?.summary.clicksDaily ?? 'N/A'}/>
-                </div>
-            </div>
-            <div className='mt-5'>
-                <h1>AuditLog</h1>
-                <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
-                    <AuditLog/>
-                </div>
-            </div>
+                <TabsContent value='overview' className='space-y-4'>
+                    <Overview />
+                </TabsContent>
+                <TabsContent value={'analytics'} className='space-y-4'>
+                    <Analytics />
+                </TabsContent>
+            </Tabs>
         </Main>
     );
 }
