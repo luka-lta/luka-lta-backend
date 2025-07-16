@@ -1,9 +1,9 @@
-import AnalyticsItem from "@/feature/analytics/components/AnalyticsItem.tsx";
-import {useClicks} from "./hooks/useClicks";
+import {useClicks} from "@/feature/dashboard/hooks/useClicks.ts";
 import {Badge} from "@/components/ui/badge.tsx";
 import {AlertTriangle} from "lucide-react";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import {Main} from "@/components/layout/main.tsx";
+import AnalyticsItem from "@/feature/dashboard/components/analytics/AnalyticsItem.tsx";
 
 function Analytics() {
     const [clicks, setFilterData] = useClicks();

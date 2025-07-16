@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {FetchWrapper} from "@/lib/fetchWrapper.ts";
-import {clicksListSchema} from "@/feature/analytics/schema/AnalyticsSchema.ts";
+import {clicksListSchema} from "@/feature/dashboard/schema/AnalyticsSchema.ts";
 
 export function useClicks() {
     const [filterData, setFilterData] = useState<Record<string, string>>({});
