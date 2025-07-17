@@ -18,6 +18,7 @@ import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 import EditUserSheet from "@/feature/user/components/sheet/EditUserSheet.tsx";
 import InfoUserSheet from "@/feature/user/components/sheet/InfoUserSheet.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
+import UserDeleteDialog from "@/feature/user/components/UserDeleteDialog.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];
@@ -31,6 +32,7 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
     const [newUser, setNewUser] = useState(false);
     const [editUser, setEditUser] = useState<null | UserTypeSchema>(null);
     const [infoUser, setInfoUser] = useState<null | UserTypeSchema>(null);
+    const [deleteUser, setDeleteUser] = useState<null | UserTypeSchema>(null);
 
     return (
         <>
@@ -40,6 +42,10 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
 
             {(infoUser !== null) && (
                 <InfoUserSheet user={infoUser} onClose={() => setInfoUser(null)}/>
+            )}
+
+            {(deleteUser !== null) && (
+                <UserDeleteDialog onOpenChange={() => setDeleteUser(null)} currentRow={deleteUser} />
             )}
 
             {newUser && (
@@ -96,7 +102,10 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                                                 <Pencil/>
                                                 Edit
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem onClick={(event) => {
+                                                event.stopPropagation();
+                                                setDeleteUser(user);
+                                            }}>
                                                 <Trash/>
                                                 Delete
                                             </DropdownMenuItem>
