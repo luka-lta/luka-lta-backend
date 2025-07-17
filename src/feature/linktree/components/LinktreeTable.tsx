@@ -34,7 +34,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
     const navigate = useNavigate();
     const [newLink, setNewLink] = useState(false);
     const [editLink, setEditLink] = useState<null | LinkItemTypeSchema>(null);
-    const [deleteLink, setDeleteLink] = useState<null | number>(null);
+    const [deleteLink, setDeleteLink] = useState<null | LinkItemTypeSchema>(null);
 
     return (
         <>
@@ -43,7 +43,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
             )}
 
             {(deleteLink !== null) && (
-                <DeleteLinkDialog onClose={() => setDeleteLink(null)} linkId={deleteLink}/>
+                <DeleteLinkDialog onClose={() => setDeleteLink(null)} link={deleteLink}/>
             )}
 
             {newLink && (
@@ -115,7 +115,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={(event) => {
                                                     event.stopPropagation();
-                                                    setDeleteLink(link.id)
+                                                    setDeleteLink(link)
                                                 }
                                                 }>
                                                     <Trash/>
