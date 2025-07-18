@@ -4,7 +4,6 @@ import { z } from "zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import type { UserTypeSchema } from "@/feature/user/schema/UserSchema.ts"
 import { FetchWrapper } from "@/lib/fetchWrapper.ts"
 import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx"
@@ -17,10 +16,12 @@ import { Loader2, Mail, User } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card.tsx"
 import {Label} from "@/components/ui/label.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
+import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
 
-interface EditUserDialogProps {
-    onClose: () => void
-    user: UserTypeSchema
+interface Props {
+    currentRow: UserTypeSchema
+    open: boolean
+    onOpenChange: (open: boolean) => void
 }
 
 const userEditSchema = z.object({
@@ -36,24 +37,24 @@ export type userData = {
     avatar: File | null
     isActive: boolean
 }
-
-function EditUserSheet({ onClose, user }: EditUserDialogProps) {
+// TODO: Edit and Create form in one component
+function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
     const queryClient = useQueryClient()
 
     const form = useForm<userData>({
         resolver: zodResolver(userEditSchema),
         defaultValues: {
-            email: user.email,
-            username: user.username,
+            email: currentRow.email,
+            username: currentRow.username,
             avatar: null,
-            isActive: user.isActive,
+            isActive: currentRow.isActive,
         },
     })
 
     const editUser = useMutation({
         mutationFn: async ({ email, username, avatar, isActive }: userData) => {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl)
-            await fetchWrapper.put(`/user/${user.userId}`, {
+            await fetchWrapper.put(`/user/${currentRow.userId}`, {
                 username,
                 email,
                 avatar,
@@ -61,7 +62,7 @@ function EditUserSheet({ onClose, user }: EditUserDialogProps) {
             })
         },
         onSuccess: () => {
-            onClose()
+            onOpenChange(false)
             toast.success("User edited successfully!")
         },
         onError: (error) => {
@@ -95,11 +96,10 @@ function EditUserSheet({ onClose, user }: EditUserDialogProps) {
 
     return (
         <Sheet
-            open={true}
-            onOpenChange={(open) => {
-                if (!open) {
-                    onClose()
-                }
+            open={open}
+            onOpenChange={(state) => {
+                form.reset()
+                onOpenChange(state)
             }}
         >
             <SheetContent className="sm:max-w-md">
@@ -117,12 +117,12 @@ function EditUserSheet({ onClose, user }: EditUserDialogProps) {
                                 <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-2">
                                     <User className="h-4 w-4"/>
                                     <span>
-                                      User ID: <span className="font-mono">{user.userId}</span>
+                                      User ID: <span className="font-mono">{currentRow.userId}</span>
                                     </span>
                                 </div>
                                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                                     <Mail className="h-4 w-4"/>
-                                    <span>Current Email: {user.email}</span>
+                                    <span>Current Email: {currentRow.email}</span>
                                 </div>
                             </CardContent>
                         </Card>
@@ -185,7 +185,10 @@ function EditUserSheet({ onClose, user }: EditUserDialogProps) {
                     <SheetFooter className="pt-4 flex-col sm:flex-row gap-2">
                         <Button
                             variant="outline"
-                            onClick={onClose}
+                            onClick={() => {
+                                form.reset()
+                                onOpenChange(false)
+                            }}
                             type="button"
                             className="w-full sm:w-auto"
                             disabled={editUser.isPending}

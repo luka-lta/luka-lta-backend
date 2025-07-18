@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 
 interface Props {
+    open: boolean
     onOpenChange: () => void
     currentRow: UserTypeSchema
 }
 
-function UserDeleteDialog({onOpenChange, currentRow}: Props) {
+function UserDeleteDialog({open, onOpenChange, currentRow}: Props) {
     const [value, setValue] = useState('')
 
     const handleDelete = () => {
@@ -24,12 +25,8 @@ function UserDeleteDialog({onOpenChange, currentRow}: Props) {
 
     return (
         <ConfirmDialog
-            open={true}
-            onOpenChange={(open) => {
-                if (!open) {
-                    onOpenChange()
-                }
-            }}
+            open={open}
+            onOpenChange={onOpenChange}
             handleConfirm={handleDelete}
             title={
                 <span className='text-destructive'>

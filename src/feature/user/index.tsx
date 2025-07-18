@@ -4,6 +4,8 @@ import {Badge} from "@/components/ui/badge.tsx";
 import {AlertTriangle} from "lucide-react";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import {Main} from "@/components/layout/main.tsx";
+import UsersProvider from "@/feature/user/context/users-context.tsx";
+import UserDialogs from "@/feature/user/components/UserDialogs.tsx";
 
 function Users() {
     const [userList, setFilterData] = useUserList();
@@ -25,23 +27,27 @@ function Users() {
     }
 
     return (
-        <Main>
-            <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
-                <div>
-                    <h2 className='text-2xl font-bold tracking-tight'>User List</h2>
-                    <p className='text-muted-foreground'>
-                        Manage your users and their roles here.
-                    </p>
+        <UsersProvider>
+            <Main>
+                <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+                    <div>
+                        <h2 className='text-2xl font-bold tracking-tight'>User List</h2>
+                        <p className='text-muted-foreground'>
+                            Manage your users and their roles here.
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <UserTable
-                users={userList.data?.users ?? []}
-                maxPages={userList.data?.totalPages ?? 999}
-                loading={userList.isPending}
-                setFilterData={setFilterData}
-            />
-        </Main>
+                <UserTable
+                    users={userList.data?.users ?? []}
+                    maxPages={userList.data?.totalPages ?? 999}
+                    loading={userList.isPending}
+                    setFilterData={setFilterData}
+                />
+            </Main>
+
+            <UserDialogs />
+        </UsersProvider>
     );
 }
 

@@ -15,16 +15,22 @@ import {
 import {TextInput} from "@/components/form/TextInput.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
+import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
 
-interface CreateUserDialogProps {
-    onClose: () => void;
+interface Props {
+    currentRow?: UserTypeSchema
+    open: boolean
+    onOpenChange: (open: boolean) => void
 }
 
 const userCreateSchema = z.object({
     username: z.string().min(3, "Username must be at least 3 characters long"),
-    email: z.string().email(),
+    email: z
+        .string()
+        .email({message: "Invalid email address"})
+        .min(1, "Email is required"),
     password: z.string().min(8, "Password must be at least 8 characters long"),
-    repeatPassword: z.string().min(8, "Password must be at least 8 characters long"),
+    repeatPassword: z.string().transform((pwd) => pwd.trim()),
 })
     .refine(data => data.password === data.repeatPassword, {
         path: ["repeatPassword"],
@@ -38,7 +44,7 @@ export type userData = {
     repeatPassword: string,
 }
 
-function CreateUserDialog({onClose}: CreateUserDialogProps) {
+function CreateUserDialog({ open, onOpenChange }: Props) {
     const queryClient = useQueryClient();
 
     const form = useForm<userData>({
@@ -55,7 +61,7 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
             })
         },
         onSuccess: () => {
-            onClose();
+            onOpenChange(false);
             toast.success('User created successfully!');
         },
         onError: (error) => {
@@ -88,11 +94,7 @@ function CreateUserDialog({onClose}: CreateUserDialogProps) {
     const onSubmit: SubmitHandler<userData> = (data) => createUser.mutate(data);
 
     return (
-        <Dialog open={true} onOpenChange={(open) => {
-            if (!open) {
-                onClose();
-            }
-        }}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <DialogHeader>
