@@ -8,19 +8,18 @@ import { CalendarDays, Mail, Shield, User } from "lucide-react"
 import { Separator } from "@/components/ui/separator.tsx"
 import {Badge} from "@/components/ui/badge.tsx";
 
-interface InfoUserSheetProps {
-    user: UserTypeSchema
-    onClose: () => void
+interface Props {
+    currentRow: UserTypeSchema
+    open: boolean
+    onOpenChange: (open: boolean) => void
 }
 
-function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
+function InfoUserSheet({ currentRow, open, onOpenChange }: Props) {
     return (
         <Sheet
-            open={true}
-            onOpenChange={(open) => {
-                if (!open) {
-                    onClose()
-                }
+            open={open}
+            onOpenChange={(state) => {
+                onOpenChange(state)
             }}
         >
             <SheetContent className="sm:max-w-md">
@@ -42,12 +41,12 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="user-username-info-form">Username</Label>
-                                <Input id="user-username-info-form" disabled value={user.username} />
+                                <Input id="user-username-info-form" disabled value={currentRow.username} />
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="user-id-info-form">User ID</Label>
-                                <Input id="user-id-info-form" disabled value={user.userId} className="font-mono text-xs" />
+                                <Input id="user-id-info-form" disabled value={currentRow.userId} className="font-mono text-xs" />
                             </div>
                         </div>
 
@@ -56,7 +55,7 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                                 <Mail className="mr-2 h-4 w-4" />
                                 Email
                             </Label>
-                            <Input id="user-email-info-form" disabled value={user.email} />
+                            <Input id="user-email-info-form" disabled value={currentRow.email} />
                         </div>
                     </div>
 
@@ -82,8 +81,8 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                                 <Label htmlFor="user-status-info-form">Status</Label>
                                 <div className="flex items-center gap-2">
                                     <Input id="user-status-info-form" disabled value={"Active"} />
-                                    <Badge variant={"default"} className={cn("ml-2 bg-red-500 text-white", user.isActive && "bg-green-500 text-black")}>
-                                        {user.isActive ? "Active" : "Inactive"}
+                                    <Badge variant={"default"} className={cn("ml-2 bg-red-500 text-white", currentRow.isActive && "bg-green-500 text-black")}>
+                                        {currentRow.isActive ? "Active" : "Inactive"}
                                     </Badge>
                                 </div>
                             </div>
@@ -100,7 +99,7 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="user-created-info-form">Created</Label>
-                                <Input id="user-created-info-form" disabled value={formatDate(user.createdAt)} />
+                                <Input id="user-created-info-form" disabled value={formatDate(currentRow.createdAt)} />
                             </div>
 
                             <div className="space-y-2">
@@ -108,7 +107,7 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                                 <Input
                                     id="user-updated-info-form"
                                     disabled
-                                    value={user.updatedAt ? formatDate(user.updatedAt) : "Never"}
+                                    value={currentRow.updatedAt ? formatDate(currentRow.updatedAt) : "Never"}
                                 />
                             </div>
 
@@ -117,7 +116,7 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                                 <Input
                                     id="user-last-active-info-form"
                                     disabled
-                                    value={user.lastActive ? formatDate(user.lastActive.toString()) : "N/A"}
+                                    value={currentRow.lastActive ? formatDate(currentRow.lastActive.toString()) : "N/A"}
                                 />
                             </div>
                         </div>
@@ -127,7 +126,7 @@ function InfoUserSheet({ user, onClose }: InfoUserSheetProps) {
                 <Separator />
 
                 <SheetFooter className="pt-4">
-                    <Button onClick={onClose} className="w-full sm:w-auto">
+                    <Button onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
                         Close
                     </Button>
                 </SheetFooter>

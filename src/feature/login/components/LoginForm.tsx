@@ -7,17 +7,21 @@ import {toast} from "sonner";
 import {useNavigate} from "react-router-dom";
 import {TextInput} from "@/components/form/TextInput.tsx";
 import {loginSchema, LoginSchema} from "@/feature/login/schema/loginSchema.ts";
-import {useState} from "react";
+import {HTMLAttributes, useState} from "react";
+import {cn} from "@/lib/utils.ts";
+
+type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 
 const defaultValues = {
     email: "",
     password: "",
 };
 
-function LoginForm() {
+export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     const {login} = useAuthenticatedUserStore();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
         defaultValues,
@@ -45,7 +49,11 @@ function LoginForm() {
     const onSubmit: SubmitHandler<LoginSchema> = (data) => handleLogin(data);
 
     return (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className={cn('grid gap-3', className)}
+            {...props}
+        >
             <div>
                 <TextInput
                     name={'email'}
@@ -60,6 +68,7 @@ function LoginForm() {
                 <TextInput
                     name={'password'}
                     id={'password-login-form'}
+                    placeholder={'*********'}
                     label={'Password'}
                     form={form}
                     type={'password'}
@@ -70,7 +79,7 @@ function LoginForm() {
             <div>
                 <Button
                     type="submit"
-                    className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    className="flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6  shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
                 >
                     {isLoading ? "Sigining in..." : "Sign In"}
                 </Button>
@@ -91,5 +100,3 @@ function LoginForm() {
         </form>
     );
 }
-
-export default LoginForm;

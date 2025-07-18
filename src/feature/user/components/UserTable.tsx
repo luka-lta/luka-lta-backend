@@ -12,13 +12,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
-import {useState} from "react";
-import CreateUserDialog from "@/feature/user/components/CreateUserDialog.tsx";
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
-import EditUserSheet from "@/feature/user/components/sheet/EditUserSheet.tsx";
-import InfoUserSheet from "@/feature/user/components/sheet/InfoUserSheet.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
-import UserDeleteDialog from "@/feature/user/components/UserDeleteDialog.tsx";
+import {useUsers} from "@/feature/user/context/users-context.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];
@@ -29,29 +25,10 @@ interface UserTableProps {
 
 function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
     const queryClient = useQueryClient();
-    const [newUser, setNewUser] = useState(false);
-    const [editUser, setEditUser] = useState<null | UserTypeSchema>(null);
-    const [infoUser, setInfoUser] = useState<null | UserTypeSchema>(null);
-    const [deleteUser, setDeleteUser] = useState<null | UserTypeSchema>(null);
+    const { setOpen, setCurrentRow } = useUsers()
 
     return (
         <>
-            {(editUser !== null) && (
-                <EditUserSheet onClose={() => setEditUser(null)} user={editUser}/>
-            )}
-
-            {(infoUser !== null) && (
-                <InfoUserSheet user={infoUser} onClose={() => setInfoUser(null)}/>
-            )}
-
-            {(deleteUser !== null) && (
-                <UserDeleteDialog onOpenChange={() => setDeleteUser(null)} currentRow={deleteUser} />
-            )}
-
-            {newUser && (
-                <CreateUserDialog onClose={() => setNewUser(false)}/>
-            )}
-
             <div className='space-y-4'>
                 <DataTable
                     data={users}
@@ -67,7 +44,10 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                     maxPages={maxPages}
                     renderRow={(user) => {
                         return (
-                            <TableRow key={user.userId} onClick={() => setInfoUser(user)}>
+                            <TableRow key={user.userId} onClick={() => {
+                                setOpen('info');
+                                setCurrentRow(user);
+                            }}>
                                 <TableCell className="flex items-center space-x-2">
                                     <Avatar>
                                         <AvatarImage src={splitAvatarUrl(user.avatarUrl)} alt={user.email}/>
@@ -97,14 +77,16 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                                         <DropdownMenuContent>
                                             <DropdownMenuItem onClick={(event) => {
                                                 event.stopPropagation();
-                                                setEditUser(user);
+                                                setOpen('edit')
+                                                setCurrentRow(user);
                                             }}>
                                                 <Pencil/>
                                                 Edit
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={(event) => {
                                                 event.stopPropagation();
-                                                setDeleteUser(user);
+                                                setOpen('delete')
+                                                setCurrentRow(user);
                                             }}>
                                                 <Trash/>
                                                 Delete
@@ -116,7 +98,7 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
                         );
                     }}
                     onFilterChange={setFilterData}
-                    onCreateNew={() => setNewUser(true)}
+                    onCreateNew={() => setOpen('add')}
                     loading={loading}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['users', 'list']})}
                     customFilter={[

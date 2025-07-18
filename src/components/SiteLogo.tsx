@@ -7,9 +7,10 @@ import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedS
 interface SiteLogoProps {
     className?: string
     collapsed?: boolean
+    withText?: boolean
 }
 
-export default function SiteLogo({className, collapsed: collapsedProp}: SiteLogoProps) {
+export default function SiteLogo({className, collapsed: collapsedProp, withText = true}: SiteLogoProps) {
     const {isAuthenticated} = useAuthenticatedUserStore();
 
     const sidebarContext = (() => {
@@ -33,7 +34,7 @@ export default function SiteLogo({className, collapsed: collapsedProp}: SiteLogo
                         isCollapsed && "w-0 opacity-0 hidden"
                     )}
                 >
-          luka-lta.dev
+                    {withText ? "Luka-lta" : ""}
         </span>
             </div>
         </Link>
