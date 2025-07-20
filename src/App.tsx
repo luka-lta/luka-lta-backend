@@ -2,11 +2,12 @@ import {Suspense} from "react";
 import {appRouter} from "@/AppRouter.tsx";
 import ErrorPage from "@/pages/ErrorPage.tsx";
 import {RouterProvider} from "react-router-dom";
-import {Toaster} from "sonner";
+import {toast, Toaster} from "sonner";
 import {Analytics} from "@vercel/analytics/react"
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {QueryCache, QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ThemeProvider} from "@/context/theme-context.tsx";
 import {FontProvider} from "@/context/font-context.tsx";
+import {AxiosError} from "axios";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -27,6 +28,19 @@ const queryClient = new QueryClient({
             staleTime: 10 * 1000, // 10s
         },
     },
+    queryCache: new QueryCache({
+        onError: (error) => {
+            if (error instanceof AxiosError) {
+                if (error.response?.status === 401) {
+                    toast.error('Session expired!')
+                    appRouter.navigate('/');
+                }
+                if (error.response?.status === 500) {
+                    toast.error('Internal Server Error!')
+                }
+            }
+        },
+    }),
 });
 
 function App() {
@@ -36,7 +50,7 @@ function App() {
                 <FontProvider>
                     <Suspense fallback={<ErrorPage/>}>
                         <RouterProvider router={appRouter}/>
-                        <Toaster richColors/>
+                        <Toaster duration={50000}/>
                     </Suspense>
                 </FontProvider>
                 <Analytics/>

@@ -62,6 +62,7 @@ function CreateUserDialog({ open, onOpenChange }: Props) {
         },
         onSuccess: () => {
             onOpenChange(false);
+            form.reset()
             toast.success('User created successfully!');
         },
         onError: (error) => {

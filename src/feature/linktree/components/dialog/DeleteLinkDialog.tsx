@@ -6,21 +6,22 @@ import {ConfirmDialog} from "@/components/confirm-dialog.tsx";
 import {AlertTriangle} from "lucide-react";
 import {LinkItemTypeSchema} from "@/feature/linktree/schema/LinktreeSchema.ts";
 
-interface DeleteLinkDialogProps {
-    onClose: () => void;
-    link: LinkItemTypeSchema
+interface Props {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    currentRow: LinkItemTypeSchema
 }
 
-function DeleteLinkDialog({onClose, link}: DeleteLinkDialogProps) {
+function DeleteLinkDialog({open, onOpenChange, currentRow}: Props) {
     const queryClient = useQueryClient();
 
     const deleteLink = useMutation({
         mutationFn: async () => {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            await fetchWrapper.delete(`/linkCollection/${link.clickTag}`)
+            await fetchWrapper.delete(`/linkCollection/${currentRow.clickTag}`)
         },
         onSuccess: () => {
-            onClose();
+            onOpenChange(false);
             toast.success('Link deleted successfully!');
         },
         onError: (error) => {
@@ -38,12 +39,8 @@ function DeleteLinkDialog({onClose, link}: DeleteLinkDialogProps) {
 
     return (
         <ConfirmDialog
-            open={true}
-            onOpenChange={(open) => {
-                if (!open) {
-                    onClose()
-                }
-            }}
+            open={open}
+            onOpenChange={onOpenChange}
             handleConfirm={deleteLink.mutate}
             title={
                 <span className='text-destructive'>
@@ -58,7 +55,7 @@ function DeleteLinkDialog({onClose, link}: DeleteLinkDialogProps) {
                 <div className='space-y-4'>
                     <p className='mb-2'>
                         Are you sure you want to delete{' '}
-                        <span className='font-bold'>{link.displayname}</span>?
+                        <span className='font-bold'>{currentRow.displayname}</span>?
                         <br/>
                         This action will permanently remove the user from the system. This cannot be undone.
                     </p>

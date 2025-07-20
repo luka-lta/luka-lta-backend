@@ -1,5 +1,6 @@
 import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
 import {ApiResponseSchema, ApiSchema} from "@/lib/ApiSchema.ts";
+import axios from "axios";
 
 export class FetchWrapper {
     private readonly baseUrl: string;
@@ -21,9 +22,9 @@ export class FetchWrapper {
         endpoint: string,
         method: string,
         body?: unknown,
-        headers: HeadersInit = {}
+        headers: Record<string, string> = {}
     ): Promise<ApiSchema> {
-        const { jwt } = useAuthenticatedUserStore.getState();
+        const {jwt} = useAuthenticatedUserStore.getState();
 
         const config: RequestInit = {
             method,
@@ -35,31 +36,29 @@ export class FetchWrapper {
             body: body ? JSON.stringify(body) : undefined,
         };
 
-        try {
-            const response = await fetch(`${this.baseUrl}${endpoint}`, config);
-            const data = await response.json();
+        // @ts-ignore
+        const response = await axios({
+            url: `${this.baseUrl}${endpoint}`,
+            method: method as 'GET' | 'POST' | 'PUT' | 'DELETE',
+            headers: config.headers,
+            data: config.body,
+        })
 
-            if (!response.ok) {
-                throw new Error(data.message ?? 'An unexpected error occurred');
-            }
+        const data = response.data;
 
-            return ApiResponseSchema.parse(data);
-        } catch (error) {
-            console.error('Fetch error:', error);
-            throw error;
-        }
+        return ApiResponseSchema.parse(data);
+
     }
 
     public async formDataRequest(
         endpoint: string,
         body: FormData,
     ): Promise<ApiSchema> {
-        const { jwt } = useAuthenticatedUserStore.getState();
+        const {jwt} = useAuthenticatedUserStore.getState();
         const headers: HeadersInit = {
             'Authorization': jwt ?? '',
 
         }
-
         const config: RequestInit = {
             'method': 'POST',
             headers: headers,
@@ -81,19 +80,19 @@ export class FetchWrapper {
         }
     }
 
-    get(endpoint: string, headers?: HeadersInit): Promise<ApiSchema> {
+    get(endpoint: string, headers?: Record<string, string>): Promise<ApiSchema> {
         return this.request(endpoint, 'GET', undefined, headers);
     }
 
-    post(endpoint: string, body?: unknown, headers?: HeadersInit): Promise<ApiSchema> {
+    post(endpoint: string, body?: unknown, headers?: Record<string, string>): Promise<ApiSchema> {
         return this.request(endpoint, 'POST', body, headers);
     }
 
-    put(endpoint: string, body: unknown, headers?: HeadersInit): Promise<ApiSchema> {
+    put(endpoint: string, body: unknown, headers?: Record<string, string>): Promise<ApiSchema> {
         return this.request(endpoint, 'PUT', body, headers);
     }
 
-    delete(endpoint: string, headers?: HeadersInit): Promise<ApiSchema> {
+    delete(endpoint: string, headers?: Record<string, string>): Promise<ApiSchema> {
         return this.request(endpoint, 'DELETE', undefined, headers);
     }
 }
