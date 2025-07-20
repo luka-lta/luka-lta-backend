@@ -59,7 +59,6 @@ export class FetchWrapper {
             'Authorization': jwt ?? '',
 
         }
-
         const config: RequestInit = {
             'method': 'POST',
             headers: headers,
@@ -81,19 +80,19 @@ export class FetchWrapper {
         }
     }
 
-    get(endpoint: string, headers?: HeadersInit): Promise<ApiSchema> {
+    get(endpoint: string, headers?: Record<string, string>): Promise<ApiSchema> {
         return this.request(endpoint, 'GET', undefined, headers);
     }
 
-    post(endpoint: string, body?: unknown, headers?: HeadersInit): Promise<ApiSchema> {
+    post(endpoint: string, body?: unknown, headers?: Record<string, string>): Promise<ApiSchema> {
         return this.request(endpoint, 'POST', body, headers);
     }
 
-    put(endpoint: string, body: unknown, headers?: HeadersInit): Promise<ApiSchema> {
+    put(endpoint: string, body: unknown, headers?: Record<string, string>): Promise<ApiSchema> {
         return this.request(endpoint, 'PUT', body, headers);
     }
 
-    delete(endpoint: string, headers?: HeadersInit): Promise<ApiSchema> {
+    delete(endpoint: string, headers?: Record<string, string>): Promise<ApiSchema> {
         return this.request(endpoint, 'DELETE', undefined, headers);
     }
 }
