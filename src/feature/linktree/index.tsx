@@ -4,6 +4,8 @@ import {AlertTriangle} from "lucide-react";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import LinktreeTable from "@/feature/linktree/components/LinktreeTable.tsx";
 import {Main} from "@/components/layout/main.tsx";
+import LinksProvider from "@/feature/linktree/context/links-context.tsx";
+import LinksDialogs from "@/feature/linktree/components/LinksDialogs.tsx";
 
 function Linktree() {
     const [linkList, setFilterData] = useLinktreeList();
@@ -26,21 +28,25 @@ function Linktree() {
 
     return (
         <Main>
-            <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
-                <div>
-                    <h2 className='text-2xl font-bold tracking-tight'>Links</h2>
-                    <p className='text-muted-foreground'>
-                        Manage your links here.
-                    </p>
+            <LinksProvider>
+                <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+                    <div>
+                        <h2 className='text-2xl font-bold tracking-tight'>Links</h2>
+                        <p className='text-muted-foreground'>
+                            Manage your links here.
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <LinktreeTable
-                links={linkList.data?.links ?? []}
-                maxPages={linkList.data?.totalPages ?? 999}
-                loading={linkList.isPending}
-                setFilterData={setFilterData}
-            />
+                <LinktreeTable
+                    links={linkList.data?.links ?? []}
+                    maxPages={linkList.data?.totalPages ?? 999}
+                    loading={linkList.isPending}
+                    setFilterData={setFilterData}
+                />
+
+                <LinksDialogs />
+            </LinksProvider>
         </Main>
     );
 }

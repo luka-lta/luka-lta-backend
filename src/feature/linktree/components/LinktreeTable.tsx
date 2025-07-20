@@ -16,11 +16,9 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
 import {useQueryClient} from "@tanstack/react-query";
-import {useState} from "react";
-import {CreateLinkDialog} from "@/feature/linktree/components/dialog/CreateLinkDialog.tsx";
-import EditLinkSheet from "@/feature/linktree/components/sheet/EditLinkSheet.tsx";
-import DeleteLinkDialog from "@/feature/linktree/components/dialog/DeleteLinkDialog.tsx";
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
+import {useLinksContext} from "@/feature/linktree/context/links-context.tsx";
+import LongText from "@/components/long-text.tsx";
 
 interface LinktreeTableProps {
     links: LinkItemTypeSchema[];
@@ -32,24 +30,10 @@ interface LinktreeTableProps {
 function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableProps) {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const [newLink, setNewLink] = useState(false);
-    const [editLink, setEditLink] = useState<null | LinkItemTypeSchema>(null);
-    const [deleteLink, setDeleteLink] = useState<null | LinkItemTypeSchema>(null);
+    const {setOpen, setCurrentRow} = useLinksContext();
 
     return (
         <>
-            {(editLink !== null) && (
-                <EditLinkSheet link={editLink} onClose={() => setEditLink(null)}/>
-            )}
-
-            {(deleteLink !== null) && (
-                <DeleteLinkDialog onClose={() => setDeleteLink(null)} link={deleteLink}/>
-            )}
-
-            {newLink && (
-                <CreateLinkDialog onClose={() => setNewLink(false)}/>
-            )}
-
             <div className='space-y-4'>
                 <DataTable
                     data={links}
@@ -81,18 +65,19 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                                         <span>{link.displayname}</span>
                                     </TableCell>
                                     <TableCell>
-                                        {link.description || "[No description]"}
+                                        <LongText className='max-w-36'>{link.description || "[No description]"}</LongText>
                                     </TableCell>
                                     <TableCell>
                                         <Link
                                             to={link.url}
                                             className="text-muted-foreground hover:text-blue-500 transition-colors"
                                         >
-                                            {link.url}
+                                            <LongText className='max-w-36'>{link.url}</LongText>
                                         </Link>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={"default"} className={cn("ml-2 bg-red-500 text-white", link.isActive && "bg-green-500 text-black")}>
+                                        <Badge variant={"default"}
+                                               className={cn("ml-2 bg-red-500 text-white", link.isActive && "bg-green-500 text-black")}>
                                             {link.isActive ? "Active" : "Inactive"}
                                         </Badge>
                                     </TableCell>
@@ -107,7 +92,8 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                                             <DropdownMenuContent>
                                                 <DropdownMenuItem onClick={(event) => {
                                                     event.stopPropagation();
-                                                    setEditLink(link)
+                                                    setOpen('edit')
+                                                    setCurrentRow(link);
                                                 }
                                                 }>
                                                     <Pencil/>
@@ -115,7 +101,8 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={(event) => {
                                                     event.stopPropagation();
-                                                    setDeleteLink(link)
+                                                    setOpen('delete')
+                                                    setCurrentRow(link);
                                                 }
                                                 }>
                                                     <Trash/>
@@ -129,7 +116,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                         )
                     }}
                     onFilterChange={setFilterData}
-                    onCreateNew={() => setNewLink(true)}
+                    onCreateNew={() => setOpen('add')}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['linktree', 'list']})}
                     loading={loading}
                     customFilter={[

@@ -1,4 +1,3 @@
-import React from 'react';
 import {z} from "zod";
 import {SubmitHandler, useForm} from "react-hook-form";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
@@ -20,6 +19,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {linkData} from "@/feature/linktree/schema/LinktreeSchema.ts";
+import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
 
 const linkCreateSchema = z.object({
     displayname: z.string().nonempty().min(1).max(255),
@@ -29,11 +29,13 @@ const linkCreateSchema = z.object({
     iconName: z.string().nullable().default(null),
 })
 
-type CreateLinkDialogProps = {
-    onClose: () => void,
+interface Props {
+    currentRow?: UserTypeSchema
+    open: boolean
+    onOpenChange: (open: boolean) => void
 }
 
-export const CreateLinkDialog: React.FC<CreateLinkDialogProps> = ({onClose}) => {
+export function CreateLinkDialog({ open, onOpenChange }: Props) {
     const queryClient = useQueryClient();
 
     const form = useForm<linkData>({
@@ -52,7 +54,8 @@ export const CreateLinkDialog: React.FC<CreateLinkDialogProps> = ({onClose}) => 
             })
         },
         onSuccess: () => {
-            onClose();
+            onOpenChange(false);
+            form.reset()
             toast.success('Link created successfully!');
         },
         onError: (error) => {
@@ -80,10 +83,9 @@ export const CreateLinkDialog: React.FC<CreateLinkDialogProps> = ({onClose}) => 
     const onSubmit: SubmitHandler<linkData> = (data) => createLink.mutate(data);
 
     return (
-        <Dialog open={true} onOpenChange={(open) => {
-            if (!open) {
-                onClose();
-            }
+        <Dialog open={open} onOpenChange={() => {
+            onOpenChange(false);
+            form.reset();
         }}>
             <DialogContent>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
