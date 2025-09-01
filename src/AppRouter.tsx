@@ -18,6 +18,8 @@ import Settings from "@/feature/SelfOverview";
 import SettingsProfile from "@/feature/SelfOverview/profile";
 import ComingSoon from "@/components/coming-soon.tsx";
 import SettingsAppearance from "@/feature/SelfOverview/appearance";
+import BlogsPage from "@/pages/Dashboard/BlogsPage.tsx";
+import BlogEdit from "@/feature/blogs/components/BlogEdit.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -73,6 +75,23 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'permissions',
                 element: <PermissionsPage/>
+            },
+            {
+                path: 'blogs',
+                children: [
+                    {
+                        path: '',
+                        element: <BlogsPage />,
+                    },
+                    {
+                        path: ':blogId',
+                        element: <BlogEdit />,
+                    },
+                    {
+                        path: '/new',
+                        element: <BlogEdit />,
+                    }
+                ]
             },
             {
                 path: 'settings',

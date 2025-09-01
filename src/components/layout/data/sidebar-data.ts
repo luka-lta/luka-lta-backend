@@ -61,6 +61,16 @@ export const sidebarData: SidebarData = {
             ],
         },
         {
+            title: 'Blogs-Management',
+            items: [
+                {
+                    title: "Blogs",
+                    icon: ListTree,
+                    url: '/dashboard/blogs',
+                },
+            ],
+        },
+        {
             title: 'Other',
             items: [
                 {
