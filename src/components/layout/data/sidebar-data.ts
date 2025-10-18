@@ -3,7 +3,7 @@ import {
     Eye,
     Hammer,
     KeySquare, LayoutDashboardIcon,
-    ListTree, Palette, Settings,
+    ListTree, Palette, RssIcon, Settings,
     ShieldHalfIcon, UserCog,
     UsersIcon, Wrench
 } from "lucide-react";
@@ -22,6 +22,11 @@ export const sidebarData: SidebarData = {
                     title: "Tools",
                     url: '/dashboard/tools',
                     icon: Hammer,
+                },
+                {
+                    title: 'Notifications',
+                    url: '/dashboard/notifications',
+                    icon: RssIcon
                 }
             ],
         },

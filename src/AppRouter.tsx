@@ -18,12 +18,15 @@ import Settings from "@/feature/SelfOverview";
 import SettingsProfile from "@/feature/SelfOverview/profile";
 import ComingSoon from "@/components/coming-soon.tsx";
 import SettingsAppearance from "@/feature/SelfOverview/appearance";
+import NotificationsPage from "@/pages/Dashboard/NotificationsPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
         id: 'root',
         path: '/',
+/*
         loader: authenticatedLoader,
+*/
         element: <LoginPage/>,
         errorElement: <ErrorPage/>
     },
@@ -35,7 +38,9 @@ export const appRouter = createBrowserRouter([
     {
         path: '/dashboard',
         element: <DashboardLayout/>,
+/*
         loader: protectedLoader,
+*/
         children: [
             {
                 path: '',
@@ -73,6 +78,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'permissions',
                 element: <PermissionsPage/>
+            },
+            {
+                path: 'notifications',
+                element: <NotificationsPage />
             },
             {
                 path: 'settings',
