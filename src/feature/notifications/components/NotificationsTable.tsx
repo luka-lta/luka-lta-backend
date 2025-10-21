@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {EllipsisVertical, Pencil, Trash} from "lucide-react";
+import {useNotifications} from "@/feature/notifications/context/notifications-context.tsx";
 
 interface NotificationsTableProps {
     notifications: NotificationTypeSchema[],
@@ -19,24 +20,36 @@ interface NotificationsTableProps {
 }
 
 function NotificationsTable({notifications, maxPages, loading, setFilterData}: NotificationsTableProps) {
+    const { setOpen, setCurrentRow } = useNotifications()
+
     return (
-        <div className='space-y-4'>
+        <div className='space-y-4 pt-4'>
             <DataTable
                 data={notifications}
                 header={[
+                    {label: 'Name', sortName: 'name'},
                     {label: 'RSS Url', sortName: 'rss_feed_url'},
                     {label: 'Provider', sortName: 'provider'},
+                    {label: 'Last fetched', sortName: 'last_fetched'},
                     {label: ''}
                 ]}
                 maxPages={maxPages}
                 renderRow={(notification) => {
                     return (
-                        <TableRow key={notification.notificationId}>
+                        <TableRow key={notification.id}>
                             <TableCell>
-                                {notification.rssFeedUrl}
+                                {notification.name}
                             </TableCell>
                             <TableCell>
-                                {notification.provider}
+                                {notification.url}
+                            </TableCell>
+                            <TableCell>
+                                {notification.providers.length > 0
+                                    ? notification.providers.map(p => p).join(", ")
+                                    : "No Provider"}
+                            </TableCell>
+                            <TableCell>
+                                {notification.lastFetchedAt}
                             </TableCell>
                             <TableCell>
                                 <DropdownMenu>
@@ -60,7 +73,7 @@ function NotificationsTable({notifications, maxPages, loading, setFilterData}: N
                     )
                 }}
                 onFilterChange={setFilterData}
-                onCreateNew={() => {}}
+                onCreateNew={() => setOpen('add')}
                 loading={loading}
                 onRefetchData={() => {}}
                 customFilter={[
