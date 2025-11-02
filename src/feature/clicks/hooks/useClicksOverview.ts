@@ -7,7 +7,7 @@ export function useClicksOverview() {
     const [filterData, setFilterData] = useState<Record<string, string>>({});
 
     const queryData = useQuery({
-        queryKey: ['users', 'list', filterData],
+        queryKey: ['clicks', 'overview', filterData],
         queryFn: async () => {
             const params = new URLSearchParams(filterData);
 

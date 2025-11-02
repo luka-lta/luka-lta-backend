@@ -21,7 +21,7 @@ interface ClickTableProps {
     setFilterData: (filterData: Record<string, string>) => void;
 }
 
-function UserTable({clicks, maxPages, loading, setFilterData}: ClickTableProps) {
+function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTableProps) {
     const queryClient = useQueryClient();
 
     return (
@@ -91,7 +91,7 @@ function UserTable({clicks, maxPages, loading, setFilterData}: ClickTableProps) 
                     onFilterChange={setFilterData}
                     onCreateNew={() => {}}
                     loading={loading}
-                    onRefetchData={() => queryClient.invalidateQueries({queryKey: ['click', 'overview']})}
+                    onRefetchData={() => queryClient.invalidateQueries({queryKey: ['clicks', 'overview']})}
                     customFilter={[
                         <SearchFilter name={'click_tag'} key={'search'}/>
                     ]}
@@ -101,4 +101,4 @@ function UserTable({clicks, maxPages, loading, setFilterData}: ClickTableProps) 
     );
 }
 
-export default UserTable;
+export default ClickOverviewTable;
