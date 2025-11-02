@@ -13,6 +13,7 @@ import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 import {clickTypeSchema} from "@/feature/clicks/schema/clickSchema.ts";
 import Flag from "react-flagkit";
 import LongText from "@/components/long-text.tsx";
+import {UserAgentInfo} from "@/components/user-agent-icon.tsx";
 
 interface ClickTableProps {
     clicks: clickTypeSchema[];
@@ -47,7 +48,9 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                     {click.clickTag}
                                 </TableCell>
                                 <TableCell>
-                                    {click.url}
+                                    <LongText className="max-w-36">
+                                        {click.url}
+                                    </LongText>
                                 </TableCell>
                                 <TableCell>
                                     {click.ipAddress ?? '-'}
@@ -60,7 +63,9 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    <LongText>{click.userAgent ?? '-'}</LongText>
+                                    <LongText className="max-w-36">
+                                        <UserAgentInfo userAgent={click.userAgent ?? "-"} />
+                                    </LongText>
                                 </TableCell>
                                 <TableCell>
                                     {click.referrer ?? '-'}
@@ -93,7 +98,7 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                     loading={loading}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['clicks', 'overview']})}
                     customFilter={[
-                        <SearchFilter name={'click_tag'} key={'search'}/>
+                        <SearchFilter name={'ip_address'} key={'search'} placeholder='Search IP...'/>
                     ]}
                 />
             </div>
