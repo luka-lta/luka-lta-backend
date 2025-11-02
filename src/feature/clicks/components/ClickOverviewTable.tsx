@@ -12,6 +12,7 @@ import {
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 import {clickTypeSchema} from "@/feature/clicks/schema/clickSchema.ts";
 import Flag from "react-flagkit";
+import LongText from "@/components/long-text.tsx";
 
 interface ClickTableProps {
     clicks: clickTypeSchema[];
@@ -59,7 +60,7 @@ function UserTable({clicks, maxPages, loading, setFilterData}: ClickTableProps) 
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    {click.userAgent ?? '-'}
+                                    <LongText>{click.userAgent ?? '-'}</LongText>
                                 </TableCell>
                                 <TableCell>
                                     {click.referrer ?? '-'}
