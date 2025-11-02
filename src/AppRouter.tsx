@@ -18,7 +18,6 @@ import Settings from "@/feature/SelfOverview";
 import SettingsProfile from "@/feature/SelfOverview/profile";
 import ComingSoon from "@/components/coming-soon.tsx";
 import SettingsAppearance from "@/feature/SelfOverview/appearance";
-import NotificationsPage from "@/pages/Dashboard/NotificationsPage.tsx";
 import ClicksPage from "@/pages/Dashboard/ClicksPage.tsx";
 
 export const appRouter = createBrowserRouter([
@@ -79,10 +78,6 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'permissions',
                 element: <PermissionsPage/>
-            },
-            {
-                path: 'notifications',
-                element: <NotificationsPage />
             },
             {
                 path: 'settings',
