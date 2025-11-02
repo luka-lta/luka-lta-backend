@@ -21,7 +21,7 @@ export function useClicks() {
             date.setDate(date.getDate() - 92);
 
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            const response = await fetchWrapper.get(`/click/?startDate=${date.toISOString().split('T')[0]}`);
+            const response = await fetchWrapper.get(`/click/stats?startDate=${date.toISOString().split('T')[0]}`);
 
             return clicksListSchema.parse(response.data);
         }
