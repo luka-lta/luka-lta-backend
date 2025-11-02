@@ -19,14 +19,13 @@ import SettingsProfile from "@/feature/SelfOverview/profile";
 import ComingSoon from "@/components/coming-soon.tsx";
 import SettingsAppearance from "@/feature/SelfOverview/appearance";
 import NotificationsPage from "@/pages/Dashboard/NotificationsPage.tsx";
+import ClicksPage from "@/pages/Dashboard/ClicksPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
         id: 'root',
         path: '/',
-/*
         loader: authenticatedLoader,
-*/
         element: <LoginPage/>,
         errorElement: <ErrorPage/>
     },
@@ -38,9 +37,7 @@ export const appRouter = createBrowserRouter([
     {
         path: '/dashboard',
         element: <DashboardLayout/>,
-/*
         loader: protectedLoader,
-*/
         children: [
             {
                 path: '',
@@ -66,6 +63,10 @@ export const appRouter = createBrowserRouter([
                         element: <DetailLinktree/>
                     }
                 ]
+            },
+            {
+                path: 'clicks',
+                element: <ClicksPage />
             },
             {
                 path: 'api-keys',

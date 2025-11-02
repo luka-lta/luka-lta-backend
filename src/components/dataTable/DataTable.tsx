@@ -6,6 +6,7 @@ import {TableHeader} from "@/components/dataTable/TableHeader.tsx";
 import {TableBodyLoading} from "@/components/dataTable/TableBodyLoading.tsx";
 import {TableBody} from "@/components/dataTable/TableBody.tsx";
 import Pagination from "@/components/dataTable/Pagination.tsx";
+import EmptyState from "@/components/empty-state.tsx";
 
 export type HeaderConfig = {
     label: string,
@@ -90,7 +91,7 @@ export function DataTable<TData = unknown, TExtraFilter = Record<string, unknown
                                 colSpan={header.length}
                                 className="text-center py-8 bg-zinc-900 text-red-600 hover:bg-zinc-900 h-32"
                             >
-                                {emptyState ?? 'No data found'}
+                                {emptyState ?? <EmptyState />}
                             </td>
                         </tr>
                         </tbody>
