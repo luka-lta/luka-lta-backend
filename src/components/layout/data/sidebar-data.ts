@@ -3,7 +3,7 @@ import {
     Eye,
     Hammer,
     KeySquare, LayoutDashboardIcon,
-    ListTree, Palette, Settings,
+    ListTree, MousePointerClickIcon, Palette, Settings,
     ShieldHalfIcon, UserCog,
     UsersIcon, Wrench
 } from "lucide-react";
@@ -58,6 +58,11 @@ export const sidebarData: SidebarData = {
                     icon: ListTree,
                     url: '/dashboard/linktree',
                 },
+                {
+                    title: "Clicks",
+                    icon: MousePointerClickIcon,
+                    url: '/dashboard/clicks',
+                }
             ],
         },
         {

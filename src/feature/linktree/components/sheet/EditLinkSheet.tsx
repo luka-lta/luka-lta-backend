@@ -24,29 +24,30 @@ const linkEditSchema = z.object({
     iconName: z.string().nullable().default(null),
 })
 
-type EditLinkDialogProps = {
-    link: LinkItemTypeSchema,
-    onClose: () => void,
+interface Props {
+    currentRow: LinkItemTypeSchema
+    open: boolean
+    onOpenChange: (open: boolean) => void
 }
 
-function EditLinkSheet({onClose, link}: EditLinkDialogProps) {
+function EditLinkSheet({ currentRow, open, onOpenChange }: Props) {
     const queryClient = useQueryClient();
 
     const form = useForm<linkData>({
         resolver: zodResolver(linkEditSchema),
         defaultValues: {
-            displayname: link.displayname,
-            description: link.description ?? '',
-            url: link.url,
-            isActive: link.isActive,
-            iconName: link.iconName ?? '',
+            displayname: currentRow.displayname,
+            description: currentRow.description ?? '',
+            url: currentRow.url,
+            isActive: currentRow.isActive,
+            iconName: currentRow.iconName ?? '',
         }
     });
 
     const editLink = useMutation({
         mutationFn: async ({displayname, description, iconName, isActive, url}: linkData) => {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            await fetchWrapper.put(`/linkCollection/${link.id}`, {
+            await fetchWrapper.put(`/linkCollection/${currentRow.id}`, {
                 displayname,
                 description,
                 iconName,
@@ -55,7 +56,7 @@ function EditLinkSheet({onClose, link}: EditLinkDialogProps) {
             })
         },
         onSuccess: () => {
-            onClose();
+            onOpenChange(false);
             toast.success('Link edited successfully!');
         },
         onError: (error) => {
@@ -83,11 +84,7 @@ function EditLinkSheet({onClose, link}: EditLinkDialogProps) {
     const onSubmit: SubmitHandler<linkData> = (data) => editLink.mutate(data);
 
     return (
-        <Sheet open={true} onOpenChange={(open) => {
-            if (!open) {
-                onClose();
-            }
-        }}>
+        <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <SheetHeader>
@@ -103,12 +100,12 @@ function EditLinkSheet({onClose, link}: EditLinkDialogProps) {
                                 <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-2">
                                     <Tag className="h-4 w-4" />
                                     <span>
-                                      Click Tag: <span className="font-mono">{link.clickTag}</span>
+                                      Click Tag: <span className="font-mono">{currentRow.clickTag}</span>
                                     </span>
                                 </div>
                                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                                     <IdCard className="h-4 w-4" />
-                                    <span>ID: {link.id}</span>
+                                    <span>ID: {currentRow.id}</span>
                                 </div>
                             </CardContent>
                         </Card>
