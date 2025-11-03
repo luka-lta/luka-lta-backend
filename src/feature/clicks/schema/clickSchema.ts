@@ -8,6 +8,8 @@ export const clickSchema = z.object({
     ipAddress: z.string().ip().optional().nullable(),
     market: z.string().optional().nullable(),
     userAgent: z.string().optional().nullable(),
+    os: z.string().optional().nullable(),
+    device: z.string().optional().nullable(),
     referrer: z.string().optional().nullable(),
 })
 

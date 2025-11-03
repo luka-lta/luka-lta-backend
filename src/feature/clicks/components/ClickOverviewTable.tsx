@@ -36,6 +36,8 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                         {label: 'IP Address', sortName: 'ip_address'},
                         {label: 'Market', sortName: 'market'},
                         {label: 'User Agent', sortName: 'user_agent'},
+                        {label: 'OS', sortName: 'os'},
+                        {label: 'Device', sortName: 'device'},
                         {label: 'Referrer', sortName: 'referrer'},
                         {label: 'Clicked at', sortName: 'clicked_at'},
                         {label: ''},
@@ -66,6 +68,12 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                     <LongText className="max-w-36">
                                         <UserAgentInfo userAgent={click.userAgent ?? "-"} />
                                     </LongText>
+                                </TableCell>
+                                <TableCell>
+                                    {click.os ?? '-'}
+                                </TableCell>
+                                <TableCell>
+                                    {click.device ?? '-'}
                                 </TableCell>
                                 <TableCell>
                                     {click.referrer ?? '-'}
