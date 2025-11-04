@@ -25,8 +25,6 @@ interface ClickTableProps {
 function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTableProps) {
     const queryClient = useQueryClient();
 
-    console.log(clicks)
-
     return (
         <>
             <div className='space-y-4'>
