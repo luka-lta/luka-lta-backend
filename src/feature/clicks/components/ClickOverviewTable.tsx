@@ -25,6 +25,8 @@ interface ClickTableProps {
 function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTableProps) {
     const queryClient = useQueryClient();
 
+    console.log(clicks)
+
     return (
         <>
             <div className='space-y-4'>
@@ -76,7 +78,7 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                     {click.device ?? '-'}
                                 </TableCell>
                                 <TableCell>
-                                    {click.referrer ?? '-'}
+                                    {click.referer ?? '-'}
                                 </TableCell>
                                 <TableCell>
                                     {click.clickedAt}
