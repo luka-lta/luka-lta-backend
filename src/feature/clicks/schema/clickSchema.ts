@@ -10,7 +10,7 @@ export const clickSchema = z.object({
     userAgent: z.string().optional().nullable(),
     os: z.string().optional().nullable(),
     device: z.string().optional().nullable(),
-    referrer: z.string().optional().nullable(),
+    referer: z.string().optional().nullable(),
 })
 
 export type clickTypeSchema = z.infer<typeof clickSchema>

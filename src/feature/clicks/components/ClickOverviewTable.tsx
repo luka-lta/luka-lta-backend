@@ -76,7 +76,7 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                     {click.device ?? '-'}
                                 </TableCell>
                                 <TableCell>
-                                    {click.referrer ?? '-'}
+                                    {click.referer ?? '-'}
                                 </TableCell>
                                 <TableCell>
                                     {click.clickedAt}
