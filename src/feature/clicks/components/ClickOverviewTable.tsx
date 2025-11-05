@@ -73,7 +73,7 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                 <TableCell>
                                     <div className="flex items-center gap-2 whitespace-nowrap">
                                         <OperatingSystem os={click.os || ''}/>
-                                        {click.os ?? '-'}
+                                        {click.os || '-'}
                                     </div>
                                 </TableCell>
                                 <TableCell>
@@ -81,7 +81,7 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                         {click.device === "Desktop" && <Monitor className="w-4 h-4"/>}
                                         {click.device === "Mobile" && <Smartphone className="w-4 h-4"/>}
                                         {click.device === "Tablet" && <Tablet className="w-4 h-4"/>}
-                                        {click.device ?? '-'}
+                                        {click.device || '-'}
                                     </div>
                                 </TableCell>
                                 <TableCell>
