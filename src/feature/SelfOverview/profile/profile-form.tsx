@@ -8,18 +8,15 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 import {toast} from "sonner";
 import {useRef} from "react";
+import {AvatarInput} from "@/components/form/AvatarInput.tsx";
 
 const userUpdateSchema = z.object({
     username: z.string().min(3, {message: "Username must be at least 3 characters long"}),
     email: z.string().email({message: "Please enter a valid email address"}),
-    avatarFile: z.instanceof(FileList).optional(),
+    avatarUrl: z.instanceof(FileList).optional(),
 });
 
-interface userUpdateData {
-    username: string;
-    email: string;
-    avatarUrl?: string;
-}
+type UserUpdateFormData = z.infer<typeof userUpdateSchema>;
 
 interface ProfileOverviewProps {
     user: UserTypeSchema | undefined;
@@ -29,12 +26,11 @@ function ProfileForm({user}: ProfileOverviewProps) {
     const queryClient = useQueryClient();
     const formRef = useRef<HTMLFormElement>(null);
 
-    const form = useForm<userUpdateData>({
+    const form = useForm<UserUpdateFormData>({
         resolver: zodResolver(userUpdateSchema),
         defaultValues: {
             username: user?.username,
             email: user?.email,
-            avatarUrl: user?.avatarUrl ?? '',
         }
     });
 
@@ -78,7 +74,7 @@ function ProfileForm({user}: ProfileOverviewProps) {
         }
     });
 
-    const onSubmit: SubmitHandler<userUpdateData> = () => updateSelf.mutate();
+    const onSubmit: SubmitHandler<UserUpdateFormData> = () => updateSelf.mutate();
 
     return (
         <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -97,6 +93,8 @@ function ProfileForm({user}: ProfileOverviewProps) {
                 form={form}
                 type="email"
             />
+
+            <AvatarInput name={'avatarUrl'} id={'avatar-self-overview-update'} label={'Avatar'} form={form} avatarUrl={user?.avatarUrl} />
 
             <div className="flex justify-end gap-4 pt-4">
                 <Button
