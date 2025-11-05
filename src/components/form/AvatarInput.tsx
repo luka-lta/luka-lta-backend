@@ -10,6 +10,7 @@ type AvatarInputProps<TFieldValues extends FieldValues> = {
     id: string,
     label: string,
     form: UseFormReturn<TFieldValues>,
+    avatarUrl?: string | null,
 }
 
 export const AvatarInput = <TFieldValues extends FieldValues>({
@@ -17,11 +18,12 @@ export const AvatarInput = <TFieldValues extends FieldValues>({
                                                                 name,
                                                                 label,
                                                                 id,
+                                                                avatarUrl
                                                             }: AvatarInputProps<TFieldValues>) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {register, getFieldState, formState: {errors: _ } } = form;
     const {error} = getFieldState(name);
-    const [avatar, setAvatar] = useState<string | null>(null);
+    const [avatar, setAvatar] = useState<string | null>(avatarUrl ?? null);
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]; // Erste Datei aus der Datei-Liste
@@ -31,6 +33,9 @@ export const AvatarInput = <TFieldValues extends FieldValues>({
                 setAvatar(reader.result as string); // Setze die Data-URL als Avatar
             };
             reader.readAsDataURL(file); // Lies die Datei als Data-URL
+
+            // @ts-ignore
+            form.setValue('avatarUrl', e.target.files!, { shouldDirty: true})
         }
     };
 

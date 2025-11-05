@@ -8,7 +8,7 @@ type FilterWrapperProps = {
     onRefetchData: () => void,
     onFilterValueChange: (name: string, value: unknown) => void,
     onResetFilter: () => void,
-    onCreate: () => void,
+    onCreate?: () => void,
     customFilter: ReactElement[],
     filter: DataTableFilter,
 }
@@ -37,10 +37,12 @@ export const FilterWrapper: React.FC<FilterWrapperProps> = ({
                 <Button variant="outline" size="icon" onClick={onRefetchData}>
                     <RotateCw className="h-4 w-4" />
                 </Button>
-                <Button className="gap-2" variant={'default'} onClick={onCreate}>
-                    <Plus className="h-4 w-4" />
-                    New
-                </Button>
+                {onCreate && (
+                    <Button className="gap-2" variant="default" onClick={onCreate}>
+                        <Plus className="h-4 w-4" />
+                        New
+                    </Button>
+                )}
             </div>
         </div>
     )

@@ -29,7 +29,7 @@ export const TableHeader: React.FC<TableHeaderProps> = ({ header, onSortChange, 
                                 <Button
                                     variant='ghost'
                                     className='p-0 hover:bg-transparant'
-                                    onClick={() => onSortChange(header.sortName, 'asc')}
+                                    onClick={() => onSortChange(header.sortName, 'desc')}
                                 >
                                     {header.label}
                                 </Button>
@@ -46,7 +46,7 @@ export const TableHeader: React.FC<TableHeaderProps> = ({ header, onSortChange, 
                                 className='p-0 hover:bg-transparant'
                                 onClick={() => {
                                     if (sortDir === 'asc') {
-                                        onSortChange(header.sortName, 'desc');
+                                        onSortChange(header.sortName, 'asc');
                                     } else {
                                         onSortChange();
                                     }

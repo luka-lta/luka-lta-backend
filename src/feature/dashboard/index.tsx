@@ -8,10 +8,12 @@ import {Main} from "@/components/layout/main.tsx";
 import Overview from "@/feature/dashboard/components/Overview.tsx";
 import Analytics from "@/feature/dashboard/components/analytics/Analytics.tsx";
 import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
+import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 
 function Dashboard() {
     const [clickSummary] = useClickSummary();
     const {user} = useAuthenticatedUserStore();
+    useSetPageTitle('Backend - Dashboard');
 
     if (clickSummary.error) {
         return (

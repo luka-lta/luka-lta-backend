@@ -4,9 +4,11 @@ import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import {useApiKeyList} from "@/feature/apiKey/hooks/useApiKeyList.ts";
 import ApiKeyTable from "@/feature/apiKey/components/ApiKeyTable.tsx";
 import {Main} from "@/components/layout/main.tsx";
+import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 
 function ApiKeys() {
     const [apiKeyList, setFilterData] = useApiKeyList();
+    useSetPageTitle('Backend - Api-Key Overview');
 
     if (apiKeyList.error) {
         return (

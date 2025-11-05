@@ -6,9 +6,11 @@ import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import {Main} from "@/components/layout/main.tsx";
 import UsersProvider from "@/feature/user/context/users-context.tsx";
 import UserDialogs from "@/feature/user/components/UserDialogs.tsx";
+import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 
 function Users() {
     const [userList, setFilterData] = useUserList();
+    useSetPageTitle('Backend - User Overview');
 
     if (userList.error) {
         return (

@@ -29,7 +29,7 @@ type DataTableProps<TData = unknown, TExtraFilter = Record<string, unknown>> = {
     loading?: boolean,
     renderRow: (rowData: TData, index: number, allData: TData[]) => ReactElement,
     onFilterChange: (filterData: DataTableFilter<TExtraFilter>) => void,
-    onCreateNew: () => void,
+    onCreateNew?: () => void,
     onRefetchData: () => void,
     emptyState?: string,
 }

@@ -6,9 +6,11 @@ import LinktreeTable from "@/feature/linktree/components/LinktreeTable.tsx";
 import {Main} from "@/components/layout/main.tsx";
 import LinksProvider from "@/feature/linktree/context/links-context.tsx";
 import LinksDialogs from "@/feature/linktree/components/LinksDialogs.tsx";
+import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 
 function Linktree() {
     const [linkList, setFilterData] = useLinktreeList();
+    useSetPageTitle('Backend - Linktree Overview');
 
     if (linkList.error) {
         return (

@@ -1,4 +1,5 @@
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import {Browser} from "@/components/browser.tsx";
 
 function getBrowserName(userAgent: string) {
     const ua = userAgent.toLowerCase();
@@ -13,7 +14,7 @@ function shortenUserAgent(ua: string, maxLength = 50) {
     return ua.length > maxLength ? ua.slice(0, maxLength) + "…" : ua;
 }
 
-export function UserAgentInfo({ userAgent }: { userAgent: string }) {
+export function UserAgentInfo({userAgent}: { userAgent: string }) {
     const browser = getBrowserName(userAgent);
     const shortUA = shortenUserAgent(userAgent);
 
@@ -21,7 +22,10 @@ export function UserAgentInfo({ userAgent }: { userAgent: string }) {
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <span className="cursor-default font-medium">{browser}</span>
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                        <Browser browser={browser || "Unknown"} />
+                        <span className="cursor-default font-medium">{browser}</span>
+                    </div>
                 </TooltipTrigger>
                 <TooltipContent>
                     <p className="text-sm">{shortUA}</p>
