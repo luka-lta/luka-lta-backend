@@ -60,25 +60,29 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                 </TableCell>
                                 <TableCell>
                                     {click.market ? (
-                                        <Flag country={click.market} />
-                                    ) :  (
+                                        <Flag country={click.market}/>
+                                    ) : (
                                         '-'
                                     )}
                                 </TableCell>
                                 <TableCell>
                                     <LongText className="max-w-36">
-                                        <UserAgentInfo userAgent={click.userAgent ?? "-"} />
+                                        <UserAgentInfo userAgent={click.userAgent ?? "-"}/>
                                     </LongText>
                                 </TableCell>
                                 <TableCell>
-                                    <OperatingSystem os={click.os || ''} />
-                                    {click.os ?? '-'}
+                                    <div className="flex items-center gap-2 whitespace-nowrap">
+                                        <OperatingSystem os={click.os || ''}/>
+                                        {click.os ?? '-'}
+                                    </div>
                                 </TableCell>
                                 <TableCell>
-                                    {click.device === "Desktop" && <Monitor className="w-4 h-4" />}
-                                    {click.device === "Mobile" && <Smartphone className="w-4 h-4" />}
-                                    {click.device === "Tablet" && <Tablet className="w-4 h-4" />}
-                                    {click.device ?? '-'}
+                                    <div className="flex items-center gap-2 whitespace-nowrap">
+                                        {click.device === "Desktop" && <Monitor className="w-4 h-4"/>}
+                                        {click.device === "Mobile" && <Smartphone className="w-4 h-4"/>}
+                                        {click.device === "Tablet" && <Tablet className="w-4 h-4"/>}
+                                        {click.device ?? '-'}
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     {click.referer ?? '-'}
@@ -107,7 +111,8 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                         );
                     }}
                     onFilterChange={setFilterData}
-                    onCreateNew={() => {}}
+                    onCreateNew={() => {
+                    }}
                     loading={loading}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['clicks', 'overview']})}
                     customFilter={[
