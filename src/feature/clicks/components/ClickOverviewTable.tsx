@@ -1,14 +1,7 @@
 import {useQueryClient} from "@tanstack/react-query";
 import {DataTable} from "@/components/dataTable/DataTable.tsx";
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {EllipsisVertical, Monitor, Pencil, Smartphone, Tablet, Trash} from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu.tsx";
+import {Monitor, Smartphone, Tablet} from "lucide-react";
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 import {clickTypeSchema} from "@/feature/clicks/schema/clickSchema.ts";
 import Flag from "react-flagkit";
@@ -41,7 +34,6 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                         {label: 'Device', sortName: 'device'},
                         {label: 'Referrer', sortName: 'referrer'},
                         {label: 'Clicked at', sortName: 'clicked_at'},
-                        {label: ''},
                     ]}
                     maxPages={maxPages}
                     renderRow={(click) => {
@@ -90,29 +82,10 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                 <TableCell>
                                     {click.clickedAt}
                                 </TableCell>
-                                <TableCell>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant={'ghost'}><EllipsisVertical/></Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem>
-                                                <Pencil/>
-                                                Edit
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem>
-                                                <Trash/>
-                                                Delete
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
                             </TableRow>
                         );
                     }}
                     onFilterChange={setFilterData}
-                    onCreateNew={() => {
-                    }}
                     loading={loading}
                     onRefetchData={() => queryClient.invalidateQueries({queryKey: ['clicks', 'overview']})}
                     customFilter={[

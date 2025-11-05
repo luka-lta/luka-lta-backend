@@ -9,11 +9,13 @@ import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 import QrCodeDisplay from "@/feature/linktree/childPages/detail/components/QrCodeDisplay.tsx";
 import LinkDetails from "@/feature/linktree/childPages/detail/components/LinkDetails.tsx";
+import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 
 function DetailLinktree() {
     const params = useParams()
     const linkId: number = params.linkId as unknown as number
     const [linkDetail] = useLinkDetail(linkId);
+    useSetPageTitle('Backend - Link Detail (' + linkDetail.data?.link.displayname + ')');
 
     if (linkDetail.error) {
         return (

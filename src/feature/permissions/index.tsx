@@ -4,9 +4,11 @@ import {AlertTriangle} from "lucide-react";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import PermissionsTable from "@/feature/permissions/components/PermissionsTable.tsx";
 import {Main} from "@/components/layout/main.tsx";
+import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 
 function Permissions() {
     const [permissionsList, setFilterData] = usePermissionsList();
+    useSetPageTitle('Backend - Permission Overview');
 
     if (permissionsList.error) {
         return (

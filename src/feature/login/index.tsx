@@ -8,8 +8,11 @@ import {
 } from '@/components/ui/card'
 import AuthLayout from "@/feature/login/auth-layout.tsx";
 import {UserAuthForm} from "@/feature/login/components/LoginForm.tsx";
+import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 
 function Login() {
+    useSetPageTitle('Backend - Login');
+
     return (
         <AuthLayout>
             <Card className='gap-4'>
