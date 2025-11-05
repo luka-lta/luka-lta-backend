@@ -2,7 +2,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import {DataTable} from "@/components/dataTable/DataTable.tsx";
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {EllipsisVertical, Pencil, Trash} from "lucide-react";
+import {EllipsisVertical, Monitor, Pencil, Smartphone, Tablet, Trash} from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,6 +14,7 @@ import {clickTypeSchema} from "@/feature/clicks/schema/clickSchema.ts";
 import Flag from "react-flagkit";
 import LongText from "@/components/long-text.tsx";
 import {UserAgentInfo} from "@/components/user-agent-icon.tsx";
+import {OperatingSystem} from "@/components/operating-system.tsx";
 
 interface ClickTableProps {
     clicks: clickTypeSchema[];
@@ -70,9 +71,13 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                                     </LongText>
                                 </TableCell>
                                 <TableCell>
+                                    <OperatingSystem os={click.os || ''} />
                                     {click.os ?? '-'}
                                 </TableCell>
                                 <TableCell>
+                                    {click.device === "Desktop" && <Monitor className="w-4 h-4" />}
+                                    {click.device === "Mobile" && <Smartphone className="w-4 h-4" />}
+                                    {click.device === "Tablet" && <Tablet className="w-4 h-4" />}
                                     {click.device ?? '-'}
                                 </TableCell>
                                 <TableCell>
