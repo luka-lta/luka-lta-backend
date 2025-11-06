@@ -1,8 +1,9 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import {TextCursorIcon} from "lucide-react";
+import {TextCursorIcon, Users} from "lucide-react";
 import ClicksChart from "@/feature/dashboard/components/ClicksChart.tsx";
-import AuditLog from "@/feature/dashboard/components/AuditLog.tsx";
+import BrowserUsage from "@/feature/dashboard/components/browser-usage.tsx";
 import {useClickSummary} from "@/feature/dashboard/hooks/useClickSummary.ts";
+import {browserUsage} from "@/feature/dashboard/data.ts";
 
 function Overview() {
     const [clickSummary] = useClickSummary();
@@ -15,40 +16,24 @@ function Overview() {
                         <CardTitle className='text-sm font-medium'>
                             Total Clicks
                         </CardTitle>
-                        <TextCursorIcon />
+                        <TextCursorIcon className='text-muted-foreground h-4 w-4' />
                     </CardHeader>
-                    <CardContent>
+{/*                    <CardContent>
                         <div className='text-2xl font-bold'>{clickSummary.data?.summary.totalClicks}</div>
                         <p className='text-muted-foreground text-xs'>
-                            {/*+20.1% from last month*/}
+                            +20.1% from last month
                         </p>
-                    </CardContent>
+                    </CardContent>*/}
                 </Card>
                 <Card>
                     <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                         <CardTitle className='text-sm font-medium'>
-                            Subscriptions
+                            Browser tracked
                         </CardTitle>
-                        <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            viewBox='0 0 24 24'
-                            fill='none'
-                            stroke='currentColor'
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth='2'
-                            className='text-muted-foreground h-4 w-4'
-                        >
-                            <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-                            <circle cx='9' cy='7' r='4' />
-                            <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
-                        </svg>
+                        <Users className='text-muted-foreground h-4 w-4'/>
                     </CardHeader>
                     <CardContent>
-                        <div className='text-2xl font-bold'>+2350</div>
-                        <p className='text-muted-foreground text-xs'>
-                            +180.1% from last month
-                        </p>
+                        <div className='text-2xl font-bold'>{browserUsage.length}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -118,7 +103,7 @@ function Overview() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <AuditLog />
+                        <BrowserUsage />
                     </CardContent>
                 </Card>
             </div>
