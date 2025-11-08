@@ -7,6 +7,7 @@ import {browserUsage, marketUsage, osUsage} from "@/feature/dashboard/data.ts";
 import OsUsage from "@/feature/dashboard/components/os-usage.tsx";
 import MarketUsage from "@/feature/dashboard/components/market-usage.tsx";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
+import {ScrollArea} from "@/components/ui/scroll-area.tsx";
 
 function Overview() {
     const [clickSummary] = useClickSummary();
@@ -73,7 +74,6 @@ function Overview() {
                     </CardContent>
                 </Card>
 
-                {/* TODO: Scrollable */}
                 <Card className="col-span-1 lg:col-span-3">
                     <CardHeader>
                         <div className="flex flex-col space-y-2">
@@ -84,16 +84,17 @@ function Overview() {
                                     <TabsTrigger value="os">Operating Systems</TabsTrigger>
                                     <TabsTrigger value="market">Markets</TabsTrigger>
                                 </TabsList>
-
-                                <TabsContent value="browser">
-                                    <BrowserUsage />
-                                </TabsContent>
-                                <TabsContent value="os">
-                                    <OsUsage />
-                                </TabsContent>
-                                <TabsContent value="market">
-                                    <MarketUsage />
-                                </TabsContent>
+                                <ScrollArea className='h-[300px]'>
+                                    <TabsContent value="browser">
+                                        <BrowserUsage />
+                                    </TabsContent>
+                                    <TabsContent value="os">
+                                        <OsUsage />
+                                    </TabsContent>
+                                    <TabsContent value="market">
+                                        <MarketUsage />
+                                    </TabsContent>
+                                </ScrollArea>
                             </Tabs>
                         </div>
                     </CardHeader>
