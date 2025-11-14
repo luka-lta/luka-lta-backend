@@ -42,13 +42,13 @@ function InfoClicksSheet({ currentRow, open, onOpenChange }: Props) {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-Clicksname-info-form">Click ID</Label>
-                                <Input id="Clicks-Clicksname-info-form" disabled value={currentRow.clickId} />
+                                <Label htmlFor="clicks-clickid-info-form">Click ID</Label>
+                                <Input id="clicks-clickid-info-form" disabled value={currentRow.clickId} />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-id-info-form">Click Tag</Label>
-                                <Input id="Clicks-id-info-form" disabled value={currentRow.clickTag} className="font-mono text-xs" />
+                                <Label htmlFor="clicks-tag-info-form">Click Tag</Label>
+                                <Input id="clicks-tag-info-form" disabled value={currentRow.clickTag} className="font-mono text-xs" />
                             </div>
                         </div>
                     </div>
@@ -62,47 +62,47 @@ function InfoClicksSheet({ currentRow, open, onOpenChange }: Props) {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-role-info-form">URL</Label>
+                                <Label htmlFor="clicks-url-info-form">URL</Label>
                                 <div className="flex items-center gap-2">
-                                    <Input id="user-role-info-form" disabled value={currentRow.url} />
+                                    <Input id="clicks-url-info-form" disabled value={currentRow.url} />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-status-info-form">IP Address</Label>
+                                <Label htmlFor="clicks-ipaddress-info-form">IP Address</Label>
                                 <div className="flex items-center gap-2">
-                                    <Input id="Clicks-status-info-form" disabled value={currentRow.ipAddress || '-'} />
+                                    <Input id="clicks-ipaddress-info-form" disabled value={currentRow.ipAddress || '-'} />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-status-info-form">Market</Label>
+                                <Label htmlFor="clicks-market-info-form">Market</Label>
                                 <div className="flex items-center gap-2">
-                                    <Input id="Clicks-status-info-form" disabled value={currentRow.market || '-'} />
+                                    <Input id="clicks-market-info-form" disabled value={currentRow.market || '-'} />
                                     <Flag country={currentRow.market || ''} />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-status-info-form">User Agent</Label>
+                                <Label htmlFor="clicks-agent-info-form">User Agent</Label>
                                 <div className="flex items-center gap-2">
-                                    <Input id="Clicks-status-info-form" disabled value={currentRow.userAgent || '-'} />
+                                    <Input id="clicks-agent-info-form" disabled value={currentRow.userAgent || '-'} />
                                     <UserAgentInfo userAgent={currentRow.userAgent || ''} />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-status-info-form">Operation System</Label>
+                                <Label htmlFor="clicks-os-info-form">Operation System</Label>
                                 <div className="flex items-center gap-2">
-                                    <Input id="Clicks-status-info-form" disabled value={currentRow.os || '-'} />
+                                    <Input id="clicks-os-info-form" disabled value={currentRow.os || '-'} />
                                     <OperatingSystem os={currentRow.os || ''}/>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-status-info-form">Device</Label>
+                                <Label htmlFor="clicks-device-info-form">Device</Label>
                                 <div className="flex items-center gap-2">
-                                    <Input id="Clicks-status-info-form" disabled value={currentRow.device || '-'} />
+                                    <Input id="clicks-device-info-form" disabled value={currentRow.device || '-'} />
                                     <div className="flex items-center gap-2 whitespace-nowrap">
                                         {currentRow.device === "Desktop" && <Monitor className="w-4 h-4"/>}
                                         {currentRow.device === "Mobile" && <Smartphone className="w-4 h-4"/>}
@@ -113,9 +113,9 @@ function InfoClicksSheet({ currentRow, open, onOpenChange }: Props) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-status-info-form">Referrer</Label>
+                                <Label htmlFor="clicks-referrer-info-form">Referrer</Label>
                                 <div className="flex items-center gap-2">
-                                    <Input id="Clicks-status-info-form" disabled value={currentRow.referer || '-'} />
+                                    <Input id="clicks-referrer-info-form" disabled value={currentRow.referer || '-'} />
                                 </div>
                             </div>
                         </div>
@@ -130,8 +130,8 @@ function InfoClicksSheet({ currentRow, open, onOpenChange }: Props) {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="Clicks-created-info-form">Clicked at</Label>
-                                <Input id="Clicks-created-info-form" disabled value={formatDate(currentRow.clickedAt)} />
+                                <Label htmlFor="clicks-clicked-info-form">Clicked at</Label>
+                                <Input id="clicks-clicked-info-form" disabled value={formatDate(currentRow.clickedAt)} />
                             </div>
                         </div>
                     </div>
