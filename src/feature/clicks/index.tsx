@@ -5,6 +5,8 @@ import {AlertTriangle} from "lucide-react";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import ClickOverviewTable from "@/feature/clicks/components/ClickOverviewTable.tsx";
 import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
+import ClicksProvider from "@/feature/clicks/context/clicks-context.tsx";
+import ClicksDialogs from "@/feature/clicks/components/ClicksDialogs.tsx";
 
 function Clicks() {
     const [clickOverview, setFilterData] = useClicksOverview();
@@ -27,23 +29,27 @@ function Clicks() {
     }
 
     return (
-        <Main>
-            <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
-                <div>
-                    <h2 className='text-2xl font-bold tracking-tight'>Clicks Overview</h2>
-                    <p className='text-muted-foreground'>
-                        Inspect Link Clicks
-                    </p>
+        <ClicksProvider>
+            <Main>
+                <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+                    <div>
+                        <h2 className='text-2xl font-bold tracking-tight'>Clicks Overview</h2>
+                        <p className='text-muted-foreground'>
+                            Inspect Link Clicks
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <ClickOverviewTable
-                clicks={clickOverview.data?.clicks ?? []}
-                maxPages={clickOverview.data?.totalPages ?? 999}
-                loading={clickOverview.isPending}
-                setFilterData={setFilterData}
-            />
-        </Main>
+                <ClickOverviewTable
+                    clicks={clickOverview.data?.clicks ?? []}
+                    maxPages={clickOverview.data?.totalPages ?? 999}
+                    loading={clickOverview.isPending}
+                    setFilterData={setFilterData}
+                />
+            </Main>
+
+            <ClicksDialogs />
+        </ClicksProvider>
     );
 }
 

@@ -8,6 +8,7 @@ import Flag from "react-flagkit";
 import LongText from "@/components/long-text.tsx";
 import {UserAgentInfo} from "@/components/user-agent-icon.tsx";
 import {OperatingSystem} from "@/components/operating-system.tsx";
+import {useClicksContext} from "@/feature/clicks/context/clicks-context.tsx";
 
 interface ClickTableProps {
     clicks: clickTypeSchema[];
@@ -18,6 +19,7 @@ interface ClickTableProps {
 
 function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTableProps) {
     const queryClient = useQueryClient();
+    const {setOpen, setCurrentRow} = useClicksContext();
 
     return (
         <>
@@ -38,7 +40,10 @@ function ClickOverviewTable({clicks, maxPages, loading, setFilterData}: ClickTab
                     maxPages={maxPages}
                     renderRow={(click) => {
                         return (
-                            <TableRow key={click.clickId}>
+                            <TableRow key={click.clickId} onClick={() => {
+                                setOpen('info')
+                                setCurrentRow(click)
+                            }}>
                                 <TableCell>
                                     {click.clickTag}
                                 </TableCell>
