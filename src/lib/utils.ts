@@ -18,6 +18,7 @@ export function formatDate(date: string) {
 
 export const splitAvatarUrl = (avatarUrl: null|string|undefined): string|undefined => {
   const avatarPath = avatarUrl;
+
   return  avatarPath
       ? `https://api.luka-lta.dev/api/v1/avatar/${avatarPath.split('/').pop()}`
       : undefined;

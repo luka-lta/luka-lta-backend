@@ -60,7 +60,7 @@ export class FetchWrapper {
 
         }
         const config: RequestInit = {
-            'method': 'PUT',
+            'method': 'POST',
             headers: headers,
             body: body,
         };
