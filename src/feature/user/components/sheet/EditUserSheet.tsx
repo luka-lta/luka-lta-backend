@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card.tsx"
 import {Label} from "@/components/ui/label.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
+import {useRef} from "react";
 
 interface Props {
     currentRow: UserTypeSchema
@@ -40,6 +41,7 @@ export type userData = {
 // TODO: Edit and Create form in one component
 function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
     const queryClient = useQueryClient()
+    const formRef = useRef<HTMLFormElement>(null);
 
     const form = useForm<userData>({
         resolver: zodResolver(userEditSchema),
@@ -52,14 +54,11 @@ function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
     })
 
     const editUser = useMutation({
-        mutationFn: async ({ email, username, avatar, isActive }: userData) => {
+        mutationFn: async () => {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl)
-            await fetchWrapper.put(`/user/${currentRow.userId}`, {
-                username,
-                email,
-                avatar,
-                isActive,
-            })
+            const formData = new FormData(formRef.current!);
+
+            await fetchWrapper.formDataRequest(`/user/${currentRow.userId}`, formData)
         },
         onSuccess: () => {
             onOpenChange(false)
@@ -92,7 +91,7 @@ function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
         },
     })
 
-    const onSubmit: SubmitHandler<userData> = (data) => editUser.mutate(data)
+    const onSubmit: SubmitHandler<userData> = () => editUser.mutate()
 
     return (
         <Sheet
@@ -103,7 +102,7 @@ function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
             }}
         >
             <SheetContent className="sm:max-w-md">
-                <form onSubmit={form.handleSubmit(onSubmit)}>
+                <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)}>
                     <SheetHeader className="pb-4">
                         <SheetTitle className="text-xl">Edit User</SheetTitle>
                         <SheetDescription>Make changes to the user's information.</SheetDescription>
