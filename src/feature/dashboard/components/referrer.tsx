@@ -7,7 +7,11 @@ import {ChannelIcon} from "@/components/channel.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Expand} from "lucide-react";
 
-function Referrer() {
+interface ReferrerProps {
+    className?: string;
+}
+
+function Referrer({className}: ReferrerProps) {
     const [tab, setTab] = useState("referrers");
     const [expanded, setExpanded] = useState(false);
     const close = () => {
@@ -15,7 +19,7 @@ function Referrer() {
     };
 
     return (
-        <Card className="">
+        <Card className={className}>
             <CardContent className="mt-2">
                 <Tabs defaultValue="referrers" value={tab} onValueChange={value => setTab(value)}>
                     <div className="flex flex-row gap-2 justify-between items-center">

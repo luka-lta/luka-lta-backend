@@ -6,9 +6,14 @@ import { Button } from "@/components/ui/button";
 import StandardSection from "@/components/standard-section.tsx";
 import {truncateString} from "@/api/utils.ts";
 import {useGetSite} from "@/api/analytics/hooks/useSites.ts";
+
+interface PagesProps {
+    className?: string;
+}
+
 type Tab = "pages" | "page_title" | "entry_pages" | "exit_pages" | "hostname";
 
-export function Pages() {
+export function Pages({className}: PagesProps) {
     const { data } = useGetSite();
     const [tab, setTab] = useState<Tab>("pages");
     const [expanded, setExpanded] = useState(false);
@@ -17,7 +22,7 @@ export function Pages() {
     };
 
     return (
-        <Card>
+        <Card className={className}>
             <CardContent className="mt-2">
                 <Tabs defaultValue="pages" value={tab} onValueChange={value => setTab(value as Tab)}>
                     <div className="flex flex-row gap-2 justify-between items-center">
