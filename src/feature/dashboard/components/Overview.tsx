@@ -1,13 +1,10 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Compass, Languages, TextCursorIcon, Users} from "lucide-react";
 import ClicksChart from "@/feature/dashboard/components/ClicksChart.tsx";
-import BrowserUsage from "@/feature/dashboard/components/browser-usage.tsx";
+import Referrer from "@/feature/dashboard/components/referrer.tsx";
 import {useClickSummary} from "@/feature/dashboard/hooks/useClickSummary.ts";
 import {browserUsage, marketUsage, osUsage} from "@/feature/dashboard/data.ts";
-import OsUsage from "@/feature/dashboard/components/os-usage.tsx";
-import MarketUsage from "@/feature/dashboard/components/market-usage.tsx";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
-import {ScrollArea} from "@/components/ui/scroll-area.tsx";
+import {Pages} from "@/feature/dashboard/components/Pages.tsx";
 
 function Overview() {
     const [clickSummary] = useClickSummary();
@@ -74,31 +71,8 @@ function Overview() {
                     </CardContent>
                 </Card>
 
-                <Card className="col-span-1 lg:col-span-3">
-                    <CardHeader>
-                        <div className="flex flex-col space-y-2">
-                            <CardTitle>Usages</CardTitle>
-                            <Tabs defaultValue="browser" className="w-full">
-                                <TabsList className="grid grid-cols-3">
-                                    <TabsTrigger value="browser">Browsers</TabsTrigger>
-                                    <TabsTrigger value="os">Operating Systems</TabsTrigger>
-                                    <TabsTrigger value="market">Markets</TabsTrigger>
-                                </TabsList>
-                                <ScrollArea className='h-[300px]'>
-                                    <TabsContent value="browser">
-                                        <BrowserUsage />
-                                    </TabsContent>
-                                    <TabsContent value="os">
-                                        <OsUsage />
-                                    </TabsContent>
-                                    <TabsContent value="market">
-                                        <MarketUsage />
-                                    </TabsContent>
-                                </ScrollArea>
-                            </Tabs>
-                        </div>
-                    </CardHeader>
-                </Card>
+                <Referrer />
+                <Pages />
             </div>
         </>
     );

@@ -19,6 +19,7 @@ import SettingsProfile from "@/feature/SelfOverview/profile";
 import ComingSoon from "@/components/coming-soon.tsx";
 import SettingsAppearance from "@/feature/SelfOverview/appearance";
 import ClicksPage from "@/pages/Dashboard/ClicksPage.tsx";
+import SiteConfigPage from "@/pages/Dashboard/SiteConfig.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -96,6 +97,10 @@ export const appRouter = createBrowserRouter([
                         element: <ComingSoon/>
                     }
                 ],
+            },
+            {
+                path: 'site-configuration',
+                element: <SiteConfigPage />
             }
         ]
     },

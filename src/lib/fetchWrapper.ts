@@ -22,9 +22,21 @@ export class FetchWrapper {
         endpoint: string,
         method: string,
         body?: unknown,
-        headers: Record<string, string> = {}
+        headers: Record<string, string> = {},
+        params?: Record<string, any>
     ): Promise<ApiSchema> {
         const {jwt} = useAuthenticatedUserStore.getState();
+
+        let processedParams = params;
+        if (params) {
+            processedParams = { ...params };
+            Object.entries(processedParams).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    // Convert arrays to JSON strings for backend parsing
+                    processedParams![key] = JSON.stringify(value);
+                }
+            });
+        }
 
         const config: RequestInit = {
             method,
@@ -42,12 +54,12 @@ export class FetchWrapper {
             method: method as 'GET' | 'POST' | 'PUT' | 'DELETE',
             headers: config.headers,
             data: config.body,
+            params: params
         })
 
         const data = response.data;
 
         return ApiResponseSchema.parse(data);
-
     }
 
     public async formDataRequest(
@@ -80,8 +92,8 @@ export class FetchWrapper {
         }
     }
 
-    get(endpoint: string, headers?: Record<string, string>): Promise<ApiSchema> {
-        return this.request(endpoint, 'GET', undefined, headers);
+    get(endpoint: string, headers?: Record<string, string>, params?: Record<string, any>): Promise<ApiSchema> {
+        return this.request(endpoint, 'GET', undefined, headers, params);
     }
 
     post(endpoint: string, body?: unknown, headers?: Record<string, string>): Promise<ApiSchema> {
