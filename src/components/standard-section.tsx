@@ -5,6 +5,8 @@ import { ScrollArea } from "./ui/scroll-area";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Info, Link} from "lucide-react";
 import {Row} from "@/components/Row.tsx";
+import {ErrorState} from "@/components/error-state.tsx";
+import {StandardSkeleton} from "@/components/standard-skeleton.tsx";
 
 interface StandardSectionProps {
     title: string,
@@ -44,7 +46,6 @@ function StandardSection({
         <>
             {isFetching && (
                 <div className="absolute top-[-8px] left-0 w-full h-full">
-                    {/*<CardLoader />*/}
                     <h1>Loading</h1>
                 </div>
             )}
@@ -70,11 +71,9 @@ function StandardSection({
             <ScrollArea className="h-[314px]">
                 <div className="flex flex-col gap-2 overflow-x-hidden">
                     {isLoading ? (
-                        /*<StandardSkeleton />*/
-                        <h1>Loading</h1>
+                        <StandardSkeleton />
                     ) : error ? (
-                        /*<ErrorState title="Failed to load data" message={error.message} refetch={refetch} />*/
-                        <h1>Error {error.message}</h1>
+                        <ErrorState title="Failed to load data" message={error.message} refetch={refetch} />
                     ) : (
                         <>
                             {itemsForDisplay?.length ? (

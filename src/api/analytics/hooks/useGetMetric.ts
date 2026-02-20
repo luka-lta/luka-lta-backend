@@ -2,12 +2,9 @@ import {useQuery} from "@tanstack/react-query";
 import {fetchMetric} from "@/api/analytics/endpoints/overview.ts";
 import {buildApiParams} from "@/api/utils.ts";
 
-type PeriodTime = "current" | "previous";
-
 interface GetMetricProps {
     parameter: string;
     limit: number;
-    periodTime: PeriodTime;
     useFilters?: boolean;
 }
 
@@ -56,7 +53,6 @@ export function usePaginatedMetric({
 export function useMetric({
     parameter,
     limit = 1000,
-    periodTime,
     useFilters = true,
 }: GetMetricProps) {
     const params = buildApiParams();

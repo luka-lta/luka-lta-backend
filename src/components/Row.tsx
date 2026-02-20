@@ -11,7 +11,6 @@ const RowItem = ({
                      ratio,
                      getKey,
                      getLabel,
-                     getValue,
                      getLink,
                      leftContent,
                  }: {

@@ -4,7 +4,6 @@ import {useSite} from "@/feature/site-config/hooks/useSite.ts";
 import {Badge} from "@/components/ui/badge.tsx";
 import {AlertTriangle} from "lucide-react";
 import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
-import SiteConfigurationFields from "@/feature/site-config/components/SiteConfigurationFields.tsx";
 
 function SiteConfig() {
     const [siteInfo] = useSite();
@@ -43,7 +42,9 @@ function SiteConfig() {
                 </div>
             </div>
 
+{/*
             <SiteConfigurationFields siteMetadata={siteInfo.data?.site} />
+*/}
         </Main>
     );
 }
