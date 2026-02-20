@@ -15,7 +15,7 @@ interface CountriesProps {
 type Tab = "countries" | "regions" | "languages" | "cities" | "timezones";
 
 function getCountryCity(value: string) {
-    if (value.split("-").length === 3) {
+    if (value.split("-").length === 2) {
         const [country, city] = value.split("-");
         return { country, region: "", city };
     }
