@@ -10,7 +10,8 @@ export function useSite() {
             const response = await fetchWrapper.get(`/site/1`);
 
             return siteApiResult.parse(response.data);
-        }
+        },
+        staleTime: 6000
     })
 
     return [queryData] as const;

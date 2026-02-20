@@ -8,8 +8,8 @@ export function buildApiParams(): CommonApiParams {
 
     const format = (date: Date) => date.toISOString().split("T")[0];
     return {
-        startDate: format(today),
-        endDate: format(thirtyDaysAgo),
+        startDate: format(thirtyDaysAgo),
+        endDate: format(today),
         timeZone: 'Europe/Berlin',
     };
 }
