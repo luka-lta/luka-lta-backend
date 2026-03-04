@@ -50,21 +50,21 @@ const BROWSER_TO_LOGO: Record<string, string> = {
 
 interface BrowserProps {
     browser: string;
+    size?: number;
 }
 
-export function Browser({ browser }: BrowserProps) {
+export function Browser({ browser, size = 16 }: BrowserProps) {
     return (
         <>
             {BROWSER_TO_LOGO[browser] ? (
                 <img
                     src={`/browsers/${BROWSER_TO_LOGO[browser]}`}
                     alt={browser || "Other"}
-                    className="w-4 h-4"
-                    width={16}
-                    height={16}
+                    width={size}
+                    height={size}
                 />
             ) : (
-                <Compass width={16} />
+                <Compass width={size} height={size} />
             )}
         </>
     );

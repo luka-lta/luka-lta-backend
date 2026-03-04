@@ -13,9 +13,10 @@ const OS_TO_LOGO: Record<string, string> = {
 
 interface OperatingSystemProps {
     os?: string;
+    size?: number;
 }
 
-export function OperatingSystem({ os = "" }: OperatingSystemProps) {
+export function OperatingSystem({ os = "", size = 16}: OperatingSystemProps) {
     return (
         <>
             {OS_TO_LOGO[os] ? (
@@ -23,11 +24,11 @@ export function OperatingSystem({ os = "" }: OperatingSystemProps) {
                     src={`/operating-systems/${OS_TO_LOGO[os]}`}
                     alt={os || "Other"}
                     className="w-4 h-4"
-                    width={16}
-                    height={16}
+                    width={size}
+                    height={size}
                 />
             ) : (
-                <Compass width={16} />
+                <Compass width={size} height={size} />
             )}
         </>
     );

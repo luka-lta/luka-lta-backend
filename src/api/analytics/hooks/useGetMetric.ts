@@ -1,18 +1,20 @@
 import {useQuery} from "@tanstack/react-query";
 import {fetchMetric} from "@/api/analytics/endpoints/overview.ts";
 import {buildApiParams} from "@/api/utils.ts";
+import {Filter, FilterParameter} from "@/lib/filters.ts";
 
 interface GetMetricProps {
-    parameter: string;
+    parameter: FilterParameter;
     limit: number;
     useFilters?: boolean;
 }
 
 interface GetMetricPaginationProps {
-    parameter: string;
+    parameter: FilterParameter;
     limit: number;
     page: number,
     useFilters?: boolean;
+    customFilters?: Filter[];
 }
 
 export function usePaginatedMetric({
@@ -20,9 +22,12 @@ export function usePaginatedMetric({
     limit = 10,
     page = 1,
     useFilters = true,
+    customFilters = []
 }: GetMetricPaginationProps) {
-    const params = buildApiParams();
-    const queryKey = [parameter, 1, limit, useFilters, 'Europe/Berlin'];
+    const params = buildApiParams({
+        filters: customFilters
+    });
+    const queryKey = [parameter, 1, limit, useFilters, 'Europe/Berlin', customFilters];
 
     return useQuery({
         queryKey,

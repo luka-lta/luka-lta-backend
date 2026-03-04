@@ -69,6 +69,11 @@ export const sidebarData: SidebarData = {
             title: 'Web-Tracking',
             items: [
                 {
+                    title: "Tracked-Users",
+                    icon: UsersIcon,
+                    url: '/dashboard/tracked-users',
+                },
+                {
                     title: "Site-Configuration",
                     icon: SettingsIcon,
                     url: '/dashboard/site-configuration',

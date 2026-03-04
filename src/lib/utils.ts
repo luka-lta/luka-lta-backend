@@ -1,5 +1,7 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import {type ClassValue, clsx} from "clsx"
+import {twMerge} from "tailwind-merge"
+import {animals, colors, uniqueNamesGenerator} from "unique-names-generator";
+import {userLocale} from "@/lib/dateTimeUtils.ts";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -23,3 +25,16 @@ export const splitAvatarUrl = (avatarUrl: null|string|undefined): string|undefin
       ? `https://api.luka-lta.dev/api/v1/avatar/${avatarPath.split('/').pop()}`
       : undefined;
 }
+
+export function generateName(id: string) {
+  return uniqueNamesGenerator({
+    dictionaries: [colors, animals],
+    separator: " ",
+    style: "capital",
+    seed: id,
+  });
+}
+
+export const formatter = Intl.NumberFormat(userLocale, {
+  notation: "compact",
+}).format;

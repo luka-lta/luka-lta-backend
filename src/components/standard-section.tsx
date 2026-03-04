@@ -7,6 +7,7 @@ import {Info, Link} from "lucide-react";
 import {Row} from "@/components/Row.tsx";
 import {ErrorState} from "@/components/error-state.tsx";
 import {StandardSkeleton} from "@/components/standard-skeleton.tsx";
+import {Filter, FilterParameter} from "@/lib/filters.ts";
 
 interface StandardSectionProps {
     title: string,
@@ -16,11 +17,12 @@ interface StandardSectionProps {
     getFilterLabel?: (item: MetricResponse) => string;
     getLink?: (item: MetricResponse) => string;
     countLabel?: string;
-    filterParameter: string;
+    filterParameter: FilterParameter;
     expanded: boolean;
     close: () => void;
     hasSubrow?: boolean;
     getSubrowLabel?: (item: MetricResponse) => ReactNode;
+    customFilters?: Filter[];
 }
 
 function StandardSection({
@@ -31,11 +33,13 @@ function StandardSection({
     getLink,
     countLabel,
     filterParameter,
-}: StandardSectionProps) {
+    customFilters,
+ }: StandardSectionProps) {
     const { data, isLoading, isFetching, error, refetch } = usePaginatedMetric({
         parameter: filterParameter,
         limit: 100,
         page: 1,
+        customFilters
     });
 
     const itemsForDisplay = data?.data;
