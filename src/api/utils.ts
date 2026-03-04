@@ -1,6 +1,7 @@
 import {CommonApiParams} from "@/api/analytics/endpoints/types.ts";
+import {Filter} from "@/lib/filters.ts";
 
-export function buildApiParams(): CommonApiParams {
+export function buildApiParams( options: { filters?: Filter[] } = {}): CommonApiParams {
 
     const today = new Date();
     const thirtyDaysAgo = new Date();
@@ -11,6 +12,7 @@ export function buildApiParams(): CommonApiParams {
         startDate: format(thirtyDaysAgo),
         endDate: format(today),
         timeZone: 'Europe/Berlin',
+        filters: options.filters,
     };
 }
 

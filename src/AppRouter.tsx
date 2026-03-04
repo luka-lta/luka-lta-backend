@@ -20,6 +20,8 @@ import ComingSoon from "@/components/coming-soon.tsx";
 import SettingsAppearance from "@/feature/SelfOverview/appearance";
 import ClicksPage from "@/pages/Dashboard/ClicksPage.tsx";
 import SiteConfigPage from "@/pages/Dashboard/SiteConfig.tsx";
+import TrackedUsersPage from "@/pages/Dashboard/TrackedUsersPage.tsx";
+import TrackedUser from "@/feature/tracked-user";
 
 export const appRouter = createBrowserRouter([
     {
@@ -101,6 +103,19 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'site-configuration',
                 element: <SiteConfigPage />
+            },
+            {
+                path: 'tracked-users',
+                children: [
+                    {
+                        path: '',
+                        element: <TrackedUsersPage />,
+                    },
+                    {
+                        path: ':trackedUserId',
+                        element: <TrackedUser />
+                    }
+                ]
             }
         ]
     },

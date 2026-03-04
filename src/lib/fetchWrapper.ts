@@ -54,7 +54,7 @@ export class FetchWrapper {
             method: method as 'GET' | 'POST' | 'PUT' | 'DELETE',
             headers: config.headers,
             data: config.body,
-            params: params
+            params: processedParams
         })
 
         const data = response.data;
@@ -92,8 +92,8 @@ export class FetchWrapper {
         }
     }
 
-    get(endpoint: string, headers?: Record<string, string>, params?: Record<string, any>): Promise<ApiSchema> {
-        return this.request(endpoint, 'GET', undefined, headers, params);
+    get(endpoint: string, headers?: Record<string, string>, params?: Record<string, any>, body?: unknown): Promise<ApiSchema> {
+        return this.request(endpoint, 'GET', body, headers, params);
     }
 
     post(endpoint: string, body?: unknown, headers?: Record<string, string>): Promise<ApiSchema> {
