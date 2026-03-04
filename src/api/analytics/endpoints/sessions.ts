@@ -78,7 +78,7 @@ export interface SessionEventProps {
 }
 
 export interface SessionEvent {
-    timestamp: string;
+    occurredOn: string;
     pathname: string;
     hostname: string;
     urlParameters: string;

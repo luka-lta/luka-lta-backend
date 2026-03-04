@@ -52,14 +52,14 @@ export function TimelineTab({
                 {filteredEvents.map((pageview: SessionEvent, index: number) => {
                     let nextTimestamp;
                     if (index < filteredEvents.length - 1) {
-                        nextTimestamp = filteredEvents[index + 1].timestamp;
+                        nextTimestamp = filteredEvents[index + 1].occurredOn;
                     } else if (sessionEnd) {
                         nextTimestamp = sessionEnd;
                     }
 
                     return (
                         <PageviewItem
-                            key={`${pageview.timestamp}-${index}`}
+                            key={`${pageview.occurredOn}-${index}`}
                             item={pageview}
                             index={index}
                             isLast={index === filteredEvents.length - 1 && !hasNextPage}

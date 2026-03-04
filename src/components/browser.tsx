@@ -60,7 +60,6 @@ export function Browser({ browser, size = 16 }: BrowserProps) {
                 <img
                     src={`/browsers/${BROWSER_TO_LOGO[browser]}`}
                     alt={browser || "Other"}
-                    className="w-4 h-4"
                     width={size}
                     height={size}
                 />

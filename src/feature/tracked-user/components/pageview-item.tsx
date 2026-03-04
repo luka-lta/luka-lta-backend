@@ -172,9 +172,9 @@ export function PageviewItem({
     const isCopy = item.type === "copy";
     const isFormSubmit = item.type === "form_submit";
     const isInputChange = item.type === "input_change";
-    const timestamp = DateTime.fromSQL(item.timestamp, { zone: "utc" });
+    const timestamp = DateTime.fromSQL(item.occurredOn, { zone: "utc" });
     const formattedTime = timestamp.toFormat(hour12 ? "h:mm:ss a" : "HH:mm:ss");
-    const isHighlightedEvent = highlightedEventTimestamp === DateTime.fromSQL(item.timestamp, { zone: "utc" }).toMillis();
+    const isHighlightedEvent = highlightedEventTimestamp === DateTime.fromSQL(item.occurredOn, { zone: "utc" }).toMillis();
 
     // Calculate duration if this is a pageview and we have the next timestamp
     let duration = null;
@@ -232,7 +232,7 @@ export function PageviewItem({
                                     {item.pathname}
                                     {item.urlParameters && (
                                         <span className="text-neutral-400 dark:text-neutral-500">
-                                          {item.urlParameters}
+                                          {item.urlParameters === "[]" ? "" : item.urlParameters}
                                         </span>
                                     )}
                                 </div>

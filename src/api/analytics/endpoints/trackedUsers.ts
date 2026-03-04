@@ -43,7 +43,6 @@ export type UserInfo = {
 
 export interface UsersParams extends CommonApiParams, PaginationParams, SortParams {
     pageSize?: number;
-    identifiedOnly?: boolean;
     search?: string;
     searchField?: string;
 }
