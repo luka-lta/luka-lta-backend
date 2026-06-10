@@ -3,7 +3,6 @@ import {Main} from "@/components/layout/main.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
 import SidebarNav from "@/feature/SelfOverview/components/sidebar-nav.tsx";
 import {Outlet} from "react-router-dom";
-import {Badge} from "@/components/ui/badge.tsx";
 
 function Settings() {
     return (
