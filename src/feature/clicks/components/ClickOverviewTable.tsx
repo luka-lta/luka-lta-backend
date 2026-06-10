@@ -12,7 +12,7 @@ import {useClicksContext} from "@/feature/clicks/context/clicks-context.tsx";
 
 interface ClickTableProps {
     clicks: clickTypeSchema[];
-    maxPages: number;
+    maxPages?: number;
     loading: boolean;
     setFilterData: (filterData: Record<string, string>) => void;
 }

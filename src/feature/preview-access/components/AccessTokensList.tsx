@@ -18,7 +18,7 @@ import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 
 interface AccessTokensListProps {
     accessTokens: AccessTokenTypeSchema[];
-    maxPages: number;
+    maxPages?: number;
     loading: boolean;
     setFilterData: (filterData: Record<string, string>) => void;
 }

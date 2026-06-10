@@ -1,12 +1,10 @@
 import {useUserList} from "@/feature/user/hooks/useUserList.ts";
 import UserTable from "@/feature/user/components/UserTable.tsx";
-import {Badge} from "@/components/ui/badge.tsx";
-import {AlertTriangle} from "lucide-react";
-import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import {Main} from "@/components/layout/main.tsx";
 import UsersProvider from "@/feature/user/context/users-context.tsx";
 import UserDialogs from "@/feature/user/components/UserDialogs.tsx";
 import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
+import {ErrorState} from "@/components/error-state.tsx";
 
 function Users() {
     const [userList, setFilterData] = useUserList();
@@ -15,15 +13,12 @@ function Users() {
     if (userList.error) {
         return (
             <div className='p-6'>
-                <div className='mb-5'>
-                    <div className='flex items-center gap-2 mb-2'>
-                        <h1 className='text-2xl font-semibold'>Users</h1>
-                        <Badge variant='secondary' className='bg-zinc-900 text-red-600 hover:bg-zinc-900'>
-                            <AlertTriangle/>
-                        </Badge>
-                    </div>
-                    <QueryErrorDisplay query={userList}/>
-                </div>
+                <h2 className='text-2xl font-bold tracking-tight mb-4'>User List</h2>
+                <ErrorState
+                    title="Failed to load users"
+                    message={userList.error.message}
+                    refetch={userList.refetch}
+                />
             </div>
         )
     }
@@ -42,7 +37,7 @@ function Users() {
 
                 <UserTable
                     users={userList.data?.users ?? []}
-                    maxPages={userList.data?.totalPages ?? 999}
+                    maxPages={userList.data?.totalPages}
                     loading={userList.isPending}
                     setFilterData={setFilterData}
                 />

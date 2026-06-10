@@ -39,6 +39,7 @@ const sidebarNavItems = [
         title: 'Account',
         icon: <Wrench size={18}/>,
         href: '/dashboard/settings/account',
+        badge: 'Soon',
     },
     {
         title: 'Appearance',

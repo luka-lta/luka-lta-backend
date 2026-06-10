@@ -8,7 +8,7 @@ export const permissionSchema = z.object({
 
 export const permissionListSchema = z.object({
     permissions: z.array(permissionSchema),
-    totalPages: z.number().default(999)
+    totalPages: z.number().optional()
 })
 
 export type PermissionsTypeSchema = z.infer<typeof permissionSchema>;

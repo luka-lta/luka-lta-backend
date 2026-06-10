@@ -14,7 +14,7 @@ import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 
 interface PermissionsTableProps {
     permissions: PermissionsTypeSchema[];
-    maxPages: number;
+    maxPages?: number;
     loading: boolean;
     setFilterData: (filterData: Record<string, string>) => void;
 }

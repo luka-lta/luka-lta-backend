@@ -22,6 +22,10 @@ import ClicksPage from "@/pages/Dashboard/ClicksPage.tsx";
 import SiteConfigPage from "@/pages/Dashboard/SiteConfig.tsx";
 import TrackedUsersPage from "@/pages/Dashboard/TrackedUsersPage.tsx";
 import TrackedUser from "@/feature/tracked-user";
+import BlogPage from "@/pages/Dashboard/BlogPage.tsx";
+import BlogTagsPage from "@/pages/Dashboard/BlogTagsPage.tsx";
+import BlogCreatePage from "@/pages/Dashboard/BlogCreatePage.tsx";
+import BlogDetailPage from "@/pages/Dashboard/BlogDetailPage.tsx";
 
 export const appRouter = createBrowserRouter([
     {
@@ -103,6 +107,27 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'site-configuration',
                 element: <SiteConfigPage />
+            },
+            {
+                path: 'blog',
+                children: [
+                    {
+                        path: '',
+                        element: <BlogPage />,
+                    },
+                    {
+                        path: 'create',
+                        element: <BlogCreatePage />,
+                    },
+                    {
+                        path: ':blogId',
+                        element: <BlogDetailPage />,
+                    },
+                ],
+            },
+            {
+                path: 'blog-tags',
+                element: <BlogTagsPage />,
             },
             {
                 path: 'tracked-users',

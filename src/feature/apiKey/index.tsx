@@ -1,10 +1,8 @@
-import {Badge} from "@/components/ui/badge.tsx";
-import {AlertTriangle} from "lucide-react";
-import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import {useApiKeyList} from "@/feature/apiKey/hooks/useApiKeyList.ts";
 import ApiKeyTable from "@/feature/apiKey/components/ApiKeyTable.tsx";
 import {Main} from "@/components/layout/main.tsx";
 import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
+import {ErrorState} from "@/components/error-state.tsx";
 
 function ApiKeys() {
     const [apiKeyList, setFilterData] = useApiKeyList();
@@ -13,15 +11,12 @@ function ApiKeys() {
     if (apiKeyList.error) {
         return (
             <div className='p-6'>
-                <div className='mb-5'>
-                    <div className='flex items-center gap-2 mb-2'>
-                        <h1 className='text-2xl font-semibold'>Api-Keys</h1>
-                        <Badge variant='secondary' className='bg-zinc-900 text-red-600 hover:bg-zinc-900'>
-                            <AlertTriangle/>
-                        </Badge>
-                    </div>
-                    <QueryErrorDisplay query={apiKeyList}/>
-                </div>
+                <h2 className='text-2xl font-bold tracking-tight mb-4'>Api-Keys</h2>
+                <ErrorState
+                    title="Failed to load API keys"
+                    message={apiKeyList.error.message}
+                    refetch={apiKeyList.refetch}
+                />
             </div>
         )
     }
@@ -39,7 +34,7 @@ function ApiKeys() {
 
             <ApiKeyTable
                 apiKeys={apiKeyList.data?.apiKeys ?? []}
-                maxPages={apiKeyList.data?.totalPages ?? 999}
+                maxPages={apiKeyList.data?.totalPages}
                 loading={apiKeyList.isPending}
                 setFilterData={setFilterData}
             />

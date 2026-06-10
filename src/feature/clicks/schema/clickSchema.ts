@@ -17,5 +17,5 @@ export type clickTypeSchema = z.infer<typeof clickSchema>
 
 export const clickResponse = z.object({
     clicks: z.array(clickSchema),
-    totalPages: z.number().default(999)
+    totalPages: z.number().optional()
 })

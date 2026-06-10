@@ -38,23 +38,16 @@ export class FetchWrapper {
             });
         }
 
-        const config: RequestInit = {
-            method,
+        const response = await axios({
+            url: `${this.baseUrl}${endpoint}`,
+            method: method as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
             headers: {
-                'Authorization': jwt ?? '',
+                ...(jwt ? { Authorization: jwt } : {}),
                 'Content-Type': 'application/json',
                 ...headers,
             },
-            body: body ? JSON.stringify(body) : undefined,
-        };
-
-        // @ts-ignore
-        const response = await axios({
-            url: `${this.baseUrl}${endpoint}`,
-            method: method as 'GET' | 'POST' | 'PUT' | 'DELETE',
-            headers: config.headers,
-            data: config.body,
-            params: processedParams
+            data: body ? JSON.stringify(body) : undefined,
+            params: processedParams,
         })
 
         const data = response.data;
@@ -67,13 +60,11 @@ export class FetchWrapper {
         body: FormData,
     ): Promise<ApiSchema> {
         const {jwt} = useAuthenticatedUserStore.getState();
-        const headers: HeadersInit = {
-            'Authorization': jwt ?? '',
-
-        }
         const config: RequestInit = {
-            'method': 'POST',
-            headers: headers,
+            method: 'POST',
+            headers: {
+                ...(jwt ? { Authorization: jwt } : {}),
+            },
             body: body,
         };
 
@@ -102,6 +93,10 @@ export class FetchWrapper {
 
     put(endpoint: string, body: unknown, headers?: Record<string, string>): Promise<ApiSchema> {
         return this.request(endpoint, 'PUT', body, headers);
+    }
+
+    patch(endpoint: string, body?: unknown, headers?: Record<string, string>): Promise<ApiSchema> {
+        return this.request(endpoint, 'PATCH', body, headers);
     }
 
     delete(endpoint: string, headers?: Record<string, string>): Promise<ApiSchema> {

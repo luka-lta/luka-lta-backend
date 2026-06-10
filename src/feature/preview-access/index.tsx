@@ -1,9 +1,7 @@
 import {useAccessTokensList} from "@/feature/preview-access/hooks/useAccessTokensList.ts";
-import {Badge} from "@/components/ui/badge.tsx";
-import {AlertTriangle} from "lucide-react";
-import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import AccessTokensList from "@/feature/preview-access/components/AccessTokensList.tsx";
 import {Main} from "@/components/layout/main.tsx";
+import {ErrorState} from "@/components/error-state.tsx";
 
 function PreviewAccess() {
     const [previewAccessTokensList, setFilterData] = useAccessTokensList();
@@ -11,15 +9,12 @@ function PreviewAccess() {
     if (previewAccessTokensList.error) {
         return (
             <div className='p-6'>
-                <div className='mb-5'>
-                    <div className='flex items-center gap-2 mb-2'>
-                        <h1 className='text-2xl font-semibold'>Preview-Access Tokens</h1>
-                        <Badge variant='secondary' className='bg-zinc-900 text-red-600 hover:bg-zinc-900'>
-                            <AlertTriangle/>
-                        </Badge>
-                    </div>
-                    <QueryErrorDisplay query={previewAccessTokensList}/>
-                </div>
+                <h2 className='text-2xl font-bold tracking-tight mb-4'>Preview-Access Tokens</h2>
+                <ErrorState
+                    title="Failed to load access tokens"
+                    message={previewAccessTokensList.error.message}
+                    refetch={previewAccessTokensList.refetch}
+                />
             </div>
         )
     }
@@ -37,7 +32,7 @@ function PreviewAccess() {
 
             <AccessTokensList
                 accessTokens={previewAccessTokensList.data?.tokens ?? []}
-                maxPages={previewAccessTokensList.data?.totalPages ?? 999}
+                maxPages={previewAccessTokensList.data?.totalPages}
                 loading={previewAccessTokensList.isPending}
                 setFilterData={setFilterData}
             />

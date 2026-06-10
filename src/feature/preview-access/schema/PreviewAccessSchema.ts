@@ -12,7 +12,7 @@ export const accessTokenSchema = z.object({
 
 export const accessTokenListSchema = z.object({
     tokens: z.array(accessTokenSchema),
-    totalPages: z.number().default(999)
+    totalPages: z.number().optional()
 })
 
 export type AccessTokenTypeSchema = z.infer<typeof accessTokenSchema>;

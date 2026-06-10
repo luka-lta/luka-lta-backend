@@ -13,7 +13,7 @@ function Tools() {
             <h1 className="text-3xl font-bold text-center mb-2">Tools</h1>
 
             <Tabs defaultValue="link-shortener" value={activeTab} onValueChange={setActiveTab} className="max-w-3xl mx-auto">
-                <TabsList className="grid grid-cols-2 md:grid-cols-2 mb-8">
+                <TabsList className="mb-8">
                     <TabsTrigger value="link-shortener" className="flex items-center gap-2">
                         <Link className="h-4 w-4" />
                         <span className="hidden md:inline">Link Shortener</span>

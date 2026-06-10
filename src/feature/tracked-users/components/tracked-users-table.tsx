@@ -1,4 +1,5 @@
 
+import {useQueryClient} from "@tanstack/react-query";
 import {DataTable} from "@/components/dataTable/DataTable.tsx";
 import {TableCell, TableRow} from "@/components/ui/table.tsx";
 import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
@@ -15,12 +16,13 @@ import {Favicon} from "@/components/Favicon.tsx";
 
 interface UserTableProps {
     users: UsersResponse[];
-    maxPages: number;
+    maxPages?: number;
     loading: boolean;
     setFilterData: (filterData: Record<string, string>) => void;
 }
 
 function TrackedUsersTable({users, maxPages, loading, setFilterData}: UserTableProps) {
+    const queryClient = useQueryClient()
 
     function returnChannel(referrer: string, channel: string) {
         const domain = extractDomain(referrer);
@@ -54,16 +56,16 @@ function TrackedUsersTable({users, maxPages, loading, setFilterData}: UserTableP
                     data={users}
                     header={[
                         {label: 'User'},
-                        {label: 'Country', sortName: 'username'},
-                        {label: 'Channel', sortName: 'email'},
-                        {label: 'Browser', sortName: 'role'},
-                        {label: 'OS', sortName: 'is_active'},
-                        {label: 'Device', sortName: 'last_active'},
-                        {label: 'Pageviews', sortName: 'last_active'},
-                        {label: 'Events', sortName: 'last_active'},
-                        {label: 'Sessions', sortName: 'last_active'},
-                        {label: 'Last seen', sortName: 'last_active'},
-                        {label: 'First seen', sortName: 'last_active'},
+                        {label: 'Country'},
+                        {label: 'Channel'},
+                        {label: 'Browser'},
+                        {label: 'OS'},
+                        {label: 'Device'},
+                        {label: 'Pageviews'},
+                        {label: 'Events'},
+                        {label: 'Sessions'},
+                        {label: 'Last seen'},
+                        {label: 'First seen'},
                     ]}
                     maxPages={maxPages}
                     renderRow={(user) => {
@@ -134,9 +136,7 @@ function TrackedUsersTable({users, maxPages, loading, setFilterData}: UserTableP
                     }}
                     onFilterChange={setFilterData}
                     loading={loading}
-                    onRefetchData={() => {
-                        console.log()
-                    }}
+                    onRefetchData={() => queryClient.invalidateQueries({ queryKey: ['tracked', 'users'] })}
                     customFilter={[
                         <SearchFilter name={'email'} key={'search'}/>
                     ]}

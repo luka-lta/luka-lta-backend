@@ -8,7 +8,7 @@ import {SearchFilter} from "@/components/dataTable/filter/SearchFilter.tsx";
 
 interface ApiKeyTableProps {
     apiKeys: ApiKeyTypeSchema[];
-    maxPages: number;
+    maxPages?: number;
     loading: boolean;
     setFilterData: (filterData: Record<string, string>) => void;
 }

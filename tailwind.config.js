@@ -19,6 +19,8 @@ export default {
         fontFamily: {
             inter: ['Inter', ...fontFamily.sans],
             manrope: ['Manrope', ...fontFamily.sans],
+            sora: ['Sora', ...fontFamily.sans],
+            'dm-mono': ['DM Mono', ...fontFamily.mono],
         },
         extend: {
             keyframes: {
@@ -26,9 +28,19 @@ export default {
                     "0%,70%,100%": {opacity: "1"},
                     "20%,50%": {opacity: "0"},
                 },
+                "fade-in": {
+                    "0%": {opacity: "0", transform: "translateY(8px)"},
+                    "100%": {opacity: "1", transform: "translateY(0)"},
+                },
+                "fade-up": {
+                    "0%": {opacity: "0", transform: "translateY(16px)"},
+                    "100%": {opacity: "1", transform: "translateY(0)"},
+                },
             },
             animation: {
                 "caret-blink": "caret-blink 1.25s ease-out infinite",
+                "fade-in": "fade-in 0.3s ease-out forwards",
+                "fade-up": "fade-up 0.4s ease-out forwards",
             },
             borderRadius: {
                 lg: 'var(--radius)',
@@ -89,6 +101,6 @@ export default {
             }
         }
     },
-    plugins: [require("tailwindcss-animate")],
+    plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 }
 

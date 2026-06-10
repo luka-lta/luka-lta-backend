@@ -25,7 +25,7 @@ type DataTableProps<TData = unknown, TExtraFilter = Record<string, unknown>> = {
     data: TData[]
     header: HeaderConfig,
     customFilter?: ReactElement[],
-    maxPages: number,
+    maxPages?: number,
     loading?: boolean,
     renderRow: (rowData: TData, index: number, allData: TData[]) => ReactElement,
     onFilterChange: (filterData: DataTableFilter<TExtraFilter>) => void,
@@ -89,7 +89,7 @@ export function DataTable<TData = unknown, TExtraFilter = Record<string, unknown
                         <tr>
                             <td
                                 colSpan={header.length}
-                                className="text-center py-8 bg-zinc-900 text-red-600 hover:bg-zinc-900 h-32"
+                                className="text-center py-8 h-32"
                             >
                                 {emptyState ?? <EmptyState />}
                             </td>
