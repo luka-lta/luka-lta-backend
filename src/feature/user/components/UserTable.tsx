@@ -18,7 +18,7 @@ import {useUsers} from "@/feature/user/context/users-context.tsx";
 
 interface UserTableProps {
     users: UserTypeSchema[];
-    maxPages: number;
+    maxPages?: number;
     loading: boolean;
     setFilterData: (filterData: Record<string, string>) => void;
 }

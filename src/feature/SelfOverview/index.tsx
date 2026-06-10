@@ -3,6 +3,7 @@ import {Main} from "@/components/layout/main.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
 import SidebarNav from "@/feature/SelfOverview/components/sidebar-nav.tsx";
 import {Outlet} from "react-router-dom";
+import {Badge} from "@/components/ui/badge.tsx";
 
 function Settings() {
     return (
@@ -39,6 +40,7 @@ const sidebarNavItems = [
         title: 'Account',
         icon: <Wrench size={18}/>,
         href: '/dashboard/settings/account',
+        badge: 'Soon',
     },
     {
         title: 'Appearance',

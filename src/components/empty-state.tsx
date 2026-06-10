@@ -6,16 +6,23 @@ import {
     EmptyTitle,
 } from "@/components/ui/empty"
 import {AlertTriangle} from "lucide-react";
+import {ReactNode} from "react";
 
-function EmptyState() {
+interface EmptyStateProps {
+    title?: string;
+    description?: string;
+    icon?: ReactNode;
+}
+
+function EmptyState({ title = 'No data', description = 'No data found', icon }: EmptyStateProps) {
     return (
         <Empty>
             <EmptyHeader>
                 <EmptyMedia variant="icon">
-                    <AlertTriangle />
+                    {icon ?? <AlertTriangle />}
                 </EmptyMedia>
-                <EmptyTitle>No data</EmptyTitle>
-                <EmptyDescription>No data found</EmptyDescription>
+                <EmptyTitle>{title}</EmptyTitle>
+                {description && <EmptyDescription>{description}</EmptyDescription>}
             </EmptyHeader>
         </Empty>
     );

@@ -1,5 +1,4 @@
-"use client"
-
+import EmptyState from "@/components/empty-state.tsx"
 import {
     ChartContainer,
     ChartLegend,
@@ -130,7 +129,7 @@ function AnalyticsItem({ clicks, loading }: ClicksListProps) {
             <Card>
                 <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
                     <div className="flex items-center justify-center h-[300px]">
-                        <p>No click data available</p>
+                        <EmptyState title="No click data available" description="No click events recorded yet." />
                     </div>
                 </CardContent>
             </Card>

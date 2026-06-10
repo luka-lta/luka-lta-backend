@@ -8,6 +8,7 @@ import {Search} from "@/components/search.tsx";
 import {ThemeSwitch} from "@/components/theme-switch.tsx";
 import {SearchProvider} from "@/context/search-context.tsx";
 import {ProfileDropdown} from "@/components/profile-dropdown.tsx";
+import {DynamicBreadcrumb} from "@/components/layout/dynamic-breadcrumb.tsx";
 
 export default function DashboardLayout() {
     /*
@@ -32,8 +33,9 @@ export default function DashboardLayout() {
                     )}
                 >
                     <Header>
-                        <Search/>
+                        <DynamicBreadcrumb />
                         <div className='ml-auto flex items-center space-x-4'>
+                            <Search/>
                             <ThemeSwitch/>
                             <ProfileDropdown/>
                         </div>

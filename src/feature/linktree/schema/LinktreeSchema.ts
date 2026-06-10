@@ -2,7 +2,7 @@ import {z} from "zod";
 
 export const LinkItemSchema = z.object({
     id: z.number(),
-    clickTag: z.string().min(16),
+    clickTag: z.string().min(8),
     displayname: z.string().min(1, "Display name is required"),
     description: z.string().optional().nullable().default(null),
     url: z.string().url("Must be a valid URL"),
@@ -24,6 +24,6 @@ export type LinkItemTypeSchema = z.infer<typeof LinkItemSchema>
 
 export const linkListSchema = z.object({
     links: z.array(LinkItemSchema),
-    totalPages: z.number().default(999),
+    totalPages: z.number().optional(),
 });
 

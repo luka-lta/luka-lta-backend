@@ -15,5 +15,5 @@ export type UserTypeSchema = z.infer<typeof UserSchema>;
 
 export const userListSchema = z.object({
     users: z.array(UserSchema),
-    totalPages: z.number().default(999),
+    totalPages: z.number().optional(),
 });

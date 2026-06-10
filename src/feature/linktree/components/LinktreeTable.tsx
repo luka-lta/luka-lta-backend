@@ -22,7 +22,7 @@ import LongText from "@/components/long-text.tsx";
 
 interface LinktreeTableProps {
     links: LinkItemTypeSchema[];
-    maxPages: number;
+    maxPages?: number;
     loading: boolean;
     setFilterData: (filterData: Record<string, string>) => void;
 }

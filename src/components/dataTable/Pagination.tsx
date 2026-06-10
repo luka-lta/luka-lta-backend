@@ -5,11 +5,12 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-r
 interface PagerProps {
     page: number,
     rowsPerPage: number;
-    maxPages: number;
+    maxPages?: number;
     onUpdatePagination: (page: number, pageSize: number) => void;
 }
 
 function Pagination({ onUpdatePagination, page, rowsPerPage, maxPages }: PagerProps) {
+    const isLastPage = maxPages !== undefined && page >= maxPages;
     return (
         <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2">
@@ -25,7 +26,7 @@ function Pagination({ onUpdatePagination, page, rowsPerPage, maxPages }: PagerPr
                         <SelectItem value="50">50</SelectItem>
                     </SelectContent>
                 </Select>
-                <span className="text-sm text-muted-foreground">Page {page} of {maxPages}</span>
+                <span className="text-sm text-muted-foreground">Page {page} of {maxPages ?? '?'}</span>
             </div>
             <div className="flex items-center gap-2">
                 <Button
@@ -39,7 +40,7 @@ function Pagination({ onUpdatePagination, page, rowsPerPage, maxPages }: PagerPr
                 <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => onUpdatePagination(--page, rowsPerPage)}
+                    onClick={() => onUpdatePagination(page - 1, rowsPerPage)}
                     disabled={page === 1}
                 >
                     <ChevronLeft className="h-4 w-4" />
@@ -47,16 +48,16 @@ function Pagination({ onUpdatePagination, page, rowsPerPage, maxPages }: PagerPr
                 <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => onUpdatePagination(++page, rowsPerPage)}
-                    disabled={page === maxPages}
+                    onClick={() => onUpdatePagination(page + 1, rowsPerPage)}
+                    disabled={isLastPage}
                 >
                     <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => onUpdatePagination(maxPages, rowsPerPage)}
-                    disabled={page === maxPages}
+                    onClick={() => maxPages && onUpdatePagination(maxPages, rowsPerPage)}
+                    disabled={isLastPage || maxPages === undefined}
                 >
                     <ChevronsRight className="h-4 w-4" />
                 </Button>

@@ -26,26 +26,24 @@ import {
     DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import { NavCollapsible, NavItem, NavLink, type NavGroup } from './types'
-import {Link} from "react-router-dom";
+import { Link, useLocation } from 'react-router-dom'
 
 export function NavGroup({ title, items }: NavGroup) {
     const { state } = useSidebar()
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>{title}</SidebarGroupLabel>
+            <SidebarGroupLabel className="uppercase text-[10px] font-semibold tracking-widest opacity-50 mt-2">{title}</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => {
                     const key = `${item.title}-${item.url}`
 
                     if (!item.items)
-                        return <SidebarMenuLink key={key} item={item} href={item.url ?? ''} />
+                        return <SidebarMenuLink key={key} item={item} />
 
                     if (state === 'collapsed')
-                        return (
-                            <SidebarMenuCollapsedDropdown key={key} item={item} href={item.url ?? ''} />
-                        )
+                        return <SidebarMenuCollapsedDropdown key={key} item={item} />
 
-                    return <SidebarMenuCollapsible key={key} item={item} href={item.url ?? ''} />
+                    return <SidebarMenuCollapsible key={key} item={item} />
                 })}
             </SidebarMenu>
         </SidebarGroup>
@@ -56,13 +54,14 @@ const NavBadge = ({ children }: { children: ReactNode }) => (
     <Badge className='rounded-full px-1 py-0 text-xs'>{children}</Badge>
 )
 
-const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
+const SidebarMenuLink = ({ item }: { item: NavLink }) => {
     const { setOpenMobile } = useSidebar()
+    const { pathname } = useLocation()
     return (
         <SidebarMenuItem>
             <SidebarMenuButton
                 asChild
-                isActive={checkIsActive(href, item)}
+                isActive={checkIsActive(pathname, item)}
                 tooltip={item.title}
             >
                 <Link to={item.url} onClick={() => setOpenMobile(false)}>
@@ -75,18 +74,13 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
     )
 }
 
-const SidebarMenuCollapsible = ({
-                                    item,
-                                    href,
-                                }: {
-    item: NavCollapsible
-    href: string
-}) => {
+const SidebarMenuCollapsible = ({ item }: { item: NavCollapsible }) => {
     const { setOpenMobile } = useSidebar()
+    const { pathname } = useLocation()
     return (
         <Collapsible
             asChild
-            defaultOpen={checkIsActive(href, item, true)}
+            defaultOpen={checkIsActive(pathname, item, true)}
             className='group/collapsible'
         >
             <SidebarMenuItem>
@@ -104,7 +98,7 @@ const SidebarMenuCollapsible = ({
                             <SidebarMenuSubItem key={subItem.title}>
                                 <SidebarMenuSubButton
                                     asChild
-                                    isActive={checkIsActive(href, subItem)}
+                                    isActive={checkIsActive(pathname, subItem)}
                                 >
                                     <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
                                         {subItem.icon && <subItem.icon />}
@@ -121,20 +115,15 @@ const SidebarMenuCollapsible = ({
     )
 }
 
-const SidebarMenuCollapsedDropdown = ({
-                                          item,
-                                          href,
-                                      }: {
-    item: NavCollapsible
-    href: string
-}) => {
+const SidebarMenuCollapsedDropdown = ({ item }: { item: NavCollapsible }) => {
+    const { pathname } = useLocation()
     return (
         <SidebarMenuItem>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
                         tooltip={item.title}
-                        isActive={checkIsActive(href, item)}
+                        isActive={checkIsActive(pathname, item)}
                     >
                         {item.icon && <item.icon />}
                         <span>{item.title}</span>
@@ -151,7 +140,7 @@ const SidebarMenuCollapsedDropdown = ({
                         <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>
                             <Link
                                 to={sub.url}
-                                className={`${checkIsActive(href, sub) ? 'bg-secondary' : ''}`}
+                                className={`${checkIsActive(pathname, sub) ? 'bg-secondary' : ''}`}
                             >
                                 {sub.icon && <sub.icon />}
                                 <span className='max-w-52 text-wrap'>{sub.title}</span>

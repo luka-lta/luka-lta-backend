@@ -10,12 +10,14 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import {Link, useLocation, useNavigate} from "react-router-dom";
+import {Badge} from "@/components/ui/badge.tsx";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
     items: {
         href: string
         title: string
         icon: JSX.Element
+        badge?: string
     }[]
 }
 
@@ -78,6 +80,11 @@ export default function SidebarNav({
                         >
                             <span className='mr-2'>{item.icon}</span>
                             {item.title}
+                            {item.badge && (
+                                <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-4">
+                                    {item.badge}
+                                </Badge>
+                            )}
                         </Link>
                     ))}
                 </nav>

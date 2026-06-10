@@ -1,10 +1,11 @@
 import { type SidebarData } from '../types'
 import {
+    BookOpen,
     Eye,
     Hammer,
     KeySquare, LayoutDashboardIcon,
     ListTree, MousePointerClickIcon, Palette, Settings, SettingsIcon,
-    ShieldHalfIcon, UserCog,
+    ShieldHalfIcon, Tag, UserCog,
     UsersIcon, Wrench
 } from "lucide-react";
 
@@ -63,6 +64,21 @@ export const sidebarData: SidebarData = {
                     icon: MousePointerClickIcon,
                     url: '/dashboard/clicks',
                 }
+            ],
+        },
+        {
+            title: 'Blog-Management',
+            items: [
+                {
+                    title: 'Blog Posts',
+                    icon: BookOpen,
+                    url: '/dashboard/blog',
+                },
+                {
+                    title: 'Blog Tags',
+                    icon: Tag,
+                    url: '/dashboard/blog-tags',
+                },
             ],
         },
         {

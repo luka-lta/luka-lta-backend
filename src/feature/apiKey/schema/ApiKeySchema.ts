@@ -15,5 +15,5 @@ export type ApiKeyTypeSchema = z.infer<typeof ApiKeySchema>;
 
 export const apiKeyListSchema = z.object({
     apiKeys: z.array(ApiKeySchema),
-    totalPages: z.number().default(999),
+    totalPages: z.number().optional(),
 });

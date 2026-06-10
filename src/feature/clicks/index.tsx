@@ -1,12 +1,10 @@
 import {Main} from "@/components/layout/main.tsx";
 import {useClicksOverview} from "@/feature/clicks/hooks/useClicksOverview.ts";
-import {Badge} from "@/components/ui/badge.tsx";
-import {AlertTriangle} from "lucide-react";
-import {QueryErrorDisplay} from "@/components/QueryErrorDisplay.tsx";
 import ClickOverviewTable from "@/feature/clicks/components/ClickOverviewTable.tsx";
 import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 import ClicksProvider from "@/feature/clicks/context/clicks-context.tsx";
 import ClicksDialogs from "@/feature/clicks/components/ClicksDialogs.tsx";
+import {ErrorState} from "@/components/error-state.tsx";
 
 function Clicks() {
     const [clickOverview, setFilterData] = useClicksOverview();
@@ -15,15 +13,12 @@ function Clicks() {
     if (clickOverview.error) {
         return (
             <div className='p-6'>
-                <div className='mb-5'>
-                    <div className='flex items-center gap-2 mb-2'>
-                        <h1 className='text-2xl font-semibold'>Clicks Overview</h1>
-                        <Badge variant='secondary' className='bg-zinc-900 text-red-600 hover:bg-zinc-900'>
-                            <AlertTriangle/>
-                        </Badge>
-                    </div>
-                    <QueryErrorDisplay query={clickOverview}/>
-                </div>
+                <h2 className='text-2xl font-bold tracking-tight mb-4'>Clicks Overview</h2>
+                <ErrorState
+                    title="Failed to load clicks"
+                    message={clickOverview.error.message}
+                    refetch={clickOverview.refetch}
+                />
             </div>
         )
     }
@@ -42,7 +37,7 @@ function Clicks() {
 
                 <ClickOverviewTable
                     clicks={clickOverview.data?.clicks ?? []}
-                    maxPages={clickOverview.data?.totalPages ?? 999}
+                    maxPages={clickOverview.data?.totalPages}
                     loading={clickOverview.isPending}
                     setFilterData={setFilterData}
                 />

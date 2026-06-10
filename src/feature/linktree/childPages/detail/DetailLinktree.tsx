@@ -13,7 +13,7 @@ import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 
 function DetailLinktree() {
     const params = useParams()
-    const linkId: number = params.linkId as unknown as number
+    const linkId = parseInt(params.linkId ?? '', 10)
     const [linkDetail] = useLinkDetail(linkId);
     useSetPageTitle('Backend - Link Detail (' + linkDetail.data?.link.displayname + ')');
 

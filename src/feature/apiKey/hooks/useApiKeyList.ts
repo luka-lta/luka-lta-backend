@@ -20,8 +20,6 @@ export function useApiKeyList() {
             const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
             const response = await fetchWrapper.get(`/key/?${params.toString()}`);
 
-            console.log(response.data)
-
             return apiKeyListSchema.parse(response.data);
         }
     })

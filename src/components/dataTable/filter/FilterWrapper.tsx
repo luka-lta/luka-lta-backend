@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Plus, RotateCw, Trash } from 'lucide-react'
+import { FilterX, Plus, RotateCw } from 'lucide-react'
 import { ReactElement } from 'react'
 import { DataTableFilter } from '../DataTable'
 import { CustomFilterContext } from './CustomFilterContext'
@@ -31,7 +31,7 @@ export const FilterWrapper: React.FC<FilterWrapperProps> = ({
 
             <div className="flex items-center gap-2">
                 <Button variant="outline" className="gap-2" onClick={onResetFilter}>
-                    <Trash className="h-4 w-4" />
+                    <FilterX className="h-4 w-4" />
                     Clear Filters
                 </Button>
                 <Button variant="outline" size="icon" onClick={onRefetchData}>
