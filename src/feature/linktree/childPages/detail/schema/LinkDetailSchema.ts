@@ -6,9 +6,11 @@ export const linkDetailSchema = z.object({
 })
 
 export const LinkDetailEditSchema = z.object({
-    displayname: z.string(),
+    displayname: z.string().nonempty().min(1).max(255),
+    description: z.string().nullable().default(null).transform((v) => (v ? v : null)),
     url: z.string().url(),
     isActive: z.boolean(),
+    iconName: z.string().nullable().default(null).transform((v) => (v ? v : null)),
 });
 
 export type LinkDetailEditTypeSchema = z.infer<typeof LinkDetailEditSchema>
