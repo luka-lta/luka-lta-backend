@@ -1,4 +1,4 @@
-import { Duration, DurationLikeObject } from "luxon";
+import { DateTime, Duration, DurationLikeObject } from "luxon";
 
 export const userLocale = typeof navigator !== "undefined" ? navigator.language : "en-US";
 const resolved = new Intl.DateTimeFormat(userLocale, {
@@ -38,4 +38,26 @@ export function formatDuration(duration: number): string {
         listStyle: "narrow",
         unitDisplay: "short",
     });
+}
+
+// The API returns SQL-style ("yyyy-MM-dd HH:mm:ss") timestamps with no zone marker.
+// They're UTC on the wire, so parse as UTC and convert to local for display —
+// otherwise relative times ("2 hours ago" for something just created) come out wrong.
+function parseTimestamp(ts: string): DateTime {
+    return DateTime.fromSQL(ts, {zone: "utc"}).setZone("local");
+}
+
+export function formatAbs(ts: string): string {
+    const date = parseTimestamp(ts);
+    return date.isValid ? date.toFormat("dd.MM.yyyy HH:mm") : ts;
+}
+
+export function formatAbsFull(ts: string): string {
+    const date = parseTimestamp(ts);
+    return date.isValid ? date.toFormat("dd.MM.yyyy HH:mm:ss") : ts;
+}
+
+export function formatRel(ts: string): string {
+    const date = parseTimestamp(ts);
+    return date.isValid ? (date.toRelative() ?? ts) : ts;
 }
