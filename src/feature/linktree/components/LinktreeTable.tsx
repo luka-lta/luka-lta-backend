@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {
     createColumnHelper,
     flexRender,
@@ -64,12 +64,18 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
             page: String(page),
             pageSize: String(PAGE_SIZE),
             displayname: debouncedSearch,
-            status: statusFilter === "all" ? "" : statusFilter,
             sortColumn: sorting[0]?.id ?? '',
             sortDirection: sorting[0] ? (sorting[0].desc ? 'desc' : 'asc') : '',
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, debouncedSearch, statusFilter, sorting]);
+
+    const visibleLinks = useMemo(() => links.filter((l) => {
+        if (statusFilter === "all") return true;
+        if (statusFilter === "deactivated") return l.deactivated;
+        if (statusFilter === "active") return !l.deactivated && l.isActive;
+        return !l.deactivated && !l.isActive; // inactive
+    }), [links, statusFilter]);
 
     const columns = [
         col.accessor('clickTag', {
@@ -188,7 +194,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
     ];
 
     const table = useReactTable({
-        data: links,
+        data: visibleLinks,
         columns,
         state: {sorting},
         onSortingChange: setSorting,
@@ -222,7 +228,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                             <SelectItem value="deactivated">Deactivated</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Button variant="outline" onClick={() => { setSearchInput(""); setStatusFilter("all"); }}>
+                    <Button variant="outline" onClick={() => { setSearchInput(""); setStatusFilter("all"); setPage(1); }}>
                         <FilterX className="h-4 w-4"/>
                         Clear
                     </Button>
@@ -302,7 +308,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
             <Pagination
                 page={page}
                 totalPages={maxPages}
-                rowCount={links.length}
+                rowCount={visibleLinks.length}
                 isLoading={loading}
                 onPageChange={setPage}
             />

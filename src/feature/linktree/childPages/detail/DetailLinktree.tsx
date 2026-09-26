@@ -148,10 +148,8 @@ function DetailLinktree() {
                 <>
                     <DeleteLinkDialog
                         open={openDialog === 'delete'}
-                        onOpenChange={(open) => {
-                            setOpenDialog(open ? 'delete' : null);
-                            if (!open) navigate('/dashboard/linktree');
-                        }}
+                        onOpenChange={(open) => setOpenDialog(open ? 'delete' : null)}
+                        onDeleted={() => navigate('/dashboard/linktree')}
                         currentRow={link}
                     />
                     <DeactivateLinkDialog

@@ -1,47 +1,39 @@
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 import {toast} from "sonner";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 import {ConfirmDialog} from "@/components/confirm-dialog.tsx";
 import {AlertTriangle} from "lucide-react";
 import {LinkItemTypeSchema} from "@/feature/linktree/schema/LinktreeSchema.ts";
+import {useDeleteLink} from "@/api/linktree/hooks.ts";
 
 interface Props {
     open: boolean
     onOpenChange: (open: boolean) => void
     currentRow: LinkItemTypeSchema
+    onDeleted?: () => void
 }
 
-function DeleteLinkDialog({open, onOpenChange, currentRow}: Props) {
-    const queryClient = useQueryClient();
+function DeleteLinkDialog({open, onOpenChange, currentRow, onDeleted}: Props) {
+    const deleteLink = useDeleteLink();
 
-    const deleteLink = useMutation({
-        mutationFn: async () => {
-            const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            await fetchWrapper.delete(`/linkCollection/${currentRow.clickTag}`)
-        },
-        onSuccess: () => {
-            onOpenChange(false);
-            toast.success('Link deleted successfully!');
-        },
-        onError: (error) => {
-            toast.error(error.message);
-            console.error(error);
-        },
-        onSettled: () => {
-            setTimeout(() => {
-                queryClient.invalidateQueries({
-                    queryKey: ['linktree', 'list'],
-                });
-            }, 500)
-        }
-    })
+    const handleConfirm = () => {
+        deleteLink.mutate(currentRow.id, {
+            onSuccess: () => {
+                onOpenChange(false);
+                onDeleted?.();
+                toast.success('Link deleted successfully!');
+            },
+            onError: (error) => {
+                toast.error(error.message);
+                console.error(error);
+            },
+        });
+    };
 
     return (
         <ConfirmDialog
             open={open}
             onOpenChange={onOpenChange}
-            handleConfirm={deleteLink.mutate}
+            handleConfirm={handleConfirm}
             title={
                 <span className='text-destructive'>
                   <AlertTriangle
@@ -57,7 +49,7 @@ function DeleteLinkDialog({open, onOpenChange, currentRow}: Props) {
                         Are you sure you want to delete{' '}
                         <span className='font-bold'>{currentRow.displayname}</span>?
                         <br/>
-                        This action will permanently remove the user from the system. This cannot be undone.
+                        This action will permanently remove the link. This cannot be undone.
                     </p>
 
                     <Alert variant='destructive'>
@@ -71,6 +63,7 @@ function DeleteLinkDialog({open, onOpenChange, currentRow}: Props) {
             confirmText={
                 deleteLink.isPending ? 'Deleting...' : 'Delete'
             }
+            isLoading={deleteLink.isPending}
             destructive
         />
     );

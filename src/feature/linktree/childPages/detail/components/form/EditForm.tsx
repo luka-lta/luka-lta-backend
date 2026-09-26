@@ -40,7 +40,10 @@ function EditForm({initialData}: EditFormProps) {
 
     const onSubmit: SubmitHandler<LinkDetailEditTypeSchema> = (data) => {
         editLink.mutate(data, {
-            onSuccess: () => toast.success("Link updated successfully"),
+            onSuccess: () => {
+                form.reset(data);
+                toast.success("Link updated successfully");
+            },
             onError: (error) => toast.error(error.message),
         });
     };
