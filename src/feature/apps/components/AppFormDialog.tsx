@@ -24,12 +24,26 @@ const appFormSchema = z.object({
     url: z.string().max(2048).refine((val) => val === "" || /^https?:\/\/.+/.test(val), {
         message: "Muss eine gültige URL sein (http:// oder https://)",
     }),
-    metricsRevenue: z.string().refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein"),
-    metricsDownloads: z.string().refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein"),
-    metricsRating: z.string().refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein"),
-    metricsMrr: z.string().refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein"),
-    metricsActiveUsers: z.string().refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein"),
-    metricsChurnPercent: z.string().refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein"),
+    metricsRevenue: z.string()
+        .refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein")
+        .refine((v) => v === "" || Number(v) >= 0, "Muss 0 oder größer sein"),
+    metricsDownloads: z.string()
+        .refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein")
+        .refine((v) => v === "" || Number(v) >= 0, "Muss 0 oder größer sein")
+        .refine((v) => v === "" || Number.isInteger(Number(v)), "Muss eine ganze Zahl sein"),
+    metricsRating: z.string()
+        .refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein")
+        .refine((v) => v === "" || (Number(v) >= 0 && Number(v) <= 5), "Muss zwischen 0 und 5 liegen"),
+    metricsMrr: z.string()
+        .refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein")
+        .refine((v) => v === "" || Number(v) >= 0, "Muss 0 oder größer sein"),
+    metricsActiveUsers: z.string()
+        .refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein")
+        .refine((v) => v === "" || Number(v) >= 0, "Muss 0 oder größer sein")
+        .refine((v) => v === "" || Number.isInteger(Number(v)), "Muss eine ganze Zahl sein"),
+    metricsChurnPercent: z.string()
+        .refine((v) => v === "" || !Number.isNaN(Number(v)), "Muss eine Zahl sein")
+        .refine((v) => v === "" || (Number(v) >= 0 && Number(v) <= 100), "Muss zwischen 0 und 100 liegen"),
 });
 
 type AppFormValues = z.infer<typeof appFormSchema>;
@@ -228,26 +242,44 @@ export function AppFormDialog({ open, onOpenChange, mode, defaultValues }: AppFo
                             <div className="space-y-1">
                                 <Label htmlFor="app-revenue" className="text-xs">Umsatz (€)</Label>
                                 <Input id="app-revenue" inputMode="decimal" {...form.register("metricsRevenue")} />
+                                {form.formState.errors.metricsRevenue && (
+                                    <p className="text-sm text-destructive">{form.formState.errors.metricsRevenue.message}</p>
+                                )}
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="app-downloads" className="text-xs">Downloads</Label>
                                 <Input id="app-downloads" inputMode="numeric" {...form.register("metricsDownloads")} />
+                                {form.formState.errors.metricsDownloads && (
+                                    <p className="text-sm text-destructive">{form.formState.errors.metricsDownloads.message}</p>
+                                )}
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="app-rating" className="text-xs">Rating (0-5)</Label>
                                 <Input id="app-rating" inputMode="decimal" {...form.register("metricsRating")} />
+                                {form.formState.errors.metricsRating && (
+                                    <p className="text-sm text-destructive">{form.formState.errors.metricsRating.message}</p>
+                                )}
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="app-mrr" className="text-xs">MRR (€)</Label>
                                 <Input id="app-mrr" inputMode="decimal" {...form.register("metricsMrr")} />
+                                {form.formState.errors.metricsMrr && (
+                                    <p className="text-sm text-destructive">{form.formState.errors.metricsMrr.message}</p>
+                                )}
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="app-active-users" className="text-xs">Aktive User</Label>
                                 <Input id="app-active-users" inputMode="numeric" {...form.register("metricsActiveUsers")} />
+                                {form.formState.errors.metricsActiveUsers && (
+                                    <p className="text-sm text-destructive">{form.formState.errors.metricsActiveUsers.message}</p>
+                                )}
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="app-churn" className="text-xs">Churn (%)</Label>
                                 <Input id="app-churn" inputMode="decimal" {...form.register("metricsChurnPercent")} />
+                                {form.formState.errors.metricsChurnPercent && (
+                                    <p className="text-sm text-destructive">{form.formState.errors.metricsChurnPercent.message}</p>
+                                )}
                             </div>
                         </div>
                     </fieldset>
