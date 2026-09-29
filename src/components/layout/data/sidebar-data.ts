@@ -1,6 +1,7 @@
 import { type SidebarData } from '../types'
 import {
     BookOpen,
+    Boxes,
     Eye,
     Hammer,
     KeySquare, LayoutDashboardIcon,
@@ -18,6 +19,11 @@ export const sidebarData: SidebarData = {
                     title: 'Dashboard',
                     url: '/dashboard',
                     icon: LayoutDashboardIcon,
+                },
+                {
+                    title: 'Apps',
+                    url: '/dashboard/apps',
+                    icon: Boxes,
                 },
                 {
                     title: "Tools",
