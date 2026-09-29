@@ -73,7 +73,9 @@ function Apps() {
             {formState && (
                 <AppFormDialog
                     open={!!formState}
-                    onOpenChange={(open) => !open && setFormState(null)}
+                    onOpenChange={(open) => {
+                        if (!open) setTimeout(() => setFormState(null), 500);
+                    }}
                     mode={formState.mode}
                     defaultValues={formState.app}
                 />
@@ -82,7 +84,9 @@ function Apps() {
             {appToDelete && (
                 <DeleteAppDialog
                     open={!!appToDelete}
-                    onOpenChange={(open) => !open && setAppToDelete(null)}
+                    onOpenChange={(open) => {
+                        if (!open) setTimeout(() => setAppToDelete(null), 500);
+                    }}
                     app={appToDelete}
                 />
             )}
