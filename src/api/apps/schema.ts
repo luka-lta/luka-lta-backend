@@ -17,6 +17,13 @@ export const AppStatusSchema = z.enum([
     "planned",
 ]);
 
+export const AppAnalyticsSourceSchema = z.enum([
+    "none",
+    "app-store-connect",
+    "firebase",
+    "custom",
+]);
+
 // Icon keys live in the API layer (not in feature/apps) so schema.ts never
 // depends on a UI module. feature/apps/iconOptions.ts maps these keys to
 // lucide components.
@@ -50,6 +57,7 @@ export const AppEntitySchema = z.object({
     icon: AppIconKeySchema,
     category: AppCategorySchema,
     status: AppStatusSchema,
+    analyticsSource: AppAnalyticsSourceSchema.default("none"),
     url: z.string().url().optional(),
     metrics: AppMetricsSchema.optional(),
     createdAt: z.string(),
@@ -66,6 +74,7 @@ export const AppInputSchema = AppEntitySchema.omit({
 
 export type AppCategory = z.infer<typeof AppCategorySchema>;
 export type AppStatus = z.infer<typeof AppStatusSchema>;
+export type AppAnalyticsSource = z.infer<typeof AppAnalyticsSourceSchema>;
 export type AppIconKey = z.infer<typeof AppIconKeySchema>;
 export type AppMetrics = z.infer<typeof AppMetricsSchema>;
 export type AppEntity = z.infer<typeof AppEntitySchema>;
