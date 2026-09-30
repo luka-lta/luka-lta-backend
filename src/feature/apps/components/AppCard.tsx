@@ -2,6 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import type { AppEntity } from "@/api/apps/schema";
 import { getAppIcon } from "@/feature/apps/iconOptions";
@@ -30,7 +31,7 @@ export function AppCard({ app, onEdit, onDelete }: AppCardProps) {
     return (
         <Card className="flex flex-col">
             <CardHeader className="flex flex-row items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
+                <Link to={`/dashboard/apps/${app.id}`} className="flex items-start gap-3 min-w-0 hover:opacity-80">
                     <div className="rounded-lg bg-muted p-2 shrink-0">
                         <Icon className="h-5 w-5" />
                     </div>
@@ -38,7 +39,7 @@ export function AppCard({ app, onEdit, onDelete }: AppCardProps) {
                         <p className="font-semibold truncate">{app.name}</p>
                         <p className="text-sm text-muted-foreground line-clamp-2">{app.description}</p>
                     </div>
-                </div>
+                </Link>
             </CardHeader>
             <CardContent className="flex-1 space-y-3">
                 <div className="flex flex-wrap gap-2">
