@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createApp, deleteApp, fetchApp, fetchAppList, updateApp } from "@/api/apps/endpoints";
-import type { AppInput } from "@/api/apps/schema";
+import { fetchAppAnalytics } from "@/api/apps/analyticsEndpoints";
+import type { AppEntity, AppInput } from "@/api/apps/schema";
 
 export function useAppList() {
     return useQuery({
@@ -14,6 +15,14 @@ export function useApp(id: string) {
         queryKey: ["apps", "detail", id],
         queryFn: () => fetchApp(id),
         enabled: !!id,
+    });
+}
+
+export function useAppAnalytics(app: AppEntity | undefined) {
+    return useQuery({
+        queryKey: ["apps", "analytics", app?.id],
+        queryFn: () => fetchAppAnalytics(app!),
+        enabled: !!app,
     });
 }
 
