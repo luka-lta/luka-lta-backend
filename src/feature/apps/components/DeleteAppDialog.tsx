@@ -8,9 +8,10 @@ interface DeleteAppDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     app: AppEntity
+    onDeleted?: () => void
 }
 
-export function DeleteAppDialog({ open, onOpenChange, app }: DeleteAppDialogProps) {
+export function DeleteAppDialog({ open, onOpenChange, app, onDeleted }: DeleteAppDialogProps) {
     const deleteApp = useDeleteApp()
 
     function handleConfirm() {
@@ -18,6 +19,7 @@ export function DeleteAppDialog({ open, onOpenChange, app }: DeleteAppDialogProp
             onSuccess: () => {
                 onOpenChange(false)
                 toast.success('App gelöscht')
+                onDeleted?.()
             },
             onError: (error) => toast.error(error.message),
         })
