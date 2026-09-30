@@ -10,10 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/kibo-ui/spinner";
-import { AppCategorySchema, AppIconKeySchema, AppStatusSchema, type AppEntity, type AppInput } from "@/api/apps/schema";
+import { AppAnalyticsSourceSchema, AppCategorySchema, AppIconKeySchema, AppStatusSchema, type AppEntity, type AppInput } from "@/api/apps/schema";
 import { useCreateApp, useUpdateApp } from "@/api/apps/hooks";
 import { APP_ICON_OPTIONS } from "@/feature/apps/iconOptions";
-import { CATEGORY_LABELS, STATUS_LABELS } from "@/feature/apps/labels";
+import { ANALYTICS_SOURCE_LABELS, CATEGORY_LABELS, STATUS_LABELS } from "@/feature/apps/labels";
 
 const appFormSchema = z.object({
     name: z.string().min(1, "Name ist erforderlich").max(100, "Maximal 100 Zeichen"),
@@ -21,6 +21,7 @@ const appFormSchema = z.object({
     icon: AppIconKeySchema,
     category: AppCategorySchema,
     status: AppStatusSchema,
+    analyticsSource: AppAnalyticsSourceSchema,
     url: z.string().max(2048).refine((val) => {
         if (val === "") return true;
         try {
@@ -62,6 +63,7 @@ const emptyFormValues: AppFormValues = {
     icon: "boxes",
     category: "other",
     status: "active",
+    analyticsSource: "none",
     url: "",
     metricsRevenue: "",
     metricsDownloads: "",
@@ -78,6 +80,7 @@ function toFormValues(app: AppEntity): AppFormValues {
         icon: app.icon,
         category: app.category,
         status: app.status,
+        analyticsSource: app.analyticsSource,
         url: app.url ?? "",
         metricsRevenue: app.metrics?.revenue?.toString() ?? "",
         metricsDownloads: app.metrics?.downloads?.toString() ?? "",
@@ -111,6 +114,7 @@ function toAppInput(values: AppFormValues): AppInput {
         icon: values.icon,
         category: values.category,
         status: values.status,
+        analyticsSource: values.analyticsSource,
         url: values.url.trim() === "" ? undefined : values.url.trim(),
         metrics: hasMetrics ? metrics : undefined,
     };
@@ -211,6 +215,24 @@ export function AppFormDialog({ open, onOpenChange, mode, defaultValues }: AppFo
                                 )}
                             />
                         </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <Label>Analytics-Quelle</Label>
+                        <Controller
+                            control={form.control}
+                            name="analyticsSource"
+                            render={({ field }) => (
+                                <Select value={field.value} onValueChange={field.onChange}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(ANALYTICS_SOURCE_LABELS).map(([value, label]) => (
+                                            <SelectItem key={value} value={value}>{label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
                     </div>
 
                     <div className="space-y-1.5">
