@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Star, Download } from "lucide-react";
 import { useAppList } from "@/api/apps/hooks.ts";
 
@@ -17,7 +18,16 @@ export function AppStoreMetricsCard() {
                 <CardDescription>Downloads & Revenue pro App</CardDescription>
             </CardHeader>
             <CardContent>
-                {apps.length === 0 ? (
+                {appList.isLoading ? (
+                    <div className="space-y-3">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                ) : appList.isError ? (
+                    <p className="text-sm text-destructive">
+                        App-Store-Metriken konnten nicht geladen werden.
+                    </p>
+                ) : apps.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                         Noch keine App-Store-Apps angelegt. Füge welche unter „Apps" hinzu.
                     </p>

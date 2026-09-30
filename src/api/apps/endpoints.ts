@@ -1,4 +1,4 @@
-import { AppEntitySchema, type AppEntity, type AppInput } from "@/api/apps/schema";
+import { AppEntitySchema, AppInputSchema, type AppEntity, type AppInput } from "@/api/apps/schema";
 import { getAppById, insertApp, listApps, removeAppById, updateAppById } from "@/api/apps/mockStore";
 
 /**
@@ -24,12 +24,14 @@ export async function fetchApp(id: string): Promise<AppEntity> {
 
 export async function createApp(input: AppInput): Promise<AppEntity> {
     await delay(300);
-    return AppEntitySchema.parse(insertApp(input));
+    const parsed = AppInputSchema.parse(input);
+    return AppEntitySchema.parse(insertApp(parsed));
 }
 
 export async function updateApp(id: string, input: AppInput): Promise<AppEntity> {
     await delay(300);
-    const updated = updateAppById(id, input);
+    const parsed = AppInputSchema.parse(input);
+    const updated = updateAppById(id, parsed);
     if (!updated) throw new Error(`App not found: ${id}`);
     return AppEntitySchema.parse(updated);
 }

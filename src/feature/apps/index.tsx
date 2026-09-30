@@ -14,7 +14,9 @@ import { DeleteAppDialog } from "@/feature/apps/components/DeleteAppDialog";
 function Apps() {
     const appList = useAppList();
     const [formState, setFormState] = useState<{ mode: "create" | "edit"; app?: AppEntity } | null>(null);
+    const [formOpen, setFormOpen] = useState(false);
     const [appToDelete, setAppToDelete] = useState<AppEntity | null>(null);
+    const [deleteOpen, setDeleteOpen] = useState(false);
 
     const apps = appList.data ?? [];
 
@@ -26,7 +28,7 @@ function Apps() {
                     <p className="text-muted-foreground">Verwalte alle Apps, Webseiten und Produkte an einem Ort.</p>
                 </div>
                 {apps.length > 0 && (
-                    <Button onClick={() => setFormState({ mode: "create" })}>
+                    <Button onClick={() => { setFormState({ mode: "create" }); setFormOpen(true); }}>
                         <Plus className="h-4 w-4" />
                         Neue App
                     </Button>
@@ -54,7 +56,7 @@ function Apps() {
             )}
 
             {!appList.isLoading && !appList.isError && apps.length === 0 && (
-                <EmptyAppsState onCreate={() => setFormState({ mode: "create" })} />
+                <EmptyAppsState onCreate={() => { setFormState({ mode: "create" }); setFormOpen(true); }} />
             )}
 
             {!appList.isLoading && !appList.isError && apps.length > 0 && (
@@ -63,8 +65,8 @@ function Apps() {
                         <AppCard
                             key={app.id}
                             app={app}
-                            onEdit={(a) => setFormState({ mode: "edit", app: a })}
-                            onDelete={(a) => setAppToDelete(a)}
+                            onEdit={(a) => { setFormState({ mode: "edit", app: a }); setFormOpen(true); }}
+                            onDelete={(a) => { setAppToDelete(a); setDeleteOpen(true); }}
                         />
                     ))}
                 </div>
@@ -72,8 +74,9 @@ function Apps() {
 
             {formState && (
                 <AppFormDialog
-                    open={!!formState}
+                    open={formOpen}
                     onOpenChange={(open) => {
+                        setFormOpen(open);
                         if (!open) setTimeout(() => setFormState(null), 500);
                     }}
                     mode={formState.mode}
@@ -83,8 +86,9 @@ function Apps() {
 
             {appToDelete && (
                 <DeleteAppDialog
-                    open={!!appToDelete}
+                    open={deleteOpen}
                     onOpenChange={(open) => {
+                        setDeleteOpen(open);
                         if (!open) setTimeout(() => setAppToDelete(null), 500);
                     }}
                     app={appToDelete}

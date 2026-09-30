@@ -13,7 +13,7 @@ export function BusinessSummaryKpis() {
         ? apps.filter((app) => app.category === "app-store").reduce((sum, app) => sum + (app.metrics?.revenue ?? 0), 0)
         : undefined;
 
-    const trackspireApp = apps?.find((app) => app.category === "saas" && app.name === "Trackspire");
+    const trackspireApp = apps?.find((app) => app.category === "saas");
     const trackspireMrr = apps ? (trackspireApp?.metrics?.mrr ?? 0) : undefined;
 
     return (

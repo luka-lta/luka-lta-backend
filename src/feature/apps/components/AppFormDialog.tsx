@@ -21,7 +21,15 @@ const appFormSchema = z.object({
     icon: AppIconKeySchema,
     category: AppCategorySchema,
     status: AppStatusSchema,
-    url: z.string().max(2048).refine((val) => val === "" || /^https?:\/\/.+/.test(val), {
+    url: z.string().max(2048).refine((val) => {
+        if (val === "") return true;
+        try {
+            new URL(val);
+            return /^https?:\/\//.test(val);
+        } catch {
+            return false;
+        }
+    }, {
         message: "Muss eine gültige URL sein (http:// oder https://)",
     }),
     metricsRevenue: z.string()

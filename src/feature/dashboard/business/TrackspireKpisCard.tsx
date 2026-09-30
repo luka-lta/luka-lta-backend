@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 import {
     type ChartConfig,
     ChartContainer,
@@ -24,7 +25,7 @@ function monthlyMrrGrowthPercent(): number | undefined {
 
 export function TrackspireKpisCard() {
     const appList = useAppList();
-    const trackspireApp = appList.data?.find((app) => app.category === "saas" && app.name === "Trackspire");
+    const trackspireApp = appList.data?.find((app) => app.category === "saas");
     const growthPercent = monthlyMrrGrowthPercent();
 
     return (
@@ -34,24 +35,36 @@ export function TrackspireKpisCard() {
                 <CardDescription>SaaS-KPIs (Demo-Zeitreihe für den Chart)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                        <p className="text-2xl font-bold tabular-nums">
-                            {(trackspireApp?.metrics?.mrr ?? 0).toLocaleString("de-DE")} €
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            MRR{growthPercent !== undefined ? ` (${growthPercent >= 0 ? "+" : ""}${growthPercent}%)` : ""}
-                        </p>
+                {appList.isLoading ? (
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold tabular-nums">{trackspireApp?.metrics?.activeUsers ?? 0}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Aktive User</p>
+                ) : appList.isError ? (
+                    <p className="text-sm text-destructive">
+                        Trackspire-KPIs konnten nicht geladen werden.
+                    </p>
+                ) : (
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <p className="text-2xl font-bold tabular-nums">
+                                {(trackspireApp?.metrics?.mrr ?? 0).toLocaleString("de-DE")} €
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                MRR{growthPercent !== undefined ? ` (${growthPercent >= 0 ? "+" : ""}${growthPercent}%)` : ""}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold tabular-nums">{trackspireApp?.metrics?.activeUsers ?? 0}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Aktive User</p>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold tabular-nums">{trackspireApp?.metrics?.churnPercent ?? 0}%</p>
+                            <p className="text-xs text-muted-foreground mt-1">Churn</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold tabular-nums">{trackspireApp?.metrics?.churnPercent ?? 0}%</p>
-                        <p className="text-xs text-muted-foreground mt-1">Churn</p>
-                    </div>
-                </div>
+                )}
 
                 <ChartContainer config={chartConfig} className="h-[200px] w-full">
                     <LineChart accessibilityLayer data={trackspireMonthlyMrr}>
