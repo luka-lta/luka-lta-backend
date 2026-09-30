@@ -1,4 +1,4 @@
-import type { AppCategory, AppStatus } from "@/api/apps/schema";
+import type { AppAnalyticsSource, AppCategory, AppStatus } from "@/api/apps/schema";
 
 export const CATEGORY_LABELS: Record<AppCategory, string> = {
     "app-store": "App Store",
@@ -22,6 +22,13 @@ export const STATUS_BADGE_CLASS: Record<AppStatus, string> = {
     maintenance: "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-transparent",
     archived: "bg-muted text-muted-foreground border-transparent",
     planned: "bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 border-transparent",
+};
+
+export const ANALYTICS_SOURCE_LABELS: Record<AppAnalyticsSource, string> = {
+    none: "Keine",
+    "app-store-connect": "App Store Connect",
+    firebase: "Firebase",
+    custom: "Eigene Quelle",
 };
 
 export const METRIC_LABELS = {
