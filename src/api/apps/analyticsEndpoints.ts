@@ -12,8 +12,9 @@ function delay(ms: number): Promise<void> {
  * server-side. Only this file changes when that backend exists - the hook
  * and every UI component stay untouched.
  */
-export async function fetchAppAnalytics(app: AppEntity): Promise<AppAnalytics | null> {
+export async function fetchAppAnalytics(app: AppEntity, sourceConfigId: string): Promise<AppAnalytics | null> {
     await delay(300);
-    if (app.analyticsSource === "none") return null;
-    return AppAnalyticsSchema.parse(generateMockAnalytics(app.analyticsSource, app.id));
+    const sourceConfig = app.analyticsSources.find((s) => s.id === sourceConfigId && s.enabled);
+    if (!sourceConfig) return null;
+    return AppAnalyticsSchema.parse(generateMockAnalytics(sourceConfig.type, sourceConfig.id));
 }
