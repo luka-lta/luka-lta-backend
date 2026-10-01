@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AppAnalyticsSourceSchema } from "@/api/apps/schema";
+import { AppAnalyticsSourceTypeSchema } from "@/api/apps/schema";
 
 export const AppAnalyticsPointSchema = z.object({
   date: z.string(), // YYYY-MM-DD
@@ -7,10 +7,12 @@ export const AppAnalyticsPointSchema = z.object({
 });
 
 export const AppAnalyticsSchema = z.object({
-  // In practice never "none" - fetchAppAnalytics returns null for "none"
-  // instead of an AppAnalytics object. Reuses the entity's source enum so
-  // there is only one definition of what a "source" is.
-  source: AppAnalyticsSourceSchema,
+  // Reuses the entity's source-type enum so there is only one definition
+  // of what a source type is. An AppAnalytics object always belongs to one
+  // concrete, enabled source config - fetchAppAnalytics returns null when
+  // no matching enabled config exists, rather than ever modeling "no source"
+  // as a value of this field.
+  source: AppAnalyticsSourceTypeSchema,
   fetchedAt: z.string(),
   primaryMetric: z.object({
     label: z.string(),
