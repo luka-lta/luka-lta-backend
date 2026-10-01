@@ -4,8 +4,8 @@ import type { AppAnalytics, AppAnalyticsPoint } from "@/api/apps/analyticsSchema
 
 /**
  * Deterministic pseudo-random generator seeded by a string, so the same
- * app always gets the same demo numbers within a session instead of a
- * fresh random shape on every render/refetch.
+ * source configuration always gets the same demo numbers within a session
+ * instead of a fresh random shape on every render/refetch.
  */
 function seededRandom(seed: string): () => number {
   let state = 0;

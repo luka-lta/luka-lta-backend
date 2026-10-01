@@ -308,6 +308,12 @@ export function AppFormDialog({ open, onOpenChange, mode, defaultValues }: AppFo
                                                 type="password"
                                                 value={newSourceCredentials[field.key] ?? ""}
                                                 onChange={(e) => setNewSourceCredentials((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter") {
+                                                        e.preventDefault();
+                                                        handleAddSource();
+                                                    }
+                                                }}
                                             />
                                         )}
                                     </div>
@@ -414,11 +420,17 @@ export function AppFormDialog({ open, onOpenChange, mode, defaultValues }: AppFo
                         </div>
                     </fieldset>
 
+                    {addingSourceType !== null && (
+                        <p className="text-sm text-muted-foreground">
+                            Quelle zuerst hinzufügen oder abbrechen, bevor du speicherst.
+                        </p>
+                    )}
+
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
                             Abbrechen
                         </Button>
-                        <Button type="submit" disabled={isPending}>
+                        <Button type="submit" disabled={isPending || addingSourceType !== null}>
                             {isPending && <Spinner size={14} />}
                             {mode === "create" ? "Anlegen" : "Speichern"}
                         </Button>

@@ -24,7 +24,7 @@ export const AppAnalyticsSourceTypeSchema = z.enum([
 ]);
 
 export const AppAnalyticsSourceConfigSchema = z.object({
-    id: z.string(),
+    id: z.string().min(1),
     type: AppAnalyticsSourceTypeSchema,
     enabled: z.boolean().default(true),
     // Generic key-value map; which keys are expected depends on `type`

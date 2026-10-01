@@ -50,7 +50,8 @@ export function AnalyticsTab({ app, onConfigureSource }: AnalyticsTabProps) {
                     key={source.id}
                     type="button"
                     onClick={() => setSelectedSourceId(source.id)}
-                    className="focus:outline-none"
+                    className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-pressed={source.id === activeSourceId}
                 >
                     <Badge
                         variant={source.id === activeSourceId ? "default" : "outline"}
