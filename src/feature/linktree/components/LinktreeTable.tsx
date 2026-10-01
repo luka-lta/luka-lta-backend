@@ -14,7 +14,7 @@ import {TableSkeleton, SkeletonCell} from "@/components/TableSkeleton.tsx";
 import {Pagination} from "@/components/Pagination.tsx";
 import {EllipsisVertical, FilterX, ListTree, Pencil, Plus, Power, PowerOff, Search, Trash} from "lucide-react";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
-import CustomFaIcon from "@/components/CustomFaIcon.tsx";
+import {LinkIcon} from "@/components/LinkIcon.tsx";
 import {Link, useNavigate} from "react-router-dom";
 import {TimeCell} from "@/components/TimeCell.tsx";
 import {Button} from "@/components/ui/button.tsx";
@@ -91,8 +91,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
                 <div className="flex items-center gap-2 min-w-0">
                     <Avatar>
                         <AvatarFallback>
-                            {/* @ts-expect-error - iconName is a free-form string, not a keyof typeof Icons */}
-                            <CustomFaIcon name={row.original.iconName ?? undefined}/>
+                            <LinkIcon name={row.original.iconName}/>
                         </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">

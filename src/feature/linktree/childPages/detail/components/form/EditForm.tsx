@@ -5,6 +5,7 @@ import {
 import {Controller, SubmitHandler, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {TextInput} from "@/components/form/TextInput.tsx";
+import {IconPicker} from "@/components/IconPicker.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
@@ -83,14 +84,16 @@ function EditForm({initialData}: EditFormProps) {
                         placeholder="https://example.com"
                     />
 
-                    <TextInput
-                        name="iconName"
-                        id="link-detail-edit-iconName"
-                        label="Icon"
-                        form={form}
-                        type="text"
-                        placeholder="FaGithub"
-                    />
+                    <div className="flex flex-col items-start gap-2">
+                        <Label htmlFor="link-detail-edit-iconName">Icon</Label>
+                        <Controller
+                            control={form.control}
+                            name="iconName"
+                            render={({field}) => (
+                                <IconPicker value={field.value} onChange={field.onChange} />
+                            )}
+                        />
+                    </div>
 
                     <Separator />
 

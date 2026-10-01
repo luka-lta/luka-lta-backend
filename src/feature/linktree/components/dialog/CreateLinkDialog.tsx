@@ -1,8 +1,6 @@
 import {z} from "zod";
-import {SubmitHandler, useForm} from "react-hook-form";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {Controller, SubmitHandler, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 import {toast} from "sonner";
 import {
     Dialog,
@@ -13,13 +11,16 @@ import {
     DialogTitle
 } from "@/components/ui/dialog.tsx";
 import {TextInput} from "@/components/form/TextInput.tsx";
+import {IconPicker} from "@/components/IconPicker.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {Label} from "@/components/ui/label.tsx";
+import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {linkData} from "@/feature/linktree/schema/LinktreeSchema.ts";
 import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
+import {useCreateLink} from "@/api/linktree/hooks.ts";
 
 const linkCreateSchema = z.object({
     displayname: z.string().nonempty().min(1).max(255),
@@ -36,51 +37,34 @@ interface Props {
 }
 
 export function CreateLinkDialog({ open, onOpenChange }: Props) {
-    const queryClient = useQueryClient();
-
     const form = useForm<linkData>({
         resolver: zodResolver(linkCreateSchema),
     });
 
-    const createLink = useMutation({
-        mutationFn: async ({displayname, description, iconName, isActive, url}: linkData) => {
-            const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            await fetchWrapper.post('/linkCollection/', {
-                displayname,
-                description,
-                iconName,
-                isActive,
-                url,
-            })
-        },
-        onSuccess: () => {
-            onOpenChange(false);
-            form.reset()
-            toast.success('Link created successfully!');
-        },
-        onError: (error) => {
-            const errorMessage = error.message;
+    const createLink = useCreateLink();
 
-            if (errorMessage.includes('Icon')) {
-                form.setError('iconName', {
-                    type: 'manual',
-                    message: errorMessage
-                });
-            }
+    const onSubmit: SubmitHandler<linkData> = (data) => {
+        createLink.mutate(data, {
+            onSuccess: () => {
+                onOpenChange(false);
+                form.reset()
+                toast.success('Link created successfully!');
+            },
+            onError: (error) => {
+                const errorMessage = error.message;
 
-            toast.error(errorMessage);
-            console.error(error);
-        },
-        onSettled: () => {
-            setTimeout(() => {
-                queryClient.invalidateQueries({
-                    queryKey: ['linktree', 'list'],
-                });
-            }, 500)
-        }
-    })
+                if (errorMessage.includes('Icon')) {
+                    form.setError('iconName', {
+                        type: 'manual',
+                        message: errorMessage
+                    });
+                }
 
-    const onSubmit: SubmitHandler<linkData> = (data) => createLink.mutate(data);
+                toast.error(errorMessage);
+                console.error(error);
+            },
+        });
+    };
 
     return (
         <Dialog open={open} onOpenChange={() => {
@@ -122,22 +106,29 @@ export function CreateLinkDialog({ open, onOpenChange }: Props) {
                             type={'url'}
                         />
 
-                        <TextInput
-                            name={'iconName'}
-                            id={'link-iconName-create-form'}
-                            label={'Icon'}
-                            form={form}
-                            placeholder='FaGithub'
-                            type={'text'}
-                        />
+                        <div className="flex flex-col items-start gap-2">
+                            <Label htmlFor="link-iconName-create-form">Icon</Label>
+                            <Controller
+                                control={form.control}
+                                name="iconName"
+                                render={({field}) => (
+                                    <IconPicker value={field.value} onChange={field.onChange} />
+                                )}
+                            />
+                        </div>
 
                         <div className="flex flex-col items-start gap-2">
                             <Label htmlFor="active">Active</Label>
-                            <Switch
-                                id="isActive"
-                                {...form.register('isActive')}
-                                onCheckedChange={(value) => form.setValue('isActive', value)}
-                                defaultChecked={form.getValues('isActive')}
+                            <Controller
+                                control={form.control}
+                                name="isActive"
+                                render={({field}) => (
+                                    <Switch
+                                        id="isActive"
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                )}
                             />
                         </div>
 
@@ -150,7 +141,7 @@ export function CreateLinkDialog({ open, onOpenChange }: Props) {
                     </div>
                     <DialogFooter>
                         {createLink.isPending ? (
-                            <Button className="w-[100%]" disabled>Creating link...</Button>
+                            <Button className="w-[100%]" disabled><Spinner size={16}/>Creating link...</Button>
                         ) : (
                             <Button className="w-[100%]" type='submit'>Create Link</Button>
                         )}
@@ -160,4 +151,3 @@ export function CreateLinkDialog({ open, onOpenChange }: Props) {
         </Dialog>
     );
 }
-
