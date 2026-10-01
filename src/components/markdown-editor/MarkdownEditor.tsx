@@ -1,10 +1,10 @@
-import { useRef } from 'react'
+import {useRef, useState} from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {Button} from '@/components/ui/button'
+import {Separator} from '@/components/ui/separator'
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip'
 import {
     Bold,
     Italic,
@@ -20,7 +20,26 @@ import {
     Link,
     Minus,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import {cn} from '@/lib/utils'
+import {
+    Editor, EditorBubbleMenu, EditorCharacterCount, EditorClearFormatting,
+    EditorFloatingMenu, EditorFormatBold,
+    EditorFormatCode, EditorFormatItalic, EditorFormatStrike,
+    EditorFormatSubscript, EditorFormatSuperscript, EditorFormatUnderline, EditorLinkSelector,
+    EditorNodeBulletList, EditorNodeCode,
+    EditorNodeHeading1,
+    EditorNodeHeading2, EditorNodeHeading3, EditorNodeOrderedList, EditorNodeQuote, EditorNodeTable,
+    EditorNodeTaskList, EditorNodeText,
+    EditorProvider, EditorSelector,
+    EditorTableColumnAfter, EditorTableColumnBefore, EditorTableColumnDelete, EditorTableColumnMenu, EditorTableDelete,
+    EditorTableFix,
+    EditorTableGlobalMenu, EditorTableHeaderColumnToggle, EditorTableHeaderRowToggle, EditorTableMenu,
+    EditorTableMergeCells,
+    EditorTableRowAfter,
+    EditorTableRowBefore, EditorTableRowDelete,
+    EditorTableRowMenu, EditorTableSplitCell,
+    JSONContent
+} from "@/components/kibo-ui/editor";
 
 interface MarkdownEditorProps {
     value: string
@@ -41,31 +60,31 @@ interface ToolbarItem {
 }
 
 const TOOLBAR: (ToolbarItem | 'separator')[] = [
-    { icon: <Bold />,          label: 'Bold',            action: { type: 'wrap',   before: '**',   after: '**' } },
-    { icon: <Italic />,        label: 'Italic',          action: { type: 'wrap',   before: '*',    after: '*'  } },
-    { icon: <Strikethrough />, label: 'Strikethrough',   action: { type: 'wrap',   before: '~~',   after: '~~' } },
+    {icon: <Bold/>, label: 'Bold', action: {type: 'wrap', before: '**', after: '**'}},
+    {icon: <Italic/>, label: 'Italic', action: {type: 'wrap', before: '*', after: '*'}},
+    {icon: <Strikethrough/>, label: 'Strikethrough', action: {type: 'wrap', before: '~~', after: '~~'}},
     'separator',
-    { icon: <Heading1 />,      label: 'Heading 1',       action: { type: 'prefix', prefix: '# '   } },
-    { icon: <Heading2 />,      label: 'Heading 2',       action: { type: 'prefix', prefix: '## '  } },
-    { icon: <Heading3 />,      label: 'Heading 3',       action: { type: 'prefix', prefix: '### ' } },
+    {icon: <Heading1/>, label: 'Heading 1', action: {type: 'prefix', prefix: '# '}},
+    {icon: <Heading2/>, label: 'Heading 2', action: {type: 'prefix', prefix: '## '}},
+    {icon: <Heading3/>, label: 'Heading 3', action: {type: 'prefix', prefix: '### '}},
     'separator',
-    { icon: <List />,          label: 'Bullet list',     action: { type: 'prefix', prefix: '- '   } },
-    { icon: <ListOrdered />,   label: 'Numbered list',   action: { type: 'prefix', prefix: '1. '  } },
-    { icon: <Quote />,         label: 'Blockquote',      action: { type: 'prefix', prefix: '> '   } },
+    {icon: <List/>, label: 'Bullet list', action: {type: 'prefix', prefix: '- '}},
+    {icon: <ListOrdered/>, label: 'Numbered list', action: {type: 'prefix', prefix: '1. '}},
+    {icon: <Quote/>, label: 'Blockquote', action: {type: 'prefix', prefix: '> '}},
     'separator',
-    { icon: <Code />,          label: 'Inline code',     action: { type: 'wrap',   before: '`',    after: '`'  } },
+    {icon: <Code/>, label: 'Inline code', action: {type: 'wrap', before: '`', after: '`'}},
     {
-        icon: <CodeSquare />,
+        icon: <CodeSquare/>,
         label: 'Code block',
-        action: { type: 'block', before: '```\n', after: '\n```', placeholder: 'code here' },
+        action: {type: 'block', before: '```\n', after: '\n```', placeholder: 'code here'},
     },
     'separator',
     {
-        icon: <Link />,
+        icon: <Link/>,
         label: 'Link',
-        action: { type: 'block', before: '[', after: '](url)', placeholder: 'link text' },
+        action: {type: 'block', before: '[', after: '](url)', placeholder: 'link text'},
     },
-    { icon: <Minus />,         label: 'Divider',         action: { type: 'prefix', prefix: '---\n' } },
+    {icon: <Minus/>, label: 'Divider', action: {type: 'prefix', prefix: '---\n'}},
 ]
 
 function applyAction(textarea: HTMLTextAreaElement, action: ToolbarAction, current: string): string {
@@ -110,7 +129,9 @@ function applyAction(textarea: HTMLTextAreaElement, action: ToolbarAction, curre
     return current
 }
 
-function MarkdownEditor({ value, onChange, height = 520, className }: MarkdownEditorProps) {
+function MarkdownEditor({value, onChange, height = 520, className}: MarkdownEditorProps) {
+    // @ts-ignore
+    const [content, setContent] = useState<JSONContent>(value);
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     const handleToolbar = (action: ToolbarAction) => {
@@ -118,6 +139,13 @@ function MarkdownEditor({ value, onChange, height = 520, className }: MarkdownEd
         const next = applyAction(textareaRef.current, action, value)
         onChange(next)
     }
+
+
+    const handleUpdate = ({editor}: { editor: Editor }) => {
+        const json = editor.getJSON();
+        setContent(json);
+        console.log(JSON.stringify(json));
+    };
 
     return (
         <TooltipProvider delayDuration={400}>
@@ -154,9 +182,91 @@ function MarkdownEditor({ value, onChange, height = 520, className }: MarkdownEd
                 </div>
 
                 {/* Split pane */}
-                <div className="flex flex-1" style={{ height }}>
-                    {/* Editor */}
-                    <textarea
+                {/* Editor */}
+                <div className="flex flex-1" style={{height}}>
+
+                    <EditorProvider
+                        content={content}
+                        className={cn(
+                            'flex-1 resize-none bg-background p-4 font-mono text-sm',
+                            'outline-none border-r leading-relaxed',
+                            'placeholder:text-muted-foreground',
+                        )}
+                        placeholder="Write your post in Markdown..."
+                        onUpdate={handleUpdate}
+                    >
+                        <EditorFloatingMenu>
+                            <EditorNodeHeading1 hideName/>
+                            <EditorNodeBulletList hideName/>
+                            <EditorNodeQuote hideName/>
+                            <EditorNodeCode hideName/>
+                            <EditorNodeTable hideName/>
+                        </EditorFloatingMenu>
+
+                        <EditorBubbleMenu>
+                            <EditorSelector title="Text">
+                                <EditorNodeText/>
+                                <EditorNodeHeading1/>
+                                <EditorNodeHeading2/>
+                                <EditorNodeHeading3/>
+                                <EditorNodeBulletList/>
+                                <EditorNodeOrderedList/>
+                                <EditorNodeTaskList/>
+                                <EditorNodeQuote/>
+                                <EditorNodeCode/>
+                            </EditorSelector>
+                            <EditorSelector title="Format">
+                                <EditorFormatBold/>
+                                <EditorFormatItalic/>
+                                <EditorFormatUnderline/>
+                                <EditorFormatStrike/>
+                                <EditorFormatCode/>
+                                <EditorFormatSuperscript/>
+                                <EditorFormatSubscript/>
+                            </EditorSelector>
+                            <EditorLinkSelector/>
+                            <EditorClearFormatting/>
+                            <EditorTableMenu>
+                                <EditorTableColumnMenu>
+                                    <EditorTableColumnBefore/>
+                                    <EditorTableColumnAfter/>
+                                    <EditorTableColumnDelete/>
+                                </EditorTableColumnMenu>
+                                <EditorTableRowMenu>
+                                    <EditorTableRowBefore/>
+                                    <EditorTableRowAfter/>
+                                    <EditorTableRowDelete/>
+                                </EditorTableRowMenu>
+                                <EditorTableGlobalMenu>
+                                    <EditorTableHeaderColumnToggle/>
+                                    <EditorTableHeaderRowToggle/>
+                                    <EditorTableDelete/>
+                                    <EditorTableMergeCells/>
+                                    <EditorTableSplitCell/>
+                                    <EditorTableFix/>
+                                </EditorTableGlobalMenu>
+                            </EditorTableMenu>
+                        </EditorBubbleMenu>
+                        <EditorCharacterCount.Words>Words: </EditorCharacterCount.Words>
+
+                        <div
+                            className={cn(
+                                'flex-1 overflow-y-auto p-4',
+                                'prose prose-sm dark:prose-invert max-w-none'
+                            )}
+                        >
+                            {value ? (
+                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
+                                    {value}
+                                </ReactMarkdown>
+                            ) : (
+                                <p className="text-muted-foreground text-sm italic">Preview will appear here…</p>
+                            )}
+                        </div>
+                    </EditorProvider>
+                </div>
+
+                {/*                    <textarea
                         ref={textareaRef}
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
@@ -167,24 +277,9 @@ function MarkdownEditor({ value, onChange, height = 520, className }: MarkdownEd
                         )}
                         placeholder="Write your post in Markdown..."
                         spellCheck={false}
-                    />
+                    />*/}
 
-                    {/* Preview */}
-                    <div
-                        className={cn(
-                            'flex-1 overflow-y-auto p-4',
-                            'prose prose-sm dark:prose-invert max-w-none'
-                        )}
-                    >
-                        {value ? (
-                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
-                                {value}
-                            </ReactMarkdown>
-                        ) : (
-                            <p className="text-muted-foreground text-sm italic">Preview will appear here…</p>
-                        )}
-                    </div>
-                </div>
+                {/* Preview */}
             </div>
         </TooltipProvider>
     )

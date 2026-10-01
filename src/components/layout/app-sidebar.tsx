@@ -10,7 +10,7 @@ import { NavUser } from '@/components/layout/nav-user'
 import { sidebarData } from './data/sidebar-data'
 import SiteLogo from "@/components/SiteLogo.tsx";
 import React from "react";
-import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
+import {useAuthenticatedUserStore} from "@/store/authStore.ts";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const {getUser} = useAuthenticatedUserStore();

@@ -1,48 +1,42 @@
 import { useNavigate } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Main } from '@/components/layout/main'
 import { useSetPageTitle } from '@/hooks/useSetPageTitle'
-import { FetchWrapper } from '@/lib/fetchWrapper'
-import { useBlogTags } from '@/feature/blog/hooks/useBlogTags'
+import { useBlogTags, useCreateBlogPost, usePublishBlogPost } from '@/api/blog/hooks.ts'
 import BlogEditorForm, { BlogEditorData } from '@/feature/blog/components/editor/BlogEditorForm'
-import { z } from 'zod'
-import { BlogPostSchema } from '@/feature/blog/schema/BlogSchema'
-
-const createResponseSchema = z.object({ post: BlogPostSchema })
 
 function BlogCreatePage() {
     useSetPageTitle('Backend - New Blog Post')
     const navigate = useNavigate()
-    const queryClient = useQueryClient()
     const { data: tagsData } = useBlogTags()
 
-    const createPost = useMutation({
-        mutationFn: async (data: BlogEditorData) => {
-            const fw = new FetchWrapper(FetchWrapper.baseUrl)
-            const response = await fw.post('/blog', {
-                title: data.title,
-                excerpt: data.excerpt || null,
-                content: data.content,
-                tag_ids: data.tag_ids,
-            })
+    const createPost = useCreateBlogPost()
+    const togglePublish = usePublishBlogPost()
 
-            const post = createResponseSchema.parse(response.data).post
-            if (data.isPublished && post?.blogId) {
-                await fw.patch(`/blog/${post.blogId}/publish`, { published: true })
-            }
-
-            return post
-        },
-        onSuccess: (post) => {
-            queryClient.invalidateQueries({ queryKey: ['blog', 'list'] })
-            toast.success('Blog post created!')
-            navigate(post?.blogId ? `/dashboard/blog/${post.blogId}` : '/dashboard/blog')
-        },
-        onError: (error) => {
-            toast.error(error.message)
-        },
-    })
+    const handleSubmit = (data: BlogEditorData) => {
+        createPost.mutate({
+            title: data.title,
+            excerpt: data.excerpt || null,
+            content: data.content,
+            tag_ids: data.tag_ids,
+        }, {
+            onSuccess: (post) => {
+                if (data.isPublished && post.blogId) {
+                    togglePublish.mutate({blogId: post.blogId, published: true}, {
+                        onSuccess: () => {
+                            toast.success('Blog post created!')
+                            navigate(`/dashboard/blog/${post.blogId}`)
+                        },
+                        onError: (error) => toast.error(error.message),
+                    })
+                    return
+                }
+                toast.success('Blog post created!')
+                navigate(post.blogId ? `/dashboard/blog/${post.blogId}` : '/dashboard/blog')
+            },
+            onError: (error) => toast.error(error.message),
+        })
+    }
 
     return (
         <Main>
@@ -53,8 +47,8 @@ function BlogCreatePage() {
 
             <BlogEditorForm
                 tags={tagsData?.tags ?? []}
-                onSubmit={(data) => createPost.mutate(data)}
-                isPending={createPost.isPending}
+                onSubmit={handleSubmit}
+                isPending={createPost.isPending || togglePublish.isPending}
                 submitLabel="Create Post"
                 onCancel={() => navigate('/dashboard/blog')}
             />

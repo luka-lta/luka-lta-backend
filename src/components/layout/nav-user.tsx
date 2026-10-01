@@ -19,9 +19,10 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar'
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
 import {splitAvatarUrl} from "@/lib/utils.ts";
+import {useAuthenticatedUserStore} from "@/store/authStore.ts";
 
 export function NavUser({
                             user,
@@ -29,6 +30,13 @@ export function NavUser({
     user: UserTypeSchema | null
 }) {
     const {isMobile} = useSidebar()
+    const logout = useAuthenticatedUserStore((s) => s.logout)
+    const navigate = useNavigate()
+
+    function handleLogout() {
+        logout()
+        navigate('/')
+    }
 
     if (!user) {
         return null;
@@ -82,11 +90,9 @@ export function NavUser({
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator/>
-                        <DropdownMenuItem>
-                            <Link to={'/logout'}>
-                                <LogOut/>
-                                Log out
-                            </Link>
+                        <DropdownMenuItem onClick={handleLogout}>
+                            <LogOut/>
+                            Log out
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

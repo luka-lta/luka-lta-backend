@@ -1,10 +1,9 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { FetchWrapper } from '@/lib/fetchWrapper'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { AlertTriangle } from 'lucide-react'
 import { BlogPostType } from '@/feature/blog/schema/BlogSchema'
+import { useDeleteBlogPost } from '@/api/blog/hooks.ts'
 
 interface Props {
     open: boolean
@@ -13,30 +12,25 @@ interface Props {
 }
 
 function DeleteBlogDialog({ open, onOpenChange, currentRow }: Props) {
-    const queryClient = useQueryClient()
+    const deleteBlog = useDeleteBlogPost()
 
-    const deleteBlog = useMutation({
-        mutationFn: async () => {
-            const fw = new FetchWrapper(FetchWrapper.baseUrl)
-            await fw.delete(`/blog/${currentRow.blogId}`)
-        },
-        onSuccess: () => {
-            onOpenChange(false)
-            toast.success('Blog post deleted!')
-        },
-        onError: (error) => {
-            toast.error(error.message)
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ['blog', 'list'] })
-        },
-    })
+    const handleConfirm = () => {
+        deleteBlog.mutate(currentRow.blogId, {
+            onSuccess: () => {
+                onOpenChange(false)
+                toast.success('Blog post deleted!')
+            },
+            onError: (error) => {
+                toast.error(error.message)
+            },
+        })
+    }
 
     return (
         <ConfirmDialog
             open={open}
             onOpenChange={onOpenChange}
-            handleConfirm={deleteBlog.mutate}
+            handleConfirm={handleConfirm}
             title={
                 <span className="text-destructive">
                     <AlertTriangle
@@ -63,6 +57,7 @@ function DeleteBlogDialog({ open, onOpenChange, currentRow }: Props) {
                 </div>
             }
             confirmText={deleteBlog.isPending ? 'Deleting...' : 'Delete'}
+            isLoading={deleteBlog.isPending}
             destructive
         />
     )

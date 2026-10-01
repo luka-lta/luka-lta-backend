@@ -8,6 +8,7 @@ import {QueryCache, QueryClient, QueryClientProvider} from "@tanstack/react-quer
 import {ThemeProvider} from "@/context/theme-context.tsx";
 import {FontProvider} from "@/context/font-context.tsx";
 import {AxiosError} from "axios";
+import {ErrorBoundary} from "@/components/ErrorBoundary.tsx";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -49,8 +50,10 @@ function App() {
             <QueryClientProvider client={queryClient}>
                 <FontProvider>
                     <Suspense fallback={<ErrorPage/>}>
-                        <RouterProvider router={appRouter}/>
-                        <Toaster duration={50000}/>
+                        <ErrorBoundary>
+                            <RouterProvider router={appRouter}/>
+                        </ErrorBoundary>
+                        <Toaster duration={5000}/>
                     </Suspense>
                 </FontProvider>
                 <Analytics/>

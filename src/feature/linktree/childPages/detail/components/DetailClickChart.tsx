@@ -1,5 +1,6 @@
 import {useState} from 'react';
-import {Card, CardContent} from "@/components/ui/card.tsx";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
+import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
 import {
     ChartConfig,
     ChartContainer,
@@ -109,7 +110,7 @@ const chartData = [
 
 
 function DetailClickChart() {
-    const [timeRange] = useState("7d")
+    const [timeRange, setTimeRange] = useState("7d")
 
     const filteredData = chartData.filter((item) => {
         const date = new Date(item.date)
@@ -127,7 +128,20 @@ function DetailClickChart() {
 
     return (
         <Card>
-            <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                    <CardTitle>Clicks over time</CardTitle>
+                    <CardDescription>Sample data — click tracking not yet connected</CardDescription>
+                </div>
+                <Tabs value={timeRange} onValueChange={setTimeRange}>
+                    <TabsList className="h-8">
+                        <TabsTrigger value="7d" className="text-xs px-2.5">7d</TabsTrigger>
+                        <TabsTrigger value="30d" className="text-xs px-2.5">30d</TabsTrigger>
+                        <TabsTrigger value="90d" className="text-xs px-2.5">90d</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+            </CardHeader>
+            <CardContent className="px-2 sm:px-6">
                 <ChartContainer
                     config={chartConfig}
                     className="aspect-auto h-[250px] w-full"

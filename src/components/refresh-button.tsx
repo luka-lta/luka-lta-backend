@@ -3,6 +3,7 @@
 import {useState} from "react"
 import {Button} from "@/components/ui/button.tsx"
 import {RefreshCcw} from "lucide-react"
+import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx"
 
 interface RefreshButtonProps {
     onRefresh: () => Promise<void>
@@ -36,7 +37,7 @@ export function RefreshButton({
 
     return (
         <Button variant={variant} className={className} size={size} onClick={handleRefresh} disabled={isRefreshing}>
-            <RefreshCcw className="h-4 w-4"/>
+            {isRefreshing ? <Spinner size={16}/> : <RefreshCcw className="h-4 w-4"/>}
             {label && <span>{label}</span>}
         </Button>
     )

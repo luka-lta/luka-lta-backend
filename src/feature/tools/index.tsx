@@ -4,15 +4,19 @@ import {Link, Newspaper} from "lucide-react";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {LinkShortener} from "@/feature/tools/components/LinkShortener.tsx";
 import {PaywallBlocker} from "@/feature/tools/components/PaywallBlocker.tsx";
+import {Main} from "@/components/layout/main.tsx";
 
 function Tools() {
     const [activeTab, setActiveTab] = useState("link-shortener")
 
     return (
-        <div className="container mx-auto py-8 px-4">
-            <h1 className="text-3xl font-bold text-center mb-2">Tools</h1>
+        <Main>
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold tracking-tight">Tools</h1>
+                <p className="text-muted-foreground">Utilities for links and content.</p>
+            </div>
 
-            <Tabs defaultValue="link-shortener" value={activeTab} onValueChange={setActiveTab} className="max-w-3xl mx-auto">
+            <Tabs defaultValue="link-shortener" value={activeTab} onValueChange={setActiveTab} className="max-w-3xl">
                 <TabsList className="mb-8">
                     <TabsTrigger value="link-shortener" className="flex items-center gap-2">
                         <Link className="h-4 w-4" />
@@ -45,7 +49,7 @@ function Tools() {
                     </CardContent>
                 </Card>
             </Tabs>
-        </div>
+        </Main>
     )
 }
 

@@ -8,7 +8,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import {Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis} from "recharts"
+import {Bar, BarChart, CartesianGrid, XAxis, YAxis} from "recharts"
 import {useQueryClient} from "@tanstack/react-query"
 import {RefreshButton} from "@/components/refresh-button.tsx"
 import type {ClicksMonthlyTypeSchema} from "@/feature/dashboard/schema/ClickSummarySchema"
@@ -85,45 +85,45 @@ function ClicksChart({clicksMonthly}: ClicksChartProps) {
         }
     })
 
-    return (
-        <ResponsiveContainer width='100%' height={350}>
-            {chartData.length > 0 ? (
-                <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                    <BarChart accessibilityLayer data={chartData}>
-                        <CartesianGrid vertical={false}/>
-                        <XAxis
-                            dataKey="month"
-                            tickLine={false}
-                            tickMargin={10}
-                            axisLine={false}
-                        />
-                        <YAxis
-                            stroke='#888888'
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            tickFormatter={(value) => Number.isInteger(value) ? `${value}` : ''}
-                        />
-                        <ChartTooltip content={<ChartTooltipContent/>}/>
-                        <ChartLegend content={<ChartLegendContent/>}/>
+    if (chartData.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-[350px] w-full">
+                <p className="text-gray-500">No click data available</p>
+            </div>
+        )
+    }
 
-                        {uniqueDisplayNames.map((name, index) => (
-                            <Bar
-                                key={name}
-                                dataKey={name}
-                                stackId="a"
-                                fill={colorMap[name]}
-                                radius={index === uniqueDisplayNames.length - 1 ? 4 : 0}
-                            />
-                        ))}
-                    </BarChart>
-                </ChartContainer>
-            ) : (
-                <div className="flex items-center justify-center h-[200px] w-full">
-                    <p className="text-gray-500">No click data available</p>
-                </div>
-            )}
-        </ResponsiveContainer>
+    return (
+        <ChartContainer config={chartConfig} className="h-[350px] w-full">
+            <BarChart accessibilityLayer data={chartData}>
+                <CartesianGrid vertical={false}/>
+                <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                />
+                <YAxis
+                    stroke='#888888'
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => Number.isInteger(value) ? `${value}` : ''}
+                />
+                <ChartTooltip content={<ChartTooltipContent/>}/>
+                <ChartLegend content={<ChartLegendContent/>}/>
+
+                {uniqueDisplayNames.map((name, index) => (
+                    <Bar
+                        key={name}
+                        dataKey={name}
+                        stackId="a"
+                        fill={colorMap[name]}
+                        radius={index === uniqueDisplayNames.length - 1 ? 4 : 0}
+                    />
+                ))}
+            </BarChart>
+        </ChartContainer>
     )
 }
 

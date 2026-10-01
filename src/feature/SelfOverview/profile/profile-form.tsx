@@ -4,11 +4,11 @@ import {SubmitHandler, useForm} from "react-hook-form";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 import {toast} from "sonner";
 import {useRef} from "react";
 import {AvatarInput} from "@/components/form/AvatarInput.tsx";
+import {useUpdateSelfUser} from "@/api/self/hooks.ts";
+import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
 
 const userUpdateSchema = z.object({
     username: z.string().min(3, {message: "Username must be at least 3 characters long"}),
@@ -23,7 +23,6 @@ interface ProfileOverviewProps {
 }
 
 function ProfileForm({user}: ProfileOverviewProps) {
-    const queryClient = useQueryClient();
     const formRef = useRef<HTMLFormElement>(null);
 
     const form = useForm<UserUpdateFormData>({
@@ -34,47 +33,37 @@ function ProfileForm({user}: ProfileOverviewProps) {
         }
     });
 
-    const updateSelf = useMutation({
-        mutationFn: async () => {
-            const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
+    const updateSelf = useUpdateSelfUser();
 
-            const formData = new FormData(formRef.current!);
+    const onSubmit: SubmitHandler<UserUpdateFormData> = () => {
+        const formData = new FormData(formRef.current!);
 
-            await fetchWrapper.formDataRequest(`/self/`, formData);
-        },
-        onSuccess: () => {
-            toast.success('Profile updated successfully!', {
-                description: 'Your changes have been saved',
-            });
-        },
-        onError: (error) => {
-            const errorMessage = error.message;
-            if (errorMessage.includes('email')) {
-                form.setError('email', {
-                    type: 'manual',
-                    message: errorMessage,
+        updateSelf.mutate(formData, {
+            onSuccess: () => {
+                toast.success('Profile updated successfully!', {
+                    description: 'Your changes have been saved',
                 });
-            }
+            },
+            onError: (error) => {
+                const errorMessage = error.message;
+                if (errorMessage.includes('email')) {
+                    form.setError('email', {
+                        type: 'manual',
+                        message: errorMessage,
+                    });
+                }
 
-            if (errorMessage.includes('username')) {
-                form.setError('username', {
-                    type: 'manual',
-                    message: errorMessage,
-                });
-            }
+                if (errorMessage.includes('username')) {
+                    form.setError('username', {
+                        type: 'manual',
+                        message: errorMessage,
+                    });
+                }
 
-            toast.error(error.message);
-        },
-        onSettled: () => {
-            setTimeout(() => {
-                queryClient.invalidateQueries({
-                    queryKey: ['self', 'user'],
-                });
-            }, 500);
-        }
-    });
-
-    const onSubmit: SubmitHandler<UserUpdateFormData> = () => updateSelf.mutate();
+                toast.error(error.message);
+            },
+        });
+    };
 
     return (
         <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -101,6 +90,7 @@ function ProfileForm({user}: ProfileOverviewProps) {
                     type="submit"
                     disabled={!form.formState.isDirty || updateSelf.isPending}
                 >
+                    {form.formState.isSubmitting && <Spinner size={16} className="mr-2" />}
                     {form.formState.isSubmitting ? "Updating profile..." : "Update profile"}
                 </Button>
             </div>

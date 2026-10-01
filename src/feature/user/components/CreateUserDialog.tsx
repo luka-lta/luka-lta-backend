@@ -1,8 +1,6 @@
-import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {z} from "zod";
 import {SubmitHandler, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {FetchWrapper} from "@/lib/fetchWrapper.ts";
 import {toast} from "sonner";
 import {
     Dialog,
@@ -15,7 +13,9 @@ import {
 import {TextInput} from "@/components/form/TextInput.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
+import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
 import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
+import {useCreateUser} from "@/api/user/hooks.ts";
 
 interface Props {
     currentRow?: UserTypeSchema
@@ -45,54 +45,39 @@ export type userData = {
 }
 
 function CreateUserDialog({ open, onOpenChange }: Props) {
-    const queryClient = useQueryClient();
-
     const form = useForm<userData>({
         resolver: zodResolver(userCreateSchema),
     });
 
-    const createUser = useMutation({
-        mutationFn: async ({username, email, password}: userData) => {
-            const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            await fetchWrapper.post('/user/', {
-                username,
-                email,
-                password,
-            })
-        },
-        onSuccess: () => {
-            onOpenChange(false);
-            form.reset()
-            toast.success('User created successfully!');
-        },
-        onError: (error) => {
-            const errorMessage = error.message;
-            if (errorMessage.includes('email')) {
-                form.setError('email', {
-                    type: 'manual',
-                    message: errorMessage,
-                });
-            }
+    const createUser = useCreateUser();
 
-            if (errorMessage.includes('username')) {
-                form.setError('username', {
-                    type: 'manual',
-                    message: errorMessage,
-                });
-            }
+    const onSubmit: SubmitHandler<userData> = (data) => {
+        createUser.mutate(data, {
+            onSuccess: () => {
+                onOpenChange(false);
+                form.reset()
+                toast.success('User created successfully!');
+            },
+            onError: (error) => {
+                const errorMessage = error.message;
+                if (errorMessage.includes('email')) {
+                    form.setError('email', {
+                        type: 'manual',
+                        message: errorMessage,
+                    });
+                }
 
-            toast.error(error.message);
-        },
-        onSettled: () => {
-            setTimeout(() => {
-                queryClient.invalidateQueries({
-                    queryKey: ['users', 'list'],
-                });
-            }, 500)
-        }
-    })
+                if (errorMessage.includes('username')) {
+                    form.setError('username', {
+                        type: 'manual',
+                        message: errorMessage,
+                    });
+                }
 
-    const onSubmit: SubmitHandler<userData> = (data) => createUser.mutate(data);
+                toast.error(error.message);
+            },
+        });
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -146,7 +131,7 @@ function CreateUserDialog({ open, onOpenChange }: Props) {
                     </div>
                     <DialogFooter>
                         {createUser.isPending ? (
-                            <Button className="w-[100%]" disabled>Creating user...</Button>
+                            <Button className="w-[100%]" disabled><Spinner size={16}/>Creating user...</Button>
                         ) : (
                             <Button className="w-[100%]" type='submit'>Create User</Button>
                         )}

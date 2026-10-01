@@ -1,9 +1,10 @@
 import { LinkItemTypeSchema } from "@/feature/linktree/schema/LinktreeSchema.ts";
-import {Tooltip, TooltipTrigger, TooltipContent, TooltipProvider} from "@/components/ui/tooltip";
-import {Badge} from "@/components/ui/badge.tsx";
-import {Calendar, Clock, ExternalLink, Hash, Tag} from "lucide-react";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
+import {Calendar, ExternalLink, Hash, Tag} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
-import {cn} from "@/lib/utils.ts";
+import {TimeCell} from "@/components/TimeCell.tsx";
+import {CopyButton} from "@/components/CopyButton.tsx";
+import {Status, StatusIndicator, StatusLabel} from "@/components/ui/kibo-ui/status/index.tsx";
 
 interface LinkDetailsProps {
     link: LinkItemTypeSchema;
@@ -12,85 +13,67 @@ interface LinkDetailsProps {
 function LinkDetails({ link }: LinkDetailsProps) {
     if (!link) return <p className="text-center text-red-500">No details available</p>;
 
-    const getTimeAgo = (dateString: string) => {
-        const date = new Date(dateString)
-        const now = new Date()
-        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-        if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
-        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
-        if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`
-        if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`
-        return `${Math.floor(diffInSeconds / 31536000)} years ago`
-    }
-
     return (
-        <TooltipProvider>
-            <div className="p-5 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold truncate">{link.displayname || "Untitled Link"}</h2>
-                    <Badge variant={"default"} className={cn("ml-2 bg-red-500 text-white", link.isActive && "bg-green-500 text-black")}>
-                        {link.isActive ? "Active" : "Inactive"}
-                    </Badge>
-                </div>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <CardTitle className="truncate">{link.displayname || "Untitled Link"}</CardTitle>
+                    {link.deactivated ? (
+                        <Status status="maintenance" className="shrink-0">
+                            <StatusIndicator/>
+                            <StatusLabel>Deactivated</StatusLabel>
+                        </Status>
+                    ) : (
+                        <Status status={link.isActive ? "online" : "offline"} className="shrink-0">
+                            <StatusIndicator/>
+                            <StatusLabel>{link.isActive ? "Active" : "Inactive"}</StatusLabel>
+                        </Status>
+                    )}
+                </CardHeader>
 
-                <div className="space-y-3 flex-1">
+                <CardContent className="space-y-3">
                     <div className="flex items-center text-sm">
-                        <Tag className="h-4 w-4 mr-2 text-muted-foreground"/>
+                        <Tag className="h-4 w-4 mr-2 text-muted-foreground shrink-0"/>
                         <span className="text-muted-foreground">Tag:</span>
                         <span className="font-medium ml-2 truncate">{link.clickTag}</span>
                     </div>
 
                     <div className="flex items-center text-sm">
-                        <Hash className="h-4 w-4 mr-2 text-muted-foreground"/>
+                        <Hash className="h-4 w-4 mr-2 text-muted-foreground shrink-0"/>
                         <span className="text-muted-foreground">ID:</span>
                         <span className="font-medium ml-2 truncate">{link.id}</span>
                     </div>
 
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className="flex items-center text-sm">
-                                <Calendar className="h-4 w-4 mr-2 text-muted-foreground"/>
-                                <span className="text-muted-foreground">Created:</span>
-                                <span className="font-medium ml-2">{getTimeAgo(link.createdOn)}</span>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <div className="flex items-center">
-                                <Clock className="h-4 w-4 mr-2"/>
-                                {new Date(link.createdOn).toLocaleString()}
-                            </div>
-                        </TooltipContent>
-                    </Tooltip>
+                    <div className="flex items-center text-sm">
+                        <Calendar className="h-4 w-4 mr-2 text-muted-foreground shrink-0"/>
+                        <span className="text-muted-foreground">Created:</span>
+                        <span className="font-medium ml-2"><TimeCell iso={link.createdOn} full/></span>
+                    </div>
 
                     {link.url && (
-                        <div className="flex items-start text-sm mt-4">
-                            <ExternalLink className="h-4 w-4 mr-2 text-muted-foreground mt-0.5"/>
-                            <div className="flex-1">
+                        <div className="flex items-start text-sm pt-1">
+                            <ExternalLink className="h-4 w-4 mr-2 text-muted-foreground mt-0.5 shrink-0"/>
+                            <div className="flex-1 min-w-0">
                                 <span className="text-muted-foreground">URL:</span>
-                                <div className="font-medium mt-1 break-all">
+                                <div className="font-medium mt-1 flex items-start gap-1.5">
                                     <a href={link.url} target="_blank" rel="noopener noreferrer"
-                                       className="text-primary hover:underline">
+                                       className="text-primary hover:underline break-all">
                                         {link.url}
                                     </a>
+                                    <CopyButton value={link.url} className="mt-0.5 shrink-0"/>
                                 </div>
                             </div>
                         </div>
                     )}
-                </div>
 
-                {link.url && (
-                    <div className="mt-auto pt-4">
-                        <Button variant="outline" size="sm" className="w-full"
+                    {link.url && (
+                        <Button variant="outline" size="sm" className="w-full mt-2"
                                 onClick={() => window.open(link.url, "_blank")}>
                             <ExternalLink className="h-4 w-4 mr-2"/>
                             Visit Link
                         </Button>
-                    </div>
-                )}
-            </div>
-        </TooltipProvider>
+                    )}
+                </CardContent>
+            </Card>
     )
 }
 

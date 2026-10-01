@@ -1,4 +1,4 @@
-import {useUserList} from "@/feature/user/hooks/useUserList.ts";
+import {useUserList} from "@/api/user/hooks.ts";
 import UserTable from "@/feature/user/components/UserTable.tsx";
 import {Main} from "@/components/layout/main.tsx";
 import UsersProvider from "@/feature/user/context/users-context.tsx";

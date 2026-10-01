@@ -1,9 +1,7 @@
-import ApiKeys from "@/feature/apiKey";
+import ApiKeys from "@/feature/apiKeys";
 
-function ApiKeysPage() {
+export default function ApiKeysPage() {
     return (
         <ApiKeys />
-    )
+    );
 }
-
-export default ApiKeysPage;

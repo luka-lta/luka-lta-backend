@@ -1,10 +1,12 @@
-import {useLinktreeList} from "@/feature/linktree/hooks/useLinktreeList.ts";
+import {useLinktreeList} from "@/api/linktree/hooks.ts";
 import LinktreeTable from "@/feature/linktree/components/LinktreeTable.tsx";
 import {Main} from "@/components/layout/main.tsx";
 import LinksProvider from "@/feature/linktree/context/links-context.tsx";
 import LinksDialogs from "@/feature/linktree/components/LinksDialogs.tsx";
 import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 import {ErrorState} from "@/components/error-state.tsx";
+import {LinktreeHeader} from "@/feature/linktree/components/LinktreeHeader.tsx";
+import {LinktreeSummaryKpis} from "@/feature/linktree/components/LinktreeSummaryKpis.tsx";
 
 function Linktree() {
     const [linkList, setFilterData] = useLinktreeList();
@@ -23,20 +25,16 @@ function Linktree() {
         )
     }
 
+    const links = linkList.data?.links ?? [];
+
     return (
         <Main>
             <LinksProvider>
-                <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
-                    <div>
-                        <h2 className='text-2xl font-bold tracking-tight'>Links</h2>
-                        <p className='text-muted-foreground'>
-                            Manage your links here.
-                        </p>
-                    </div>
-                </div>
+                <LinktreeHeader links={links} onRefresh={async () => { await linkList.refetch(); }} />
+                <LinktreeSummaryKpis links={links} />
 
                 <LinktreeTable
-                    links={linkList.data?.links ?? []}
+                    links={links}
                     maxPages={linkList.data?.totalPages}
                     loading={linkList.isPending}
                     setFilterData={setFilterData}

@@ -1,7 +1,8 @@
 import {useLinksContext} from "@/feature/linktree/context/links-context.tsx";
 import {CreateLinkDialog} from "@/feature/linktree/components/dialog/CreateLinkDialog.tsx";
 import DeleteLinkDialog from "@/feature/linktree/components/dialog/DeleteLinkDialog.tsx";
-import EditLinkSheet from "@/feature/linktree/components/sheet/EditLinkSheet.tsx";
+import DeactivateLinkDialog from "@/feature/linktree/components/dialog/DeactivateLinkDialog.tsx";
+import ActivateLinkDialog from "@/feature/linktree/components/dialog/ActivateLinkDialog.tsx";
 
 function LinksDialogs() {
     const {open, setOpen, currentRow, setCurrentRow} = useLinksContext();
@@ -28,16 +29,28 @@ function LinksDialogs() {
                         currentRow={currentRow}
                     />
 
-                    <EditLinkSheet
-                        key={`link-edit-${currentRow.clickTag}`}
-                        currentRow={currentRow}
-                        open={open === 'edit'}
+                    <DeactivateLinkDialog
+                        key={`link-deactivate-${currentRow.clickTag}`}
+                        open={open === 'deactivate'}
                         onOpenChange={() => {
-                            setOpen('edit')
+                            setOpen('deactivate')
                             setTimeout(() => {
                                 setCurrentRow(null)
                             }, 500)
                         }}
+                        currentRow={currentRow}
+                    />
+
+                    <ActivateLinkDialog
+                        key={`link-activate-${currentRow.clickTag}`}
+                        open={open === 'activate'}
+                        onOpenChange={() => {
+                            setOpen('activate')
+                            setTimeout(() => {
+                                setCurrentRow(null)
+                            }, 500)
+                        }}
+                        currentRow={currentRow}
                     />
                 </>
             )}

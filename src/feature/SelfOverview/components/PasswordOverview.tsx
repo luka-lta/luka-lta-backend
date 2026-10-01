@@ -4,11 +4,11 @@ import { TextInput } from "@/components/form/TextInput.tsx";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, RefreshCw, CheckCircle } from "lucide-react";
+import { Lock, CheckCircle } from "lucide-react";
+import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import { FetchWrapper } from "@/lib/fetchWrapper.ts";
 import {Separator} from "@/components/ui/separator.tsx";
+import {useUpdateSelfPassword} from "@/api/self/hooks.ts";
 
 const passwordSchema = z.object({
     password: z.string().min(8, "Password must be at least 8 characters"),
@@ -26,29 +26,25 @@ function PasswordOverview() {
         mode: "onChange"
     });
 
-    const updatePassword = useMutation({
-        mutationFn: async ({ password }: PasswordFormData) => {
-            const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl);
-            await fetchWrapper.put("/auth/update-password", { password });
-        },
-        onSuccess: () => {
-            toast.success("Password updated successfully", {
-                description: "Your password has been changed",
-                icon: <CheckCircle className="h-5 w-5 text-green-500" />,
-                action: {
-                    label: "Dismiss",
-                    onClick: () => {}
-                }
-            });
-            form.reset();
-        },
-        onError: (error) => {
-            toast.error(error.message);
-        }
-    });
+    const updatePassword = useUpdateSelfPassword();
 
     const onSubmit = (data: PasswordFormData) => {
-        updatePassword.mutate(data);
+        updatePassword.mutate(data.password, {
+            onSuccess: () => {
+                toast.success("Password updated successfully", {
+                    description: "Your password has been changed",
+                    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+                    action: {
+                        label: "Dismiss",
+                        onClick: () => {}
+                    }
+                });
+                form.reset();
+            },
+            onError: (error) => {
+                toast.error(error.message);
+            },
+        });
     };
 
     return (
@@ -98,7 +94,7 @@ function PasswordOverview() {
                         >
                             {updatePassword.isPending ? (
                                 <>
-                                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                    <Spinner size={16} className="mr-2" />
                                     Updating...
                                 </>
                             ) : (

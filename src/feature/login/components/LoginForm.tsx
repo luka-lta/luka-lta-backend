@@ -1,14 +1,16 @@
 import {SubmitHandler, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
+import {AxiosError} from "axios";
 import {Button} from "@/components/ui/button.tsx";
-import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
-import {toast} from "sonner";
+import {useAuthenticatedUserStore} from "@/store/authStore.ts";
+import {useLogin} from "@/api/auth/hooks.ts";
 import {useNavigate} from "react-router-dom";
 import {TextInput} from "@/components/form/TextInput.tsx";
 import {loginSchema, LoginSchema} from "@/feature/login/schema/loginSchema.ts";
-import {HTMLAttributes, useState} from "react";
+import {HTMLAttributes} from "react";
 import {cn} from "@/lib/utils.ts";
+import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
 
 type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 
@@ -17,10 +19,21 @@ const defaultValues = {
     password: "",
 };
 
+function getLoginError(error: unknown): string {
+    if (error instanceof AxiosError) {
+        const status = error.response?.status;
+        if (status === 401) return "Invalid credentials";
+        if (status === 404) return "User not found";
+        if (status === 429) return "Too many attempts. Please try again later.";
+        if (!error.response) return "Network error. Check your connection.";
+    }
+    return "Login failed. Please try again.";
+}
+
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
-    const {login} = useAuthenticatedUserStore();
+    const setAuth = useAuthenticatedUserStore((s) => s.setAuth);
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(false);
+    const loginMutation = useLogin();
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -28,21 +41,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     });
 
     const handleLogin = async (data: LoginSchema) => {
-        setIsLoading(true);
         try {
-            await login(data);
-
-            toast.success("Redirecting to dashboard");
-
-            setTimeout(() => {
-                setIsLoading(false);
-                navigate("/dashboard");
-            }, 1000);
+            const result = await loginMutation.mutateAsync(data);
+            setAuth(result.token, result.user);
+            navigate("/dashboard");
         } catch (error: unknown) {
-            setIsLoading(false);
-            if (error instanceof Error) {
-                toast.error(error.message);
-            }
+            form.setError("root", { type: "manual", message: getLoginError(error) });
         }
     };
 
@@ -75,13 +79,19 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 />
             </div>
 
+            {form.formState.errors.root && (
+                <p className="text-sm text-red-500">{form.formState.errors.root.message}</p>
+            )}
+
             {/* Submit-Button */}
             <div>
                 <Button
                     type="submit"
-                    className="flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6  shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
+                    disabled={loginMutation.isPending}
+                    className="flex w-full justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold leading-6  shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
                 >
-                    {isLoading ? "Sigining in..." : "Sign In"}
+                    {loginMutation.isPending && <Spinner size={16} />}
+                    {loginMutation.isPending ? "Signing in..." : "Sign In"}
                 </Button>
             </div>
 

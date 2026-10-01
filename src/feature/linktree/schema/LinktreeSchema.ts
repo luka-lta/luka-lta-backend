@@ -10,6 +10,8 @@ export const LinkItemSchema = z.object({
     isActive: z.boolean(),
     iconName: z.string().optional().nullable().default(null),
     displayOrder: z.number().int().nonnegative('Display order must be a positive number'),
+    deactivated: z.boolean().default(false),
+    deactivatedOn: z.string().optional().nullable().default(null),
 })
 
 export type linkData = {

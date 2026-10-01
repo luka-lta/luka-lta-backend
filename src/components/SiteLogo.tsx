@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useSidebar } from '@/components/ui/sidebar'
-import { useAuthenticatedUserStore } from '@/feature/login/hooks/useAuthenticatedStore.ts'
+import { useAuthenticatedUserStore } from '@/store/authStore.ts'
 
 interface SiteLogoProps {
     className?: string
