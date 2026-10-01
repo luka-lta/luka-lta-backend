@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
     type ChartConfig,
@@ -12,6 +14,8 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { useAppAnalytics } from "@/api/apps/hooks";
 import type { AppEntity } from "@/api/apps/schema";
 import { NoAnalyticsState } from "@/feature/apps/detail/NoAnalyticsState";
+import { ANALYTICS_SOURCE_TYPE_LABELS } from "@/feature/apps/labels";
+import { cn } from "@/lib/utils";
 
 interface AnalyticsTabProps {
     app: AppEntity;
@@ -30,15 +34,39 @@ function formatKpiValue(value: number, unit?: string): string {
 }
 
 export function AnalyticsTab({ app, onConfigureSource }: AnalyticsTabProps) {
-    const analytics = useAppAnalytics(app);
+    const enabledSources = app.analyticsSources.filter((s) => s.enabled);
+    const [selectedSourceId, setSelectedSourceId] = useState<string | undefined>(enabledSources[0]?.id);
+    const activeSourceId = enabledSources.some((s) => s.id === selectedSourceId) ? selectedSourceId : enabledSources[0]?.id;
+    const analytics = useAppAnalytics(app, activeSourceId);
 
-    if (app.analyticsSource === "none") {
+    if (enabledSources.length === 0) {
         return <NoAnalyticsState onConfigure={onConfigureSource} />;
     }
+
+    const pillBar = (
+        <div className="flex flex-wrap gap-2">
+            {enabledSources.map((source) => (
+                <button
+                    key={source.id}
+                    type="button"
+                    onClick={() => setSelectedSourceId(source.id)}
+                    className="focus:outline-none"
+                >
+                    <Badge
+                        variant={source.id === activeSourceId ? "default" : "outline"}
+                        className={cn("cursor-pointer", source.id === activeSourceId && "ring-2 ring-primary/30")}
+                    >
+                        {ANALYTICS_SOURCE_TYPE_LABELS[source.type]}
+                    </Badge>
+                </button>
+            ))}
+        </div>
+    );
 
     if (analytics.isLoading) {
         return (
             <div className="space-y-4">
+                {pillBar}
                 <Skeleton className="h-72 w-full rounded-xl" />
                 <div className="grid grid-cols-3 gap-4">
                     <Skeleton className="h-20 w-full rounded-xl" />
@@ -51,26 +79,35 @@ export function AnalyticsTab({ app, onConfigureSource }: AnalyticsTabProps) {
 
     if (analytics.isError) {
         return (
-            <Alert variant="destructive">
-                <AlertTitle>Analytics konnten nicht geladen werden</AlertTitle>
-                <AlertDescription className="flex items-center justify-between gap-4">
-                    <span>{analytics.error.message}</span>
-                    <Button variant="outline" size="sm" onClick={() => analytics.refetch()}>
-                        Erneut versuchen
-                    </Button>
-                </AlertDescription>
-            </Alert>
+            <div className="space-y-4">
+                {pillBar}
+                <Alert variant="destructive">
+                    <AlertTitle>Analytics konnten nicht geladen werden</AlertTitle>
+                    <AlertDescription className="flex items-center justify-between gap-4">
+                        <span>{analytics.error.message}</span>
+                        <Button variant="outline" size="sm" onClick={() => analytics.refetch()}>
+                            Erneut versuchen
+                        </Button>
+                    </AlertDescription>
+                </Alert>
+            </div>
         );
     }
 
     if (!analytics.data) {
-        return <NoAnalyticsState onConfigure={onConfigureSource} />;
+        return (
+            <div className="space-y-4">
+                {pillBar}
+                <NoAnalyticsState onConfigure={onConfigureSource} />
+            </div>
+        );
     }
 
     const { primaryMetric, kpis, breakdown } = analytics.data;
 
     return (
         <div className="space-y-4">
+            {pillBar}
             <Card>
                 <CardHeader>
                     <CardTitle>{primaryMetric.label}</CardTitle>
