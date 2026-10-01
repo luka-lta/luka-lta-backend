@@ -18,11 +18,11 @@ export function useApp(id: string) {
     });
 }
 
-export function useAppAnalytics(app: AppEntity | undefined) {
+export function useAppAnalytics(app: AppEntity | undefined, sourceConfigId: string | undefined) {
     return useQuery({
-        queryKey: ["apps", "analytics", app?.id],
-        queryFn: () => fetchAppAnalytics(app!),
-        enabled: !!app,
+        queryKey: ["apps", "analytics", app?.id, sourceConfigId],
+        queryFn: () => fetchAppAnalytics(app!, sourceConfigId!),
+        enabled: !!app && !!sourceConfigId,
     });
 }
 
