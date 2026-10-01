@@ -2,11 +2,11 @@ import { type SidebarData } from '../types'
 import {
     BookOpen,
     Boxes,
-    Eye,
     Hammer,
-    KeySquare, LayoutDashboardIcon,
-    ListTree, MousePointerClickIcon, Palette, Settings, SettingsIcon,
-    ShieldHalfIcon, Tag, UserCog,
+    KeyRound,
+    LayoutDashboardIcon,
+    ListTree, MousePointerClickIcon, Palette, Server, Settings,
+    UserCog,
     UsersIcon, Wrench
 } from "lucide-react";
 
@@ -41,20 +41,10 @@ export const sidebarData: SidebarData = {
                     url: '/dashboard/users',
                 },
                 {
-                    title: "Preview Access",
-                    icon: Eye,
-                    url: '/dashboard/preview-access',
-                },
-                {
-                    title: "Api-Keys",
-                    icon: KeySquare,
+                    title: 'API Keys',
+                    icon: KeyRound,
                     url: '/dashboard/api-keys',
-                },
-                {
-                    title: "Permissions",
-                    icon: ShieldHalfIcon,
-                    url: '/dashboard/permissions',
-                },
+                }
             ],
         },
         {
@@ -73,33 +63,23 @@ export const sidebarData: SidebarData = {
             ],
         },
         {
-            title: 'Blog-Management',
+            title: 'Homelab',
             items: [
                 {
-                    title: 'Blog Posts',
-                    icon: BookOpen,
-                    url: '/dashboard/blog',
-                },
-                {
-                    title: 'Blog Tags',
-                    icon: Tag,
-                    url: '/dashboard/blog-tags',
+                    title: 'Homelab',
+                    icon: Server,
+                    url: '/dashboard/homelab',
                 },
             ],
         },
         {
-            title: 'Web-Tracking',
+            title: 'Blog-Management',
             items: [
                 {
-                    title: "Tracked-Users",
-                    icon: UsersIcon,
-                    url: '/dashboard/tracked-users',
+                    title: 'Blog',
+                    icon: BookOpen,
+                    url: '/dashboard/blog',
                 },
-                {
-                    title: "Site-Configuration",
-                    icon: SettingsIcon,
-                    url: '/dashboard/site-configuration',
-                }
             ],
         },
         {
