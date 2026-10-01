@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import type { AppAnalyticsSource } from "@/api/apps/schema";
+import type { AppAnalyticsSourceType } from "@/api/apps/schema";
 import type { AppAnalytics, AppAnalyticsPoint } from "@/api/apps/analyticsSchema";
 
 /**
@@ -18,8 +18,8 @@ function seededRandom(seed: string): () => number {
   };
 }
 
-function buildSeries(appId: string, baseValue: number, volatility: number): AppAnalyticsPoint[] {
-  const random = seededRandom(`${appId}-series`);
+function buildSeries(seed: string, baseValue: number, volatility: number): AppAnalyticsPoint[] {
+  const random = seededRandom(`${seed}-series`);
   const points: AppAnalyticsPoint[] = [];
   let current = baseValue;
 
@@ -33,14 +33,14 @@ function buildSeries(appId: string, baseValue: number, volatility: number): AppA
   return points;
 }
 
-function generateAppStoreConnect(appId: string): AppAnalytics {
-  const random = seededRandom(`${appId}-asc`);
+function generateAppStoreConnect(seed: string): AppAnalytics {
+  const random = seededRandom(`${seed}-asc`);
   return {
     source: "app-store-connect",
     fetchedAt: DateTime.now().toISO(),
     primaryMetric: {
       label: "Downloads",
-      series: buildSeries(appId, 200 + Math.round(random() * 300), 25),
+      series: buildSeries(seed, 200 + Math.round(random() * 300), 25),
     },
     kpis: [
       { label: "Impressions gesamt", value: Math.round(15000 + random() * 25000) },
@@ -55,14 +55,14 @@ function generateAppStoreConnect(appId: string): AppAnalytics {
   };
 }
 
-function generateFirebase(appId: string): AppAnalytics {
-  const random = seededRandom(`${appId}-firebase`);
+function generateFirebase(seed: string): AppAnalytics {
+  const random = seededRandom(`${seed}-firebase`);
   return {
     source: "firebase",
     fetchedAt: DateTime.now().toISO(),
     primaryMetric: {
       label: "Aktive Nutzer (DAU)",
-      series: buildSeries(appId, 80 + Math.round(random() * 150), 12),
+      series: buildSeries(seed, 80 + Math.round(random() * 150), 12),
     },
     kpis: [
       { label: "MAU", value: Math.round(1500 + random() * 3000) },
@@ -77,14 +77,14 @@ function generateFirebase(appId: string): AppAnalytics {
   };
 }
 
-function generateCustom(appId: string): AppAnalytics {
-  const random = seededRandom(`${appId}-custom`);
+function generateCustom(seed: string): AppAnalytics {
+  const random = seededRandom(`${seed}-custom`);
   return {
     source: "custom",
     fetchedAt: DateTime.now().toISO(),
     primaryMetric: {
       label: "Requests",
-      series: buildSeries(appId, 500 + Math.round(random() * 1000), 80),
+      series: buildSeries(seed, 500 + Math.round(random() * 1000), 80),
     },
     kpis: [
       { label: "Ø Latenz", value: Math.round(40 + random() * 160), unit: "ms" },
@@ -100,10 +100,10 @@ function generateCustom(appId: string): AppAnalytics {
 }
 
 export function generateMockAnalytics(
-  source: Exclude<AppAnalyticsSource, "none">,
-  appId: string
+  type: AppAnalyticsSourceType,
+  seed: string
 ): AppAnalytics {
-  if (source === "app-store-connect") return generateAppStoreConnect(appId);
-  if (source === "firebase") return generateFirebase(appId);
-  return generateCustom(appId);
+  if (type === "app-store-connect") return generateAppStoreConnect(seed);
+  if (type === "firebase") return generateFirebase(seed);
+  return generateCustom(seed);
 }
