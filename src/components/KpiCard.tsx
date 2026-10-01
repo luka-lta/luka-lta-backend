@@ -12,9 +12,10 @@ interface KpiCardProps {
     iconBg: string;
     iconColor: string;
     subtitle?: React.ReactNode;
+    valueFormatter?: (value: number) => string;
 }
 
-export function KpiCard({ title, value, icon: Icon, href, iconBg, iconColor, subtitle }: KpiCardProps) {
+export function KpiCard({ title, value, icon: Icon, href, iconBg, iconColor, subtitle, valueFormatter }: KpiCardProps) {
     const inner = (
         <Card className={cn("group relative transition-all duration-150", href && "hover:shadow-md cursor-pointer")}>
             <CardContent className="p-5">
@@ -27,7 +28,7 @@ export function KpiCard({ title, value, icon: Icon, href, iconBg, iconColor, sub
                 <div className="flex items-end justify-between gap-2">
                     <div>
                         {value !== undefined ? (
-                            <p className="text-2xl font-bold tabular-nums">{value.toLocaleString()}</p>
+                            <p className="text-2xl font-bold tabular-nums">{valueFormatter ? valueFormatter(value) : value.toLocaleString()}</p>
                         ) : (
                             <Skeleton className="h-8 w-20 mt-0.5" />
                         )}

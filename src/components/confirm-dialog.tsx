@@ -9,6 +9,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/kibo-ui/spinner/index.tsx'
 
 interface ConfirmDialogProps {
     open: boolean
@@ -58,6 +59,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
                         onClick={handleConfirm}
                         disabled={disabled || isLoading}
                     >
+                        {isLoading && <Spinner size={14} />}
                         {confirmText ?? 'Continue'}
                     </Button>
                 </AlertDialogFooter>

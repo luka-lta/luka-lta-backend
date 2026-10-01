@@ -1,0 +1,54 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Empty, EmptyMedia, EmptyTitle } from "@/components/ui/empty.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { OctagonAlert, RefreshCcw, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils.ts";
+
+interface DashboardAlert {
+    id: string;
+    title: string;
+    description: string;
+    refetch: () => void;
+}
+
+interface DashboardAlertsProps {
+    alerts: DashboardAlert[];
+}
+
+export function DashboardAlerts({ alerts }: DashboardAlertsProps) {
+    return (
+        <Card>
+            <CardHeader className="pb-3">
+                <CardTitle className="text-base">Attention needed</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {alerts.length === 0 ? (
+                    <Empty className="border-0 py-8">
+                        <EmptyMedia variant="icon">
+                            <ShieldCheck />
+                        </EmptyMedia>
+                        <EmptyTitle>All systems operational</EmptyTitle>
+                    </Empty>
+                ) : (
+                    <ul className="space-y-1">
+                        {alerts.map((alert) => (
+                            <li key={alert.id} className="flex items-start gap-3 rounded-md p-2 -mx-2 hover:bg-muted/50 transition-colors">
+                                <div className={cn("rounded-md p-1.5 shrink-0", "text-rose-500 bg-rose-500/10")}>
+                                    <OctagonAlert className="h-4 w-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium">{alert.title}</p>
+                                    <p className="text-sm text-muted-foreground">{alert.description}</p>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={alert.refetch}>
+                                    <RefreshCcw className="h-3.5 w-3.5" />
+                                    Retry
+                                </Button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </CardContent>
+        </Card>
+    );
+}

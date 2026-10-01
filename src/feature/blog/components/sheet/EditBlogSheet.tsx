@@ -1,8 +1,6 @@
 import { z } from 'zod'
-import { SubmitHandler, useForm } from 'react-hook-form'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FetchWrapper } from '@/lib/fetchWrapper'
 import { toast } from 'sonner'
 import {
     Sheet,
@@ -20,8 +18,9 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import { Spinner } from '@/components/ui/kibo-ui/spinner/index.tsx'
 import { BlogPostType } from '@/feature/blog/schema/BlogSchema'
-import { useBlogTags } from '@/feature/blog/hooks/useBlogTags'
+import { useBlogTags, useTogglePublishBlogPost, useUpdateBlogPost } from '@/api/blog/hooks.ts'
 
 const editBlogSchema = z.object({
     title: z.string().min(1, 'Title is required').max(100),
@@ -40,7 +39,6 @@ interface Props {
 }
 
 function EditBlogSheet({ currentRow, open, onOpenChange }: Props) {
-    const queryClient = useQueryClient()
     const { data: tagsData } = useBlogTags()
 
     const form = useForm<EditBlogData>({
@@ -54,38 +52,33 @@ function EditBlogSheet({ currentRow, open, onOpenChange }: Props) {
         },
     })
 
-    const editBlog = useMutation({
-        mutationFn: async (data: EditBlogData) => {
-            const fw = new FetchWrapper(FetchWrapper.baseUrl)
+    const updateBlog = useUpdateBlogPost(currentRow.blogId)
+    const togglePublish = useTogglePublishBlogPost(currentRow.blogId)
 
-            await fw.put(`/blog/${currentRow.blogId}`, {
-                title: data.title,
-                excerpt: data.excerpt,
-                content: data.content,
-                tag_ids: data.tag_ids,
-            })
-
-            if (data.isPublished !== currentRow.isPublished) {
-                await fw.patch(`/blog/${currentRow.blogId}/publish`, {
-                    published: data.isPublished,
-                })
-            }
-        },
-        onSuccess: () => {
-            onOpenChange(false)
-            toast.success('Blog post updated!')
-        },
-        onError: (error) => {
-            toast.error(error.message)
-        },
-        onSettled: () => {
-            setTimeout(() => {
-                queryClient.invalidateQueries({ queryKey: ['blog', 'list'] })
-            }, 500)
-        },
-    })
-
-    const onSubmit: SubmitHandler<EditBlogData> = (data) => editBlog.mutate(data)
+    const onSubmit: SubmitHandler<EditBlogData> = (data) => {
+        updateBlog.mutate({
+            title: data.title,
+            excerpt: data.excerpt,
+            content: data.content,
+            tag_ids: data.tag_ids,
+        }, {
+            onSuccess: () => {
+                if (data.isPublished !== currentRow.isPublished) {
+                    togglePublish.mutate(data.isPublished, {
+                        onSuccess: () => {
+                            onOpenChange(false)
+                            toast.success('Blog post updated!')
+                        },
+                        onError: (error) => toast.error(error.message),
+                    })
+                    return
+                }
+                onOpenChange(false)
+                toast.success('Blog post updated!')
+            },
+            onError: (error) => toast.error(error.message),
+        })
+    }
 
     const toggleTag = (tagId: number, checked: boolean) => {
         const current = form.getValues('tag_ids')
@@ -94,6 +87,9 @@ function EditBlogSheet({ currentRow, open, onOpenChange }: Props) {
             checked ? [...current, tagId] : current.filter((id) => id !== tagId)
         )
     }
+
+    const isPending = updateBlog.isPending || togglePublish.isPending
+    const error = updateBlog.error ?? togglePublish.error
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -168,24 +164,31 @@ function EditBlogSheet({ currentRow, open, onOpenChange }: Props) {
 
                         <div className="flex flex-col items-start gap-2">
                             <Label htmlFor="blog-published-edit">Published</Label>
-                            <Switch
-                                id="blog-published-edit"
-                                defaultChecked={currentRow.isPublished}
-                                onCheckedChange={(value) => form.setValue('isPublished', value)}
+                            <Controller
+                                control={form.control}
+                                name="isPublished"
+                                render={({field}) => (
+                                    <Switch
+                                        id="blog-published-edit"
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                )}
                             />
                         </div>
 
-                        {editBlog.error && (
+                        {error && (
                             <Alert variant="destructive">
                                 <AlertTitle>Failed to update post</AlertTitle>
-                                <AlertDescription>{editBlog.error.message}</AlertDescription>
+                                <AlertDescription>{error.message}</AlertDescription>
                             </Alert>
                         )}
                     </div>
 
                     <SheetFooter>
-                        <Button className="w-full" type="submit" disabled={editBlog.isPending}>
-                            {editBlog.isPending ? 'Saving...' : 'Save Changes'}
+                        <Button className="w-full" type="submit" disabled={isPending}>
+                            {isPending && <Spinner size={16} />}
+                            {isPending ? 'Saving...' : 'Save Changes'}
                         </Button>
                     </SheetFooter>
                 </form>

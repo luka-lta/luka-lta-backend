@@ -1,5 +1,5 @@
 import {Main} from "@/components/layout/main.tsx";
-import {useClicksOverview} from "@/feature/clicks/hooks/useClicksOverview.ts";
+import {useClicksOverview} from "@/api/clicks/hooks.ts";
 import ClickOverviewTable from "@/feature/clicks/components/ClickOverviewTable.tsx";
 import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 import ClicksProvider from "@/feature/clicks/context/clicks-context.tsx";

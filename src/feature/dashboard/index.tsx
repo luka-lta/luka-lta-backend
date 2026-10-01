@@ -1,41 +1,43 @@
+import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useClickSummary } from './hooks/useClickSummary'
 import { Main } from '@/components/layout/main.tsx'
 import Overview from '@/feature/dashboard/components/Overview.tsx'
 import Analytics from '@/feature/dashboard/components/analytics/Analytics.tsx'
-import { useAuthenticatedUserStore } from '@/feature/login/hooks/useAuthenticatedStore.ts'
+import { BusinessTab } from '@/feature/dashboard/business/BusinessTab.tsx'
+import { DashboardHeader } from '@/feature/dashboard/components/DashboardHeader.tsx'
+import { useClickSummary } from '@/api/dashboard/hooks.ts'
+import { useLinktreeList } from '@/api/linktree/hooks.ts'
+import { useBlogList } from '@/api/blog/hooks.ts'
+import { useUserList } from '@/api/user/hooks.ts'
+import { useAuthenticatedUserStore } from '@/store/authStore.ts'
 import { useSetPageTitle } from '@/hooks/useSetPageTitle.ts'
-import { ErrorState } from '@/components/error-state.tsx'
+import { toSqlUtcNow } from '@/lib/dateTimeUtils.ts'
+import { useQueryClient } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 
-function getGreeting(name: string): { greeting: string; sub: string } {
-    const hour = new Date().getHours()
-    if (hour < 5)  return { greeting: `Good night, ${name}`,  sub: "Burning the midnight oil?" }
-    if (hour < 12) return { greeting: `Good morning, ${name}`, sub: "Ready to build something great today?" }
-    if (hour < 17) return { greeting: `Good afternoon, ${name}`, sub: "Hope the afternoon is treating you well." }
-    if (hour < 21) return { greeting: `Good evening, ${name}`, sub: "Wrapping up for the day?" }
-    return { greeting: `Hey, ${name}`,  sub: "Still at it — respect." }
-}
-
 function Dashboard() {
-    const [clickSummary] = useClickSummary()
     const { user } = useAuthenticatedUserStore()
+    const queryClient = useQueryClient()
+    const [lastUpdated, setLastUpdated] = useState(() => toSqlUtcNow())
     useSetPageTitle('Backend - Dashboard')
 
-    if (clickSummary.error) {
-        return (
-            <div className='p-6'>
-                <h1 className='text-2xl font-bold tracking-tight mb-4'>Dashboard</h1>
-                <ErrorState
-                    title="Failed to load dashboard data"
-                    message={clickSummary.error.message}
-                    refetch={clickSummary.refetch}
-                />
-            </div>
-        )
-    }
+    // Cheap: shares the react-query cache with Overview's own subscriptions, no extra fetch.
+    const [clickSummary] = useClickSummary()
+    const [linktreeList] = useLinktreeList()
+    const [blogList] = useBlogList()
+    const [userList] = useUserList()
+    const hasErrors = Boolean(clickSummary.error || linktreeList.error || blogList.error || userList.error)
 
-    const { greeting, sub } = getGreeting(user?.username ?? 'there')
+    async function handleRefresh() {
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['summary'] }),
+            queryClient.invalidateQueries({ queryKey: ['clicks'] }),
+            queryClient.invalidateQueries({ queryKey: ['linktree'] }),
+            queryClient.invalidateQueries({ queryKey: ['blog'] }),
+            queryClient.invalidateQueries({ queryKey: ['users'] }),
+        ])
+        setLastUpdated(toSqlUtcNow())
+    }
 
     return (
         <Main>
@@ -45,10 +47,12 @@ function Dashboard() {
                 transition={{ duration: 0.35, ease: 'easeOut' }}
                 className='mb-6'
             >
-                <h1 className='text-3xl font-bold tracking-tight'>
-                    {greeting} <span className='wave'>👋</span>
-                </h1>
-                <p className='text-muted-foreground mt-1 text-sm'>{sub}</p>
+                <DashboardHeader
+                    username={user?.username ?? 'there'}
+                    status={hasErrors ? "degraded" : "online"}
+                    lastUpdated={lastUpdated}
+                    onRefresh={handleRefresh}
+                />
             </motion.div>
 
             <motion.div
@@ -60,12 +64,16 @@ function Dashboard() {
                     <TabsList className='h-9'>
                         <TabsTrigger value='overview'>Overview</TabsTrigger>
                         <TabsTrigger value='analytics'>Analytics</TabsTrigger>
+                        <TabsTrigger value='business'>Business</TabsTrigger>
                     </TabsList>
                     <TabsContent value='overview' className='space-y-4'>
                         <Overview />
                     </TabsContent>
                     <TabsContent value='analytics' className='space-y-4'>
                         <Analytics />
+                    </TabsContent>
+                    <TabsContent value='business' className='space-y-4'>
+                        <BusinessTab />
                     </TabsContent>
                 </Tabs>
             </motion.div>

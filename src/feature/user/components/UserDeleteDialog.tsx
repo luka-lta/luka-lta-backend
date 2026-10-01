@@ -6,6 +6,7 @@ import {AlertTriangle} from "lucide-react";
 import {Label} from "@/components/ui/label.tsx";
 import { Input } from "@/components/ui/input";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
+import {useDeleteUser} from "@/api/user/hooks.ts";
 
 interface Props {
     open: boolean
@@ -15,12 +16,20 @@ interface Props {
 
 function UserDeleteDialog({open, onOpenChange, currentRow}: Props) {
     const [value, setValue] = useState('')
+    const deleteUser = useDeleteUser();
 
     const handleDelete = () => {
         if (value.trim() !== currentRow.username) return
 
-        onOpenChange()
-        toast.info('The following user has been deleted: ' + currentRow.username)
+        deleteUser.mutate(currentRow.userId, {
+            onSuccess: () => {
+                onOpenChange()
+                toast.success('The following user has been deleted: ' + currentRow.username)
+            },
+            onError: (error) => {
+                toast.error(error.message)
+            },
+        })
     }
 
     return (
@@ -28,6 +37,7 @@ function UserDeleteDialog({open, onOpenChange, currentRow}: Props) {
             open={open}
             onOpenChange={onOpenChange}
             handleConfirm={handleDelete}
+            isLoading={deleteUser.isPending}
             title={
                 <span className='text-destructive'>
                   <AlertTriangle
@@ -57,12 +67,13 @@ function UserDeleteDialog({open, onOpenChange, currentRow}: Props) {
                     <Alert variant='destructive'>
                         <AlertTitle>Warning!</AlertTitle>
                         <AlertDescription>
-                            Please be carefull, this operation can not be rolled back.
+                            Please be carefull, this operation can not be rolled back. The user must be
+                            deactivated (via Edit) before it can be deleted.
                         </AlertDescription>
                     </Alert>
                 </div>
             }
-            confirmText='Delete'
+            confirmText={deleteUser.isPending ? 'Deleting...' : 'Delete'}
             destructive
         />
     );

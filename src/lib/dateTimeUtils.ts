@@ -61,3 +61,8 @@ export function formatRel(ts: string): string {
     const date = parseTimestamp(ts);
     return date.isValid ? (date.toRelative() ?? ts) : ts;
 }
+
+/** Current time as a SQL-style ("yyyy-MM-dd HH:mm:ss") UTC timestamp, matching what the API returns. */
+export function toSqlUtcNow(): string {
+    return DateTime.utc().toFormat("yyyy-MM-dd HH:mm:ss");
+}

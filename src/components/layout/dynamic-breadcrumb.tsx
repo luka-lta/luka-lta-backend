@@ -22,8 +22,7 @@ const SEGMENT_LABELS: Record<string, string> = {
     appearance: 'Appearance',
     account: 'Account',
     'site-configuration': 'Site Configuration',
-    blog: 'Blog Posts',
-    'blog-tags': 'Blog Tags',
+    blog: 'Blog',
     'tracked-users': 'Tracked Users',
     create: 'New Post',
 }

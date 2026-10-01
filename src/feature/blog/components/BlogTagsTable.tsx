@@ -1,15 +1,13 @@
 import { z } from 'zod'
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FetchWrapper } from '@/lib/fetchWrapper'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Trash } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
 import { TextInput } from '@/components/form/TextInput'
-import { useBlogTags } from '@/feature/blog/hooks/useBlogTags'
+import { TimeCell } from '@/components/TimeCell.tsx'
+import { useBlogTags, useCreateBlogTag, useDeleteBlogTag } from '@/api/blog/hooks.ts'
 import { TagType } from '@/feature/blog/schema/BlogSchema'
 import { useState } from 'react'
 import {
@@ -20,9 +18,9 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import { AlertTriangle } from 'lucide-react'
+import { Spinner } from '@/components/ui/kibo-ui/spinner/index.tsx'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { useUndoToast } from '@/hooks/useUndoToast.ts'
 
 const createTagSchema = z.object({
     name: z.string().min(1, 'Name is required').max(50),
@@ -31,48 +29,36 @@ const createTagSchema = z.object({
 type CreateTagData = z.infer<typeof createTagSchema>
 
 function BlogTagsTable() {
-    const queryClient = useQueryClient()
     const { data: tagsData, isLoading } = useBlogTags()
     const [createOpen, setCreateOpen] = useState(false)
     const [search, setSearch] = useState('')
-    const [deleteTarget, setDeleteTarget] = useState<TagType | null>(null)
+    const { trigger: triggerUndoToast } = useUndoToast()
 
     const form = useForm<CreateTagData>({
         resolver: zodResolver(createTagSchema),
     })
 
-    const createTag = useMutation({
-        mutationFn: async (data: CreateTagData) => {
-            const fw = new FetchWrapper(FetchWrapper.baseUrl)
-            await fw.post('/blog/tags', { name: data.name })
-        },
+    const createTag = useCreateBlogTag()
+    const deleteTag = useDeleteBlogTag()
+
+    const handleDelete = (tag: TagType) => {
+        triggerUndoToast({
+            message: `Deleting tag "${tag.name}"...`,
+            onConfirm: () => deleteTag.mutateAsync(tag),
+            onError: (label) => toast.error(`Failed to delete: ${label}`),
+        })
+    }
+
+    const onSubmit: SubmitHandler<CreateTagData> = (data) => createTag.mutate(data.name, {
         onSuccess: () => {
             form.reset()
             setCreateOpen(false)
             toast.success('Tag created!')
-            queryClient.invalidateQueries({ queryKey: ['blog', 'tags'] })
         },
         onError: (error) => {
             toast.error(error.message)
         },
     })
-
-    const deleteTag = useMutation({
-        mutationFn: async (tag: TagType) => {
-            const fw = new FetchWrapper(FetchWrapper.baseUrl)
-            await fw.delete(`/blog/tags/${tag.tagId}`)
-        },
-        onSuccess: () => {
-            setDeleteTarget(null)
-            toast.success('Tag deleted!')
-            queryClient.invalidateQueries({ queryKey: ['blog', 'tags'] })
-        },
-        onError: (error) => {
-            toast.error(error.message)
-        },
-    })
-
-    const onSubmit: SubmitHandler<CreateTagData> = (data) => createTag.mutate(data)
 
     const filteredTags = (tagsData?.tags ?? []).filter((tag) =>
         tag.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -81,11 +67,6 @@ function BlogTagsTable() {
 
     return (
         <div className="space-y-4">
-            <div>
-                <h2 className="text-2xl font-bold tracking-tight">Blog Tags</h2>
-                <p className="text-muted-foreground">Manage tags for blog posts.</p>
-            </div>
-
             <div className="flex items-center justify-between gap-4">
                 <Input
                     placeholder="Search tags..."
@@ -110,7 +91,10 @@ function BlogTagsTable() {
                         {isLoading && (
                             <TableRow>
                                 <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                                    Loading...
+                                    <div className="flex items-center justify-center gap-2">
+                                        <Spinner size={16} />
+                                        Loading...
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         )}
@@ -127,12 +111,12 @@ function BlogTagsTable() {
                                 <TableCell className="text-muted-foreground font-mono text-sm">
                                     {tag.slug}
                                 </TableCell>
-                                <TableCell>{formatDate(tag.createdAt)}</TableCell>
+                                <TableCell><TimeCell iso={tag.createdAt}/></TableCell>
                                 <TableCell>
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => setDeleteTarget(tag)}
+                                        onClick={() => handleDelete(tag)}
                                     >
                                         <Trash className="h-4 w-4 text-destructive" />
                                     </Button>
@@ -168,35 +152,13 @@ function BlogTagsTable() {
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={createTag.isPending}>
+                                {createTag.isPending && <Spinner size={16} />}
                                 {createTag.isPending ? 'Creating...' : 'Create'}
                             </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
-
-            {deleteTarget && (
-                <ConfirmDialog
-                    open={!!deleteTarget}
-                    onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
-                    handleConfirm={() => deleteTag.mutate(deleteTarget)}
-                    title={
-                        <span className="text-destructive">
-                            <AlertTriangle className="stroke-destructive mr-1 inline-block" size={18} />
-                            Delete Tag
-                        </span>
-                    }
-                    desc={
-                        <p>
-                            Are you sure you want to delete <span className="font-bold">{deleteTarget.name}</span>?
-                            This action cannot be undone.
-                        </p>
-                    }
-                    confirmText={deleteTag.isPending ? 'Deleting...' : 'Delete'}
-                    isLoading={deleteTag.isPending}
-                    destructive
-                />
-            )}
         </div>
     )
 }

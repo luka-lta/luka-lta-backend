@@ -10,13 +10,19 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx'
-import {Link} from "react-router-dom";
-import {useAuthenticatedUserStore} from "@/feature/login/hooks/useAuthenticatedStore.ts";
+import {Link, useNavigate} from "react-router-dom";
+import {useAuthenticatedUserStore} from "@/store/authStore.ts";
 import {splitAvatarUrl} from "@/lib/utils.ts";
 
 export function ProfileDropdown() {
-  const {getUser} = useAuthenticatedUserStore();
+  const {getUser, logout} = useAuthenticatedUserStore();
   const user = getUser();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate('/');
+  }
 
   return (
     <DropdownMenu modal={false}>
@@ -47,10 +53,8 @@ export function ProfileDropdown() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <Link to={'/logout'}>
-            Log out
-          </Link>
+        <DropdownMenuItem onClick={handleLogout}>
+          Log out
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>

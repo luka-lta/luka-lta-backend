@@ -1,10 +1,8 @@
 "use client"
 
 import { z } from "zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { type SubmitHandler, useForm } from "react-hook-form"
+import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { FetchWrapper } from "@/lib/fetchWrapper.ts"
 import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx"
 import { Button } from "@/components/ui/button.tsx"
@@ -12,12 +10,14 @@ import { TextInput } from "@/components/form/TextInput.tsx"
 import { AvatarInput } from "@/components/form/AvatarInput.tsx"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet.tsx"
 import { Separator } from "@/components/ui/separator.tsx"
-import { Loader2, Mail, User } from "lucide-react"
+import { Mail, User } from "lucide-react"
+import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx"
 import {Label} from "@/components/ui/label.tsx";
 import {Switch} from "@/components/ui/switch.tsx";
 import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
 import {useRef} from "react";
+import {useUpdateUser} from "@/api/user/hooks.ts";
 
 interface Props {
     currentRow: UserTypeSchema
@@ -40,7 +40,6 @@ export type userData = {
 }
 // TODO: Edit and Create form in one component
 function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
-    const queryClient = useQueryClient()
     const formRef = useRef<HTMLFormElement>(null);
 
     const form = useForm<userData>({
@@ -53,45 +52,36 @@ function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
         },
     })
 
-    const editUser = useMutation({
-        mutationFn: async () => {
-            const fetchWrapper = new FetchWrapper(FetchWrapper.baseUrl)
-            const formData = new FormData(formRef.current!);
+    const editUser = useUpdateUser(currentRow.userId);
 
-            await fetchWrapper.formDataRequest(`/user/${currentRow.userId}`, formData)
-        },
-        onSuccess: () => {
-            onOpenChange(false)
-            toast.success("User edited successfully!")
-        },
-        onError: (error) => {
-            const errorMessage = error.message;
-            if (errorMessage.includes('email')) {
-                form.setError('email', {
-                    type: 'manual',
-                    message: errorMessage,
-                });
-            }
+    const onSubmit: SubmitHandler<userData> = () => {
+        const formData = new FormData(formRef.current!);
 
-            if (errorMessage.includes('username')) {
-                form.setError('username', {
-                    type: 'manual',
-                    message: errorMessage,
-                });
-            }
+        editUser.mutate(formData, {
+            onSuccess: () => {
+                onOpenChange(false)
+                toast.success("User edited successfully!")
+            },
+            onError: (error) => {
+                const errorMessage = error.message;
+                if (errorMessage.includes('email')) {
+                    form.setError('email', {
+                        type: 'manual',
+                        message: errorMessage,
+                    });
+                }
 
-            toast.error(error.message)
-        },
-        onSettled: () => {
-            setTimeout(() => {
-                queryClient.invalidateQueries({
-                    queryKey: ["users", "list"],
-                })
-            }, 500)
-        },
-    })
+                if (errorMessage.includes('username')) {
+                    form.setError('username', {
+                        type: 'manual',
+                        message: errorMessage,
+                    });
+                }
 
-    const onSubmit: SubmitHandler<userData> = () => editUser.mutate()
+                toast.error(error.message)
+            },
+        });
+    }
 
     return (
         <Sheet
@@ -157,11 +147,16 @@ function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
 
                             <div className="flex flex-col items-start gap-2">
                                 <Label htmlFor="active">Active</Label>
-                                <Switch
-                                    id="isActive"
-                                    {...form.register('isActive')}
-                                    onCheckedChange={(value) => form.setValue('isActive', value)}
-                                    defaultChecked={form.getValues('isActive')}
+                                <Controller
+                                    control={form.control}
+                                    name="isActive"
+                                    render={({field}) => (
+                                        <Switch
+                                            id="isActive"
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    )}
                                 />
                             </div>
                         </div>
@@ -197,7 +192,7 @@ function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
                         <Button className="w-full sm:w-auto" type="submit" disabled={editUser.isPending}>
                             {editUser.isPending ?  (
                                 <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <Spinner size={16} className="mr-2" />
                                     Updating...
                                 </>
                             ) : (
@@ -212,4 +207,3 @@ function EditUserSheet({ currentRow, open, onOpenChange }: Props) {
 }
 
 export default EditUserSheet
-

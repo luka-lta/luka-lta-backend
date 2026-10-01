@@ -7,9 +7,20 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { MultiSelect } from '@/components/ui/multi-select'
+import {
+    Tags,
+    TagsContent,
+    TagsEmpty,
+    TagsGroup,
+    TagsInput,
+    TagsItem,
+    TagsList,
+    TagsTrigger,
+    TagsValue,
+} from '@/components/ui/kibo-ui/tags'
 import { TagType } from '@/feature/blog/schema/BlogSchema'
-import { Loader2 } from 'lucide-react'
+import { CheckIcon } from 'lucide-react'
+import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
 import MarkdownEditor from '@/components/markdown-editor/MarkdownEditor'
 
 const blogEditorSchema = z.object({
@@ -100,14 +111,53 @@ function BlogEditorForm({ defaultValues, tags, onSubmit, isPending, submitLabel,
                     <Controller
                         control={form.control}
                         name="tag_ids"
-                        render={({ field }) => (
-                            <MultiSelect
-                                options={tags.map((t) => ({ label: t.name, value: String(t.tagId) }))}
-                                defaultValue={field.value.map(String)}
-                                onValueChange={(vals) => field.onChange(vals.map(Number))}
-                                placeholder="Select tags..."
-                            />
-                        )}
+                        render={({ field }) => {
+                            const selected = field.value.map(String)
+
+                            const handleRemove = (value: string) => {
+                                field.onChange(field.value.filter((id) => id !== Number(value)))
+                            }
+
+                            const handleSelect = (value: string) => {
+                                if (selected.includes(value)) {
+                                    handleRemove(value)
+                                    return
+                                }
+                                field.onChange([...field.value, Number(value)])
+                            }
+
+                            return (
+                                <Tags>
+                                    <TagsTrigger>
+                                        {selected.map((id) => (
+                                            <TagsValue key={id} onRemove={() => handleRemove(id)}>
+                                                {tags.find((t) => String(t.tagId) === id)?.name}
+                                            </TagsValue>
+                                        ))}
+                                    </TagsTrigger>
+                                    <TagsContent>
+                                        <TagsInput placeholder="Search tags..." />
+                                        <TagsList>
+                                            <TagsEmpty />
+                                            <TagsGroup>
+                                                {tags.map((tag) => (
+                                                    <TagsItem
+                                                        key={tag.tagId}
+                                                        value={String(tag.tagId)}
+                                                        onSelect={handleSelect}
+                                                    >
+                                                        {tag.name}
+                                                        {selected.includes(String(tag.tagId)) && (
+                                                            <CheckIcon className="text-muted-foreground" size={14} />
+                                                        )}
+                                                    </TagsItem>
+                                                ))}
+                                            </TagsGroup>
+                                        </TagsList>
+                                    </TagsContent>
+                                </Tags>
+                            )
+                        }}
                     />
                 </div>
             )}
@@ -138,7 +188,7 @@ function BlogEditorForm({ defaultValues, tags, onSubmit, isPending, submitLabel,
                     Cancel
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isPending && <Spinner size={16} className="mr-2" />}
                     {submitLabel}
                 </Button>
             </div>

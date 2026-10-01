@@ -14,7 +14,7 @@
 
 - No backend/API changes — no new endpoints, no changed request shapes beyond adding query params the existing `fetchLinktreeList(filterData: Record<string, string>)` already forwards as-is.
 - No new npm dependencies. Reuse existing shadcn/ui and kibo-ui components only.
-- No test runner exists in this repo (`package.json` has no `test` script). Verification per task is `npx tsc --noEmit` (must show zero errors touching changed files) plus a described manual browser check — not unit tests.
+- No test runner exists in this repo (`package.json` has no `test` script). Verification per task is `npx tsc --noEmit -p tsconfig.app.json` (must show zero errors touching changed files) plus a described manual browser check — not unit tests.
 - Keep existing German/English mix as-is (UI copy in this feature is English; don't introduce German strings).
 - `LinkItemTypeSchema` (`feature/linktree/schema/LinktreeSchema.ts`) is unchanged — only the *edit form* schema (`LinkDetailEditSchema`) changes.
 
@@ -78,8 +78,8 @@ The `.transform((v) => (v ? v : null))` on `description`/`iconName` is load-bear
 
 **Step 2: Verify types compile**
 
-Run: `npx tsc --noEmit`
-Expected: no new errors in `LinkDetailSchema.ts` (errors elsewhere, if any, are pre-existing — grep the output for the filename to confirm this file is clean: `npx tsc --noEmit 2>&1 | grep LinkDetailSchema` should print nothing).
+Run: `npx tsc --noEmit -p tsconfig.app.json`
+Expected: no new errors in `LinkDetailSchema.ts` (errors elsewhere, if any, are pre-existing — grep the output for the filename to confirm this file is clean: `npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep LinkDetailSchema` should print nothing).
 
 - [ ] **Step 3: Add description + iconName fields to `EditForm`**
 
@@ -136,7 +136,7 @@ The `onSubmit` handler is unchanged — `editLink.mutate(data, ...)` already sen
 
 - [ ] **Step 4: Verify types compile**
 
-Run: `npx tsc --noEmit 2>&1 | grep -E "EditForm|LinkDetailSchema"`
+Run: `npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep -E "EditForm|LinkDetailSchema"`
 Expected: no output.
 
 - [ ] **Step 5: Commit**
@@ -192,7 +192,7 @@ Remove the `<EditLinkSheet .../>` block (the last child inside the `{currentRow 
 
 - [ ] **Step 4: Verify the deletion doesn't break anything yet**
 
-Run: `npx tsc --noEmit 2>&1 | grep -iE "linktree|EditLinkSheet"`
+Run: `npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep -iE "linktree|EditLinkSheet"`
 Expected: errors referencing `setOpen('edit')` in `LinktreeTable.tsx` (that call site still exists — fixed in Task 4). This is expected at this point in the plan; confirm the *only* linktree-related errors are about `'edit'` not being assignable to `LinkDialogTypes` in `LinktreeTable.tsx`.
 
 - [ ] **Step 5: Commit**
@@ -285,7 +285,7 @@ export function LinktreeSummaryKpis({ links }: LinktreeSummaryKpisProps) {
 
 - [ ] **Step 3: Verify types compile**
 
-Run: `npx tsc --noEmit 2>&1 | grep -E "LinktreeHeader|LinktreeSummaryKpis"`
+Run: `npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep -E "LinktreeHeader|LinktreeSummaryKpis"`
 Expected: no output.
 
 - [ ] **Step 4: Commit**
@@ -438,7 +438,7 @@ to:
 
 - [ ] **Step 6: Verify types compile and lint passes**
 
-Run: `npx tsc --noEmit 2>&1 | grep -i linktree`
+Run: `npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep -i linktree`
 Expected: no output (this also resolves the Task 2 expected error about `'edit'`).
 
 Run: `npx eslint src/feature/linktree/components/LinktreeTable.tsx`
@@ -518,7 +518,7 @@ export default Linktree;
 
 - [ ] **Step 2: Verify types compile**
 
-Run: `npx tsc --noEmit 2>&1 | grep -i "feature/linktree/index"`
+Run: `npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep -i "feature/linktree/index"`
 Expected: no output.
 
 - [ ] **Step 3: Manual browser check**
@@ -584,7 +584,7 @@ The existing `filteredData` computation already reads `timeRange` and branches o
 
 - [ ] **Step 2: Verify types compile**
 
-Run: `npx tsc --noEmit 2>&1 | grep DetailClickChart`
+Run: `npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep DetailClickChart`
 Expected: no output.
 
 - [ ] **Step 3: Manual browser check**
@@ -761,7 +761,7 @@ This works because `DeleteLinkDialog` calls `onOpenChange(false)` only on succes
 
 - [ ] **Step 5: Verify types compile**
 
-Run: `npx tsc --noEmit 2>&1 | grep DetailLinktree`
+Run: `npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep DetailLinktree`
 Expected: no output.
 
 - [ ] **Step 6: Manual browser check**
@@ -794,7 +794,7 @@ git commit -m "feat(linktree): restructure detail page with quick actions and Ov
 
 - [ ] **Step 1: Typecheck and lint the whole project**
 
-Run: `npx tsc --noEmit`
+Run: `npx tsc --noEmit -p tsconfig.app.json`
 Expected: zero errors anywhere under `src/feature/linktree/` (errors elsewhere, if pre-existing, are out of scope — confirm by checking the error list contains no `linktree` path).
 
 Run: `npx eslint src/feature/linktree`
