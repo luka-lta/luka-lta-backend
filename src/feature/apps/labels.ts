@@ -1,4 +1,4 @@
-import type { AppAnalyticsSource, AppCategory, AppStatus } from "@/api/apps/schema";
+import type { AppAnalyticsSourceType, AppCategory, AppStatus } from "@/api/apps/schema";
 
 export const CATEGORY_LABELS: Record<AppCategory, string> = {
     "app-store": "App Store",
@@ -24,11 +24,32 @@ export const STATUS_BADGE_CLASS: Record<AppStatus, string> = {
     planned: "bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 border-transparent",
 };
 
-export const ANALYTICS_SOURCE_LABELS: Record<AppAnalyticsSource, string> = {
-    none: "Keine",
+export const ANALYTICS_SOURCE_TYPE_LABELS: Record<AppAnalyticsSourceType, string> = {
     "app-store-connect": "App Store Connect",
     firebase: "Firebase",
     custom: "Eigene Quelle",
+};
+
+export interface AnalyticsCredentialField {
+    key: string;
+    label: string;
+    multiline?: boolean;
+}
+
+export const ANALYTICS_CREDENTIAL_FIELDS: Record<AppAnalyticsSourceType, AnalyticsCredentialField[]> = {
+    "app-store-connect": [
+        { key: "issuerId", label: "Issuer ID" },
+        { key: "keyId", label: "Key ID" },
+        { key: "privateKey", label: "Private Key", multiline: true },
+    ],
+    firebase: [
+        { key: "projectId", label: "Project ID" },
+        { key: "serviceAccountJson", label: "Service-Account-JSON", multiline: true },
+    ],
+    custom: [
+        { key: "baseUrl", label: "Base-URL" },
+        { key: "apiKey", label: "API-Key" },
+    ],
 };
 
 export const METRIC_LABELS = {
