@@ -1,7 +1,8 @@
-import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Spinner } from "@/components/ui/kibo-ui/spinner";
-import { AppAnalyticsSourceSchema, AppCategorySchema, AppIconKeySchema, AppStatusSchema, type AppEntity, type AppInput } from "@/api/apps/schema";
+import { AppAnalyticsSourceTypeSchema, AppCategorySchema, AppIconKeySchema, AppStatusSchema, type AppEntity, type AppInput } from "@/api/apps/schema";
 import { useCreateApp, useUpdateApp } from "@/api/apps/hooks";
 import { APP_ICON_OPTIONS } from "@/feature/apps/iconOptions";
-import { ANALYTICS_SOURCE_LABELS, CATEGORY_LABELS, STATUS_LABELS } from "@/feature/apps/labels";
+import { ANALYTICS_CREDENTIAL_FIELDS, ANALYTICS_SOURCE_TYPE_LABELS, CATEGORY_LABELS, STATUS_LABELS } from "@/feature/apps/labels";
 
 const appFormSchema = z.object({
     name: z.string().min(1, "Name ist erforderlich").max(100, "Maximal 100 Zeichen"),
@@ -21,7 +23,12 @@ const appFormSchema = z.object({
     icon: AppIconKeySchema,
     category: AppCategorySchema,
     status: AppStatusSchema,
-    analyticsSource: AppAnalyticsSourceSchema,
+    analyticsSources: z.array(z.object({
+        id: z.string(),
+        type: AppAnalyticsSourceTypeSchema,
+        enabled: z.boolean(),
+        credentials: z.record(z.string(), z.string()),
+    })),
     url: z.string().max(2048).refine((val) => {
         if (val === "") return true;
         try {
@@ -63,7 +70,7 @@ const emptyFormValues: AppFormValues = {
     icon: "boxes",
     category: "other",
     status: "active",
-    analyticsSource: "none",
+    analyticsSources: [],
     url: "",
     metricsRevenue: "",
     metricsDownloads: "",
@@ -80,7 +87,7 @@ function toFormValues(app: AppEntity): AppFormValues {
         icon: app.icon,
         category: app.category,
         status: app.status,
-        analyticsSource: app.analyticsSource,
+        analyticsSources: app.analyticsSources,
         url: app.url ?? "",
         metricsRevenue: app.metrics?.revenue?.toString() ?? "",
         metricsDownloads: app.metrics?.downloads?.toString() ?? "",
@@ -114,7 +121,7 @@ function toAppInput(values: AppFormValues): AppInput {
         icon: values.icon,
         category: values.category,
         status: values.status,
-        analyticsSource: values.analyticsSource,
+        analyticsSources: values.analyticsSources,
         url: values.url.trim() === "" ? undefined : values.url.trim(),
         metrics: hasMetrics ? metrics : undefined,
     };
@@ -137,11 +144,29 @@ export function AppFormDialog({ open, onOpenChange, mode, defaultValues }: AppFo
         defaultValues: emptyFormValues,
     });
 
+    const sourcesFieldArray = useFieldArray({ control: form.control, name: "analyticsSources" });
+    const [addingSourceType, setAddingSourceType] = useState<z.infer<typeof AppAnalyticsSourceTypeSchema> | null>(null);
+    const [newSourceCredentials, setNewSourceCredentials] = useState<Record<string, string>>({});
+
     useEffect(() => {
         if (!open) return;
         form.reset(defaultValues ? toFormValues(defaultValues) : emptyFormValues);
+        setAddingSourceType(null);
+        setNewSourceCredentials({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, defaultValues?.id]);
+
+    function handleAddSource() {
+        if (!addingSourceType) return;
+        sourcesFieldArray.append({
+            id: crypto.randomUUID(),
+            type: addingSourceType,
+            enabled: true,
+            credentials: newSourceCredentials,
+        });
+        setAddingSourceType(null);
+        setNewSourceCredentials({});
+    }
 
     function onSubmit(values: AppFormValues) {
         const input = toAppInput(values);
@@ -217,23 +242,98 @@ export function AppFormDialog({ open, onOpenChange, mode, defaultValues }: AppFo
                         </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                        <Label>Analytics-Quelle</Label>
-                        <Controller
-                            control={form.control}
-                            name="analyticsSource"
-                            render={({ field }) => (
-                                <Select value={field.value} onValueChange={field.onChange}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        {Object.entries(ANALYTICS_SOURCE_LABELS).map(([value, label]) => (
-                                            <SelectItem key={value} value={value}>{label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
-                        />
-                    </div>
+                    <fieldset className="space-y-3 rounded-md border p-3">
+                        <legend className="px-1 text-sm font-medium">Analytics-Quellen</legend>
+
+                        {sourcesFieldArray.fields.length > 0 && (
+                            <ul className="space-y-2">
+                                {sourcesFieldArray.fields.map((field, index) => (
+                                    <li key={field.id} className="flex items-center justify-between gap-3 rounded-md border p-2">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <span className="text-sm font-medium truncate">
+                                                {ANALYTICS_SOURCE_TYPE_LABELS[field.type]}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <Controller
+                                                control={form.control}
+                                                name={`analyticsSources.${index}.enabled`}
+                                                render={({ field: enabledField }) => (
+                                                    <Switch checked={enabledField.value} onCheckedChange={enabledField.onChange} />
+                                                )}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => sourcesFieldArray.remove(index)}
+                                                aria-label="Quelle entfernen"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+
+                        {addingSourceType ? (
+                            <div className="space-y-3 rounded-md border border-dashed p-3">
+                                <div className="space-y-1.5">
+                                    <Label>Typ</Label>
+                                    <Select value={addingSourceType} onValueChange={(v) => { setAddingSourceType(v as typeof addingSourceType); setNewSourceCredentials({}); }}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {Object.entries(ANALYTICS_SOURCE_TYPE_LABELS).map(([value, label]) => (
+                                                <SelectItem key={value} value={value}>{label}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {ANALYTICS_CREDENTIAL_FIELDS[addingSourceType].map((field) => (
+                                    <div key={field.key} className="space-y-1.5">
+                                        <Label htmlFor={`new-source-${field.key}`} className="text-xs">{field.label}</Label>
+                                        {field.multiline ? (
+                                            <Textarea
+                                                id={`new-source-${field.key}`}
+                                                rows={2}
+                                                className="resize-none"
+                                                value={newSourceCredentials[field.key] ?? ""}
+                                                onChange={(e) => setNewSourceCredentials((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                                            />
+                                        ) : (
+                                            <Input
+                                                id={`new-source-${field.key}`}
+                                                type="password"
+                                                value={newSourceCredentials[field.key] ?? ""}
+                                                onChange={(e) => setNewSourceCredentials((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+
+                                <div className="flex justify-end gap-2">
+                                    <Button type="button" variant="outline" size="sm" onClick={() => { setAddingSourceType(null); setNewSourceCredentials({}); }}>
+                                        Abbrechen
+                                    </Button>
+                                    <Button type="button" size="sm" onClick={handleAddSource}>
+                                        Hinzufügen
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAddingSourceType("app-store-connect")}
+                            >
+                                <Plus className="h-4 w-4" />
+                                Quelle hinzufügen
+                            </Button>
+                        )}
+                    </fieldset>
 
                     <div className="space-y-1.5">
                         <Label>Icon</Label>
