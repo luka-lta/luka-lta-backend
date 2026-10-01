@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AppEntity } from "@/api/apps/schema";
-import { ANALYTICS_SOURCE_LABELS, CATEGORY_LABELS, METRIC_LABELS, STATUS_BADGE_CLASS, STATUS_LABELS } from "@/feature/apps/labels";
+import { ANALYTICS_SOURCE_TYPE_LABELS, CATEGORY_LABELS, METRIC_LABELS, STATUS_BADGE_CLASS, STATUS_LABELS } from "@/feature/apps/labels";
 
 interface AppOverviewTabProps {
     app: AppEntity;
@@ -33,7 +33,12 @@ export function AppOverviewTab({ app }: AppOverviewTabProps) {
                 <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">{CATEGORY_LABELS[app.category]}</Badge>
                     <Badge className={cn(STATUS_BADGE_CLASS[app.status])}>{STATUS_LABELS[app.status]}</Badge>
-                    <Badge variant="outline">Analytics: {ANALYTICS_SOURCE_LABELS[app.analyticsSource]}</Badge>
+                    {app.analyticsSources.map((source) => (
+                        <Badge key={source.id} variant="outline">
+                            {ANALYTICS_SOURCE_TYPE_LABELS[source.type]}
+                            {!source.enabled && " (deaktiviert)"}
+                        </Badge>
+                    ))}
                 </div>
 
                 {app.url && (
