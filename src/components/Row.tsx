@@ -2,8 +2,12 @@
 import { SquareArrowOutUpRight } from "lucide-react";
 import { ReactNode } from "react";
 import { round } from "lodash";
-import {MetricResponse} from "@/api/analytics/endpoints/overview.ts";
 import NumberFlow from "@number-flow/react";
+
+interface MetricResponse {
+    percentage: number;
+    count: number;
+}
 
 // Shared row item component
 const RowItem = ({
