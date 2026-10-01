@@ -17,12 +17,21 @@ export const AppStatusSchema = z.enum([
     "planned",
 ]);
 
-export const AppAnalyticsSourceSchema = z.enum([
-    "none",
+export const AppAnalyticsSourceTypeSchema = z.enum([
     "app-store-connect",
     "firebase",
     "custom",
 ]);
+
+export const AppAnalyticsSourceConfigSchema = z.object({
+    id: z.string(),
+    type: AppAnalyticsSourceTypeSchema,
+    enabled: z.boolean().default(true),
+    // Generic key-value map; which keys are expected depends on `type`
+    // (see src/feature/apps/labels.ts). Plain-text demo placeholder only -
+    // a future real backend decides how credentials are actually stored.
+    credentials: z.record(z.string(), z.string()).default({}),
+});
 
 // Icon keys live in the API layer (not in feature/apps) so schema.ts never
 // depends on a UI module. feature/apps/iconOptions.ts maps these keys to
@@ -57,7 +66,7 @@ export const AppEntitySchema = z.object({
     icon: AppIconKeySchema,
     category: AppCategorySchema,
     status: AppStatusSchema,
-    analyticsSource: AppAnalyticsSourceSchema.default("none"),
+    analyticsSources: z.array(AppAnalyticsSourceConfigSchema).default([]),
     url: z.string().url().optional(),
     metrics: AppMetricsSchema.optional(),
     createdAt: z.string(),
@@ -74,7 +83,8 @@ export const AppInputSchema = AppEntitySchema.omit({
 
 export type AppCategory = z.infer<typeof AppCategorySchema>;
 export type AppStatus = z.infer<typeof AppStatusSchema>;
-export type AppAnalyticsSource = z.infer<typeof AppAnalyticsSourceSchema>;
+export type AppAnalyticsSourceType = z.infer<typeof AppAnalyticsSourceTypeSchema>;
+export type AppAnalyticsSourceConfig = z.infer<typeof AppAnalyticsSourceConfigSchema>;
 export type AppIconKey = z.infer<typeof AppIconKeySchema>;
 export type AppMetrics = z.infer<typeof AppMetricsSchema>;
 export type AppEntity = z.infer<typeof AppEntitySchema>;
