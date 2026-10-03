@@ -2,18 +2,21 @@ import { KpiCard } from "@/components/KpiCard.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { cn } from "@/lib/utils.ts";
 import { CheckCircle2, Container as ContainerIcon, OctagonX, Server, TriangleAlert } from "lucide-react";
-import type { Container, Host } from "@/feature/homelab/types.ts";
-import { formatUptime, overallUptimeSeconds } from "@/feature/homelab/data.ts";
+import type { Alert, Container, Event, Host } from "@/feature/homelab/types.ts";
+import { countEventsSince, countNeedsAttention, formatUptime, overallUptimeSeconds } from "@/feature/homelab/data.ts";
 
 interface SummaryKpisProps {
     containers: Container[];
     hosts: Host[];
+    alerts: Alert[];
+    events: Event[];
 }
 
-export function SummaryKpis({ containers, hosts }: SummaryKpisProps) {
+export function SummaryKpis({ containers, hosts, alerts, events }: SummaryKpisProps) {
     const running = containers.filter((c) => c.status === "running").length;
     const stopped = containers.filter((c) => c.status === "stopped").length;
-    const errored = containers.filter((c) => c.status === "warning" || c.status === "unhealthy").length;
+    const errored = countNeedsAttention(containers, alerts);
+    const newIssuesLast24h = countEventsSince(events, "alert.created", 24);
 
     return (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -51,6 +54,13 @@ export function SummaryKpis({ containers, hosts }: SummaryKpisProps) {
                 icon={TriangleAlert}
                 iconBg="bg-rose-500/10"
                 iconColor="text-rose-500"
+                subtitle={
+                    newIssuesLast24h > 0 ? (
+                        <span className="text-xs text-rose-500">+{newIssuesLast24h} new in 24h</span>
+                    ) : (
+                        <span className="text-xs text-muted-foreground">No new issues in 24h</span>
+                    )
+                }
             />
             <Card className="relative transition-all duration-150">
                 <CardContent className="p-5">

@@ -5,7 +5,7 @@ import { totalRevenueThisMonth, totalOpenInvoiceAmount } from "@/feature/dashboa
 
 const euroFormatter = (value: number) => `${value.toLocaleString("de-DE")} €`;
 
-export function BusinessSummaryKpis() {
+export function BusinessKpis() {
     const appList = useAppList();
     const apps = appList.data;
 

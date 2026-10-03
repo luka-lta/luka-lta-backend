@@ -215,4 +215,3 @@ function AnalyticsItem({ clicks, loading }: ClicksListProps) {
 }
 
 export default AnalyticsItem
-

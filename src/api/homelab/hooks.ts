@@ -3,6 +3,7 @@ import {
     fetchAlerts,
     fetchContainer,
     fetchContainers,
+    fetchEvents,
     fetchHostMetrics,
     fetchHosts,
 } from "@/api/homelab/endpoints.ts";
@@ -54,6 +55,14 @@ export function useAlerts() {
     return useQuery({
         queryKey: ["homelab", "alerts"],
         queryFn: fetchAlerts,
+        refetchInterval: REFRESH_INTERVAL_MS,
+    });
+}
+
+export function useEvents(limit = 200) {
+    return useQuery({
+        queryKey: ["homelab", "events", limit],
+        queryFn: () => fetchEvents(limit),
         refetchInterval: REFRESH_INTERVAL_MS,
     });
 }

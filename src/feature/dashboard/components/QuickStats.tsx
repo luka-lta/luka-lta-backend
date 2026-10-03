@@ -1,14 +1,15 @@
 import { KpiCard } from "@/components/KpiCard.tsx";
-import { TrendingDown, TrendingUp, MousePointerClick, ListTree, BookOpen, UsersIcon } from "lucide-react";
+import { TrendingDown, TrendingUp, MousePointerClick, Wallet, FileWarning } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
+import { useAppList } from "@/api/apps/hooks.ts";
+import { totalRevenueThisMonth, totalOpenInvoiceAmount } from "@/feature/dashboard/business/demoData.ts";
 import type { ClicksMonthlyTypeSchema } from "@/feature/dashboard/schema/ClickSummarySchema.ts";
 
-interface DashboardSummaryKpisProps {
+const euroFormatter = (value: number) => `${value.toLocaleString("de-DE")} €`;
+
+interface QuickStatsProps {
     totalClicks: number | undefined;
     clicksMonthly: ClicksMonthlyTypeSchema[] | undefined;
-    activeLinks: number | undefined;
-    publishedPosts: number | undefined;
-    teamMembers: number | undefined;
 }
 
 function monthOverMonthTrend(clicksMonthly: ClicksMonthlyTypeSchema[] | undefined): React.ReactNode | undefined {
@@ -39,41 +40,49 @@ function monthOverMonthTrend(clicksMonthly: ClicksMonthlyTypeSchema[] | undefine
     );
 }
 
-export function DashboardSummaryKpis({ totalClicks, clicksMonthly, activeLinks, publishedPosts, teamMembers }: DashboardSummaryKpisProps) {
+export function QuickStats({ totalClicks, clicksMonthly }: QuickStatsProps) {
+    const appList = useAppList();
+    const apps = appList.data;
+    const trackspireApp = apps?.find((app) => app.category === "saas");
+    const trackspireMrr = apps ? (trackspireApp?.metrics?.mrr ?? 0) : undefined;
+
     return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiCard
+                title="Trackspire MRR"
+                value={trackspireMrr}
+                valueFormatter={euroFormatter}
+                icon={TrendingUp}
+                iconBg="bg-violet-100 dark:bg-violet-500/10"
+                iconColor="text-violet-600 dark:text-violet-400"
+                href="/dashboard/business"
+            />
+            <KpiCard
+                title="Umsatz diesen Monat"
+                value={totalRevenueThisMonth()}
+                valueFormatter={euroFormatter}
+                icon={Wallet}
+                iconBg="bg-emerald-100 dark:bg-emerald-500/10"
+                iconColor="text-emerald-600 dark:text-emerald-400"
+                href="/dashboard/business"
+            />
             <KpiCard
                 title="Total Clicks"
                 value={totalClicks}
                 icon={MousePointerClick}
-                iconBg="bg-violet-100 dark:bg-violet-500/10"
-                iconColor="text-violet-600 dark:text-violet-400"
+                iconBg="bg-sky-100 dark:bg-sky-500/10"
+                iconColor="text-sky-600 dark:text-sky-400"
                 subtitle={monthOverMonthTrend(clicksMonthly)}
                 href="/dashboard/clicks"
             />
             <KpiCard
-                title="Active Links"
-                value={activeLinks}
-                icon={ListTree}
-                iconBg="bg-sky-100 dark:bg-sky-500/10"
-                iconColor="text-sky-600 dark:text-sky-400"
-                href="/dashboard/linktree"
-            />
-            <KpiCard
-                title="Published Posts"
-                value={publishedPosts}
-                icon={BookOpen}
-                iconBg="bg-emerald-100 dark:bg-emerald-500/10"
-                iconColor="text-emerald-600 dark:text-emerald-400"
-                href="/dashboard/blog"
-            />
-            <KpiCard
-                title="Team Members"
-                value={teamMembers}
-                icon={UsersIcon}
+                title="Offene Rechnungen"
+                value={totalOpenInvoiceAmount()}
+                valueFormatter={euroFormatter}
+                icon={FileWarning}
                 iconBg="bg-amber-100 dark:bg-amber-500/10"
                 iconColor="text-amber-600 dark:text-amber-400"
-                href="/dashboard/users"
+                href="/dashboard/business"
             />
         </div>
     );

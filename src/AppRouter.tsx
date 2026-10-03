@@ -18,8 +18,15 @@ import ClicksPage from "@/pages/Dashboard/ClicksPage.tsx";
 import BlogPage from "@/pages/Dashboard/BlogPage.tsx";
 import BlogCreatePage from "@/pages/Dashboard/BlogCreatePage.tsx";
 import BlogDetailPage from "@/pages/Dashboard/BlogDetailPage.tsx";
-import HomelabPage from "@/pages/Dashboard/HomelabPage.tsx";
+import HomelabLayout from "@/feature/homelab/HomelabLayout.tsx";
+import OverviewPage from "@/feature/homelab/pages/OverviewPage.tsx";
+import ContainersPage from "@/feature/homelab/pages/ContainersPage.tsx";
+import TopologyPage from "@/feature/homelab/pages/TopologyPage.tsx";
 import ApiKeysPage from "@/pages/Dashboard/ApiKeysPage.tsx";
+import CalendarPage from "@/pages/Dashboard/CalendarPage.tsx";
+import WeatherPage from "@/pages/Dashboard/WeatherPage.tsx";
+import BusinessPage from "@/pages/Dashboard/BusinessPage.tsx";
+import NotificationsPage from "@/pages/Dashboard/NotificationsPage.tsx";
 
 // eslint-disable-next-line react-refresh/only-export-components
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -72,6 +79,10 @@ export const appRouter = createBrowserRouter([
                 element: <ClicksPage />
             },
             {
+                path: 'business',
+                element: <BusinessPage />
+            },
+            {
                 path: 'tools',
                 element: <ToolsPage/>
             },
@@ -85,11 +96,37 @@ export const appRouter = createBrowserRouter([
             },
             {
                 path: 'homelab',
-                element: <HomelabPage/>
+                element: <HomelabLayout/>,
+                children: [
+                    {
+                        path: '',
+                        element: <OverviewPage/>
+                    },
+                    {
+                        path: 'containers',
+                        element: <ContainersPage/>
+                    },
+                    {
+                        path: 'topology',
+                        element: <TopologyPage/>
+                    },
+                ],
             },
             {
                 path: 'api-keys',
                 element: <ApiKeysPage/>
+            },
+            {
+                path: 'calendar',
+                element: <CalendarPage/>
+            },
+            {
+                path: 'weather',
+                element: <WeatherPage/>
+            },
+            {
+                path: 'notifications',
+                element: <NotificationsPage/>
             },
             {
                 path: 'settings',
