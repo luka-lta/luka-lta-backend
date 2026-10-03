@@ -1,8 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card.tsx'
-import ClicksChart from '@/feature/dashboard/components/ClicksChart.tsx'
-import TimeLineClicksChart from '@/feature/dashboard/components/TimeLineClicksChart.tsx'
-import { DashboardSummaryKpis } from '@/feature/dashboard/components/DashboardSummaryKpis.tsx'
-import { BusinessSummaryKpis } from '@/feature/dashboard/business/BusinessSummaryKpis.tsx'
+import { DayOverviewSection } from '@/feature/dashboard/widgets/DayOverviewSection.tsx'
+import { QuickStats } from '@/feature/dashboard/components/QuickStats.tsx'
 import { DashboardAlerts } from '@/feature/dashboard/components/DashboardAlerts.tsx'
 import { RecentActivity } from '@/feature/dashboard/components/RecentActivity.tsx'
 import { useClickSummary } from '@/api/dashboard/hooks.ts'
@@ -27,51 +24,31 @@ function Overview() {
     if (userList.error) alerts.push({ id: 'users', title: 'User data unavailable', description: userList.error.message, refetch: () => userList.refetch() })
 
     return (
-        <>
+        <div className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}>
-                <BusinessSummaryKpis />
+                <DayOverviewSection />
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05, ease: 'easeOut' }}>
-                <DashboardSummaryKpis
+            {alerts.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}>
+                    <DashboardAlerts alerts={alerts} />
+                </motion.div>
+            )}
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}>
+                <QuickStats
                     totalClicks={clickSummary.data?.summary.totalClicks}
                     clicksMonthly={clickSummary.data?.summary.clicksMonthly}
-                    activeLinks={linktreeList.data ? links.filter((l) => l.isActive && !l.deactivated).length : undefined}
-                    publishedPosts={blogList.data ? posts.filter((p) => p.isPublished).length : undefined}
-                    teamMembers={userList.data?.users.length}
                 />
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}>
-                <DashboardAlerts alerts={alerts} />
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}>
+                <RecentActivity
+                    posts={[...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)}
+                    links={[...links].sort((a, b) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime()).slice(0, 5)}
+                />
             </motion.div>
-
-            <motion.div
-                className="grid grid-cols-1 gap-4 lg:grid-cols-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-            >
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Click Overview</CardTitle>
-                        <CardDescription>Last 5 months</CardDescription>
-                    </CardHeader>
-                    <CardContent className='pl-2'>
-                        <ClicksChart clicksMonthly={clickSummary.data?.summary.clicksMonthly ?? []} />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className='p-0'>
-                        <TimeLineClicksChart clicksDaily={clickSummary.data?.summary.clicksDaily ?? []} />
-                    </CardContent>
-                </Card>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3, ease: 'easeOut' }}>
-                <RecentActivity posts={[...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 6)} links={[...links].sort((a, b) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime()).slice(0, 6)} />
-            </motion.div>
-        </>
+        </div>
     )
 }
 

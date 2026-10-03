@@ -1,6 +1,7 @@
 import {Main} from "@/components/layout/main.tsx";
 import {useClicksOverview} from "@/api/clicks/hooks.ts";
 import ClickOverviewTable from "@/feature/clicks/components/ClickOverviewTable.tsx";
+import {ClicksAnalyticsSummary} from "@/feature/clicks/components/ClicksAnalyticsSummary.tsx";
 import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
 import ClicksProvider from "@/feature/clicks/context/clicks-context.tsx";
 import ClicksDialogs from "@/feature/clicks/components/ClicksDialogs.tsx";
@@ -34,6 +35,8 @@ function Clicks() {
                         </p>
                     </div>
                 </div>
+
+                <ClicksAnalyticsSummary />
 
                 <ClickOverviewTable
                     clicks={clickOverview.data?.clicks ?? []}

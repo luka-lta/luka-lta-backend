@@ -77,6 +77,18 @@ export interface Container {
     logs: LogLine[];
 }
 
+export interface Event {
+    id: number;
+    type: string;
+    severity: AlertSeverity;
+    title: string;
+    description: string;
+    containerId: string | null;
+    hostId: string | null;
+    metadata: Record<string, unknown>;
+    occurredAt: string;
+}
+
 export interface Alert {
     id: string;
     severity: AlertSeverity;

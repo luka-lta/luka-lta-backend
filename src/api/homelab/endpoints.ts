@@ -3,6 +3,7 @@ import {
     alertListSchema,
     containerDetailSchema,
     containerListSchema,
+    eventListSchema,
     hostListSchema,
     hostMetricsSchema,
 } from "@/api/homelab/schema.ts";
@@ -51,4 +52,9 @@ export async function fetchContainerMetrics(
 export async function fetchAlerts() {
     const response = await api.get("/homelab/alerts");
     return alertListSchema.parse(response.data.data).alerts;
+}
+
+export async function fetchEvents(limit = 200) {
+    const response = await api.get("/homelab/events", { params: { limit } });
+    return eventListSchema.parse(response.data.data).events;
 }

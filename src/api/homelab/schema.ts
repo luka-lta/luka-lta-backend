@@ -76,8 +76,21 @@ export const AlertSchema = z.object({
     hostId: z.string().nullable().optional(),
 });
 
+export const EventSchema = z.object({
+    id: z.number(),
+    type: z.string(),
+    severity: z.enum(["critical", "warning", "info"]),
+    title: z.string(),
+    description: z.string(),
+    containerId: z.string().nullable(),
+    hostId: z.string().nullable(),
+    metadata: z.record(z.string(), z.unknown()),
+    occurredAt: z.string(),
+});
+
 export const hostListSchema = z.object({ hosts: z.array(HostSchema) });
 export const hostMetricsSchema = z.object({ metrics: z.array(MetricPointSchema) });
 export const containerListSchema = z.object({ containers: z.array(ContainerSchema) });
 export const containerDetailSchema = z.object({ container: ContainerSchema });
 export const alertListSchema = z.object({ alerts: z.array(AlertSchema) });
+export const eventListSchema = z.object({ events: z.array(EventSchema) });

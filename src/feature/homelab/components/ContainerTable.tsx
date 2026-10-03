@@ -11,7 +11,7 @@ import { TimeCell } from "@/components/TimeCell.tsx";
 import { FilterX, Search } from "lucide-react";
 import { ContainerStatusBadge, HealthBadge } from "@/feature/homelab/components/ContainerStatusBadge.tsx";
 import type { Container, Host } from "@/feature/homelab/types.ts";
-import { formatUptime } from "@/feature/homelab/data.ts";
+import { formatUptime, getComposeProjectKey } from "@/feature/homelab/data.ts";
 
 const PAGE_SIZE = 10;
 const col = createColumnHelper<Container>();
@@ -20,9 +20,17 @@ interface ContainerTableProps {
     containers: Container[];
     hosts: Host[];
     onSelectContainer: (container: Container) => void;
+    projectFilter?: string | null;
+    onClearProjectFilter?: () => void;
 }
 
-export function ContainerTable({ containers, hosts, onSelectContainer }: ContainerTableProps) {
+export function ContainerTable({
+    containers,
+    hosts,
+    onSelectContainer,
+    projectFilter = null,
+    onClearProjectFilter,
+}: ContainerTableProps) {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [hostFilter, setHostFilter] = useState<string>("all");
@@ -38,9 +46,10 @@ export function ContainerTable({ containers, hosts, onSelectContainer }: Contain
             }
             if (statusFilter !== "all" && c.status !== statusFilter) return false;
             if (hostFilter !== "all" && c.hostId !== hostFilter) return false;
+            if (projectFilter && getComposeProjectKey(c) !== projectFilter) return false;
             return true;
         });
-    }, [containers, search, statusFilter, hostFilter]);
+    }, [containers, search, statusFilter, hostFilter, projectFilter]);
 
     const sorted = useMemo(() => {
         if (!sorting[0]) return filtered;
@@ -174,6 +183,11 @@ export function ContainerTable({ containers, hosts, onSelectContainer }: Contain
                             ))}
                         </SelectContent>
                     </Select>
+                    {projectFilter && (
+                        <span className="inline-flex items-center gap-1.5 rounded-md border bg-muted/50 px-2.5 py-1 text-xs font-medium">
+                            Service filter active
+                        </span>
+                    )}
                     <Button
                         variant="outline"
                         onClick={() => {
@@ -181,6 +195,7 @@ export function ContainerTable({ containers, hosts, onSelectContainer }: Contain
                             setStatusFilter("all");
                             setHostFilter("all");
                             setPage(1);
+                            onClearProjectFilter?.();
                         }}
                     >
                         <FilterX className="h-4 w-4" />

@@ -2,12 +2,16 @@ import { type SidebarData } from '../types'
 import {
     BookOpen,
     Boxes,
+    CalendarDays,
+    CloudSun,
+    Container as ContainerIcon,
     Hammer,
     KeyRound,
     LayoutDashboardIcon,
-    ListTree, MousePointerClickIcon, Palette, Server, Settings,
+    LayoutGrid,
+    ListTree, MousePointerClickIcon, Network, Palette, Server, Settings,
     UserCog,
-    UsersIcon, Wrench
+    UsersIcon, Wallet, Wrench
 } from "lucide-react";
 
 export const sidebarData: SidebarData = {
@@ -29,6 +33,11 @@ export const sidebarData: SidebarData = {
                     title: "Tools",
                     url: '/dashboard/tools',
                     icon: Hammer,
+                },
+                {
+                    title: 'Business',
+                    url: '/dashboard/business',
+                    icon: Wallet,
                 }
             ],
         },
@@ -68,7 +77,38 @@ export const sidebarData: SidebarData = {
                 {
                     title: 'Homelab',
                     icon: Server,
-                    url: '/dashboard/homelab',
+                    items: [
+                        {
+                            title: 'Overview',
+                            url: '/dashboard/homelab',
+                            icon: LayoutGrid,
+                        },
+                        {
+                            title: 'Containers',
+                            url: '/dashboard/homelab/containers',
+                            icon: ContainerIcon,
+                        },
+                        {
+                            title: 'Topology',
+                            url: '/dashboard/homelab/topology',
+                            icon: Network,
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            title: 'Personal',
+            items: [
+                {
+                    title: 'Calendar',
+                    icon: CalendarDays,
+                    url: '/dashboard/calendar',
+                },
+                {
+                    title: 'Weather',
+                    icon: CloudSun,
+                    url: '/dashboard/weather',
                 },
             ],
         },
