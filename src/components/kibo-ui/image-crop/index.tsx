@@ -52,6 +52,14 @@ const centerAspectCrop = (
     mediaHeight
   );
 
+// Abweichung vom Registry-Original: "Laengste Kante des Zuschnitts. Begrenzt die
+// Ausgabe, ohne sie auf die Anzeigegroesse (max-h-[277px]) zu reduzieren, wie es
+// das Original tat." Das Original setzte canvas.width/height direkt auf
+// pixelCrop.width/height — das sind Anzeige-Pixel des (durch max-h-[277px]
+// begrenzten) <img>, nicht Quellpixel. Dadurch war jeder Zuschnitt auf maximal
+// ca. 277px Hoehe limitiert, unabhaengig von der Aufloesung der Quelldatei.
+const MAX_CROP_EDGE_PX = 2000;
+
 const getCroppedPngImage = async (
   imageSrc: HTMLImageElement,
   scaleFactor: number,
@@ -68,9 +76,25 @@ const getCroppedPngImage = async (
   const scaleX = imageSrc.naturalWidth / imageSrc.width;
   const scaleY = imageSrc.naturalHeight / imageSrc.height;
 
-  ctx.imageSmoothingEnabled = false;
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  // Abweichung vom Registry-Original: Zuschnitt in Quellaufloesung rendern statt
+  // in Anzeigegroesse, dabei die laengste Kante auf MAX_CROP_EDGE_PX begrenzen
+  // (Seitenverhaeltnis bleibt durch identischen Skalierungsfaktor fuer beide
+  // Achsen erhalten). Die eigentliche Groessenreduktion fuer den Upload passiert
+  // ohnehin in ProjectImageInput.tsx — hier geht es nur darum, keine Aufloesung
+  // wegzuwerfen, die spaeter nicht mehr zurueckgeholt werden kann.
+  const nativeCropWidth = pixelCrop.width * scaleX;
+  const nativeCropHeight = pixelCrop.height * scaleY;
+  const longestEdge = Math.max(nativeCropWidth, nativeCropHeight);
+  const capFactor = longestEdge > MAX_CROP_EDGE_PX ? MAX_CROP_EDGE_PX / longestEdge : 1;
+
+  // Abweichung vom Registry-Original: Smoothing an (statt aus) und in hoher
+  // Qualitaet, da jetzt tatsaechlich herunterskaliert wird (Quellaufloesung ->
+  // gedeckelte Ausgabegroesse). Mit imageSmoothingEnabled = false entstand dabei
+  // sichtbares Nearest-Neighbour-Aliasing.
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  canvas.width = nativeCropWidth * capFactor;
+  canvas.height = nativeCropHeight * capFactor;
 
   ctx.drawImage(
     imageSrc,
