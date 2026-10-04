@@ -79,7 +79,7 @@ Diese Punkte sind von der Spec impliziert, werden aber von keinem Typecheck erfa
 | `src/feature/project-management/components/ProjectCardSkeleton.tsx` | Ladezustand |
 | `src/feature/project-management/components/ProjectTagsField.tsx` | Tag-Auswahl **mit** Inline-Anlage |
 | `src/feature/project-management/components/ProjectImageInput.tsx` | Dropzone + Crop + Kompression |
-| `src/feature/project-management/components/ProjectFormSheet.tsx` | Anlegen und Bearbeiten |
+| `src/feature/project-management/components/ProjectFormDialog.tsx` | Anlegen und Bearbeiten (Dialog, auf Wunsch des Projektinhabers) |
 | `src/feature/project-management/components/DeleteProjectDialog.tsx` | Löschbestätigung |
 | `src/feature/project-management/components/ProjectDialogs.tsx` | Dialog-Dispatcher am Context |
 | `src/pages/Dashboard/ProjectsPage.tsx` | Seiten-Wrapper |
@@ -1168,18 +1168,18 @@ EOF
 
 ---
 
-### Task 8: Formular zum Anlegen und Bearbeiten
+### Task 8: Formular zum Anlegen und Bearbeiten (Dialog)
 
 **Files:**
-- Create: `src/feature/project-management/components/ProjectFormSheet.tsx`
+- Create: `src/feature/project-management/components/ProjectFormDialog.tsx`
 - Create: `src/feature/project-management/components/ProjectDialogs.tsx`
 - Modify: `src/feature/project-management/index.tsx`
 
 **Interfaces:**
 - Consumes: `useCreateProject`, `useUpdateProject`, `useUploadProjectAsset`, `useDeleteProjectAsset` (Task 2); `ProjectTagsField` (Task 4); `ProjectImageInput` (Task 5); `useProjects()` (Task 6); `TextInput`, `Sheet`, `Select`, `Switch`, `Alert`, `Spinner`.
-- Produces: `<ProjectFormSheet mode="create" | "edit" project={Project | null} open onOpenChange />`, `<ProjectDialogs />`.
+- Produces: `<ProjectFormDialog mode="create" | "edit" project={Project | null} open onOpenChange />`, `<ProjectDialogs />`.
 
-**Ein Sheet für beide Modi.** Das Repo hat dafür sogar ein `// TODO: Edit and Create form in one component` in `EditUserSheet` — hier wird es von Anfang an so gebaut. `mode` steuert nur Titel, Button-Text und die Mutation.
+**Ein Dialog für beide Modi.** Das Repo hat dafür sogar ein `// TODO: Edit and Create form in one component` in `EditUserSheet` — hier wird es von Anfang an so gebaut. `mode` steuert nur Titel, Button-Text und die Mutation.
 
 **Felder** (alle aus dem Datenmodell, Assets separat):
 
@@ -1243,17 +1243,19 @@ Die reservierten Slugs stehen hier bewusst doppelt (Server **und** Client): der 
 2. Für jeden vorliegenden Blob `uploadProjectAsset` mit dieser `id` aufrufen, sequenziell (nicht parallel — die Singleton-Logik für Logo und Cover ersetzt serverseitig das jeweils vorhandene Asset, und paralleles Ersetzen wäre ein Rennen).
 3. Erst danach `onOpenChange(false)` und Erfolgs-Toast.
 
-Schlägt Phase 2 fehl, bleibt das Sheet offen, das Projekt ist aber gespeichert — der Toast muss das klar sagen (`"Project saved, but the image upload failed: …"`), nicht nur „Fehler".
+Schlägt Phase 2 fehl, bleibt der Dialog offen, das Projekt ist aber gespeichert — der Toast muss das klar sagen (`"Project saved, but the image upload failed: …"`), nicht nur „Fehler".
 
-- [ ] **Step 1: `ProjectFormSheet.tsx` schreiben**
+- [ ] **Step 1: `ProjectFormDialog.tsx` schreiben**
 
-Nach dem Muster von `EditUserSheet` (Sheet, Separator, Abschnitts-Überschriften, Footer mit Cancel und Submit, `Spinner` im Pending-Zustand, Fehler-`Alert` über dem Footer). **Nicht** das `new FormData(formRef.current!)`-Muster übernehmen: hier gehen die Felder als JSON, und Assets laufen über eigene Endpunkte.
+Container, Header und Footer nach dem Muster von `src/feature/apiKeys/components/CreateApiKeyDialog.tsx`; die Formular-Konventionen (Abschnitts-Überschriften, `Spinner` im Pending-Submit, Fehler-`Alert` über dem Footer) weiter nach `EditUserSheet`.
+
+**Dialoge brauchen hier etwas, das ein Sheet nicht brauchte:** rund zwanzig Felder sprengen eine Standard-`DialogContent`. Breite erhöhen (z. B. `sm:max-w-2xl`) und **den Feldbereich** scrollen lassen (`max-h-[80vh] overflow-y-auto`), nicht die Seite — Header und Footer bleiben außerhalb des Scrollbereichs stehen. Bei normaler Laptop-Fenstergröße prüfen, dass die Footer-Buttons erreichbar sind. **Nicht** das `new FormData(formRef.current!)`-Muster übernehmen: hier gehen die Felder als JSON, und Assets laufen über eigene Endpunkte.
 
 Im Edit-Modus kommen die `defaultValues` aus dem `project`-Prop; `techStack` wird zum Anzeigen mit `", "` gejoint, `projectYear` zu String. Null-Werte werden zu `""`.
 
 - [ ] **Step 2: `ProjectDialogs.tsx` schreiben**
 
-Nach dem Muster von `UserDialogs`: liest `open` und `currentRow` aus dem Context, rendert das Sheet im Create-Modus für `open === "add"` und im Edit-Modus für `open === "edit" && currentRow`. Beim Schließen `setCurrentRow(null)` verzögert (`setTimeout(…, 500)`), damit die Schließ-Animation nicht auf leeren Daten läuft. Der Delete-Dialog kommt in Task 9 dazu.
+Nach dem Muster von `UserDialogs`: liest `open` und `currentRow` aus dem Context, rendert den Dialog im Create-Modus für `open === "add"` und im Edit-Modus für `open === "edit" && currentRow`. Beim Schließen `setCurrentRow(null)` verzögert (`setTimeout(…, 500)`), damit die Schließ-Animation nicht auf leeren Daten läuft. Der Delete-Dialog kommt in Task 9 dazu.
 
 - [ ] **Step 3: In `index.tsx` einbinden**
 
@@ -1269,9 +1271,9 @@ npx eslint src/feature/project-management
 - [ ] **Step 5: Verifikation im Browser**
 
 Auf `/dashboard/projects`:
-1. **Anlegen, minimal:** `+ Project`, nur `name` = `Plan Test`, speichern. Erwartet: Sheet schließt, Erfolgs-Toast, die Karte erscheint **sofort** ohne Reload (Query-Invalidierung), Slug ist `plan-test`.
+1. **Anlegen, minimal:** `+ Project`, nur `name` = `Plan Test`, speichern. Erwartet: Dialog schließt, Erfolgs-Toast, die Karte erscheint **sofort** ohne Reload (Query-Invalidierung), Slug ist `plan-test`.
 2. **Validierung:** Anlegen mit `slug` = `tags` → sofortiger Feldfehler, kein Request. Mit `websiteUrl` = `nicht-eine-url` → Feldfehler.
-3. **Server-Fehler:** Anlegen mit `name` = `Plan Test` erneut (gleicher Slug) → Fehler-Toast mit der 409-Meldung, Sheet bleibt offen, keine zweite Karte.
+3. **Server-Fehler:** Anlegen mit `name` = `Plan Test` erneut (gleicher Slug) → Fehler-Toast mit der 409-Meldung, Dialog bleibt offen, keine zweite Karte.
 4. **Bearbeiten:** Bei `Plan Test` `Edit`, Status auf `active`, `techStack` = `PHP, MySQL`, Tags: einen neuen Tag inline anlegen, speichern. Erwartet: Karte zeigt den neuen Status und die Tags, ohne Reload.
 5. **Leeren:** Bei `Plan Test` `shortDescription` füllen, speichern, erneut öffnen, Feld leeren, speichern. Erwartet: das Feld ist danach wirklich leer (beweist, dass `""` → `null` greift).
 6. **Logo-Upload im Create-Flow:** Ein neues Projekt mit Namen **und** Logo anlegen. Erwartet: beide Phasen laufen, die Karte zeigt direkt das Logo.
