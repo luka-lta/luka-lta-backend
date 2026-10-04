@@ -204,8 +204,8 @@ export function ProjectImageInput({ type, currentUrl, onSelect, onClear, disable
         >
           <ImageCropContent />
           <div className="flex items-center gap-2">
-            <ImageCropApply disabled={disabled}>Apply</ImageCropApply>
-            <ImageCropReset disabled={disabled}>Reset</ImageCropReset>
+            <ImageCropApply type="button" disabled={disabled}>Apply</ImageCropApply>
+            <ImageCropReset type="button" disabled={disabled}>Reset</ImageCropReset>
             <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={handleCancelCrop}>
               Cancel
             </Button>

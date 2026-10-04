@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { Controller, type SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -265,30 +265,14 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
     }
   };
 
-  /**
-   * `ImageCropApply`/`ImageCropReset` (inside `ProjectImageInput`) render plain
-   * `<button>` elements without an explicit `type`, which defaults to `type="submit"`
-   * for a button nested in a `<form>`. Without this guard, clicking "Apply" on the
-   * image cropper would submit the whole project form prematurely. Only the real
-   * submit button carries `data-project-form-submit`, so every other nested button
-   * is rejected here instead.
-   */
-  function handleFormSubmit(event: FormEvent<HTMLFormElement>) {
-    const submitter = (event.nativeEvent as SubmitEvent).submitter;
-    const isRealSubmit = submitter instanceof HTMLElement && submitter.dataset.projectFormSubmit === "true";
-
-    if (!isRealSubmit) {
-      event.preventDefault();
-      return;
-    }
-
-    void form.handleSubmit(onSubmit)(event);
-  }
-
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="flex max-h-[85vh] flex-col gap-0 p-0 sm:max-w-2xl">
-        <form onSubmit={handleFormSubmit} className="flex min-h-0 flex-1 flex-col">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          noValidate
+          className="flex min-h-0 flex-1 flex-col"
+        >
           <DialogHeader className="px-6 pb-4 pt-6">
             <DialogTitle className="text-xl">{mode === "edit" ? "Edit Project" : "Create Project"}</DialogTitle>
             <DialogDescription>
@@ -511,12 +495,7 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
             >
               Cancel
             </Button>
-            <Button
-              className="w-full sm:w-auto"
-              type="submit"
-              data-project-form-submit="true"
-              disabled={isSaving}
-            >
+            <Button className="w-full sm:w-auto" type="submit" disabled={isSaving}>
               {isSaving ? (
                 <>
                   <Spinner size={16} className="mr-2" />
