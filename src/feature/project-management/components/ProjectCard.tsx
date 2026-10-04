@@ -1,4 +1,6 @@
-import { EllipsisVertical, ImageOff, Pencil, Trash } from "lucide-react";
+import { EllipsisVertical, GripVertical, ImageOff, Pencil, Trash } from "lucide-react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -36,9 +38,32 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const { setOpen, setCurrentRow } = useProjects();
   const statusInfo = STATUS_MAP[project.status];
 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: project.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
-    <Card className={cn(!project.isVisible && "opacity-60")}>
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={cn(!project.isVisible && "opacity-60", isDragging && "z-10 opacity-80 shadow-lg")}
+    >
       <CardContent className="flex items-start gap-4 p-4">
+        <button
+          type="button"
+          className="mt-1 shrink-0 cursor-grab touch-none text-muted-foreground active:cursor-grabbing"
+          aria-label={`Reorder ${project.name}`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-5" />
+        </button>
+
         {project.logo ? (
           <img
             src={project.logo.url}
