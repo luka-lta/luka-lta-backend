@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { XIcon } from "lucide-react";
 import { Dropzone, DropzoneEmptyState } from "@/components/kibo-ui/dropzone";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@/components/kibo-ui/image-crop";
 import { Button } from "@/components/ui/button.tsx";
 import { cn } from "@/lib/utils.ts";
+import { getApiErrorMessage } from "@/lib/apiError.ts";
 import type { ProjectAssetType } from "@/api/projects/schema.ts";
 
 /**
@@ -35,20 +36,18 @@ const ASPECT_RATIOS: Record<ProjectAssetType, number | undefined> = {
   screenshot: undefined,
 };
 
-/**
- * `image-crop`'s eingebaute `maxImageSize`-Kompression ist defekt:
- * `getCroppedPngImage` nimmt `scaleFactor` an, wendet ihn aber nie auf
- * `canvas.width`/`canvas.height`/`drawImage` an — die Rekursion bei
- * Ueberschreitung erzeugt ein byte-identisches PNG und laeuft endlos, bis
- * der Stack platzt. Deshalb hier ein Wert, den die Rekursion nie ausloest;
- * die eigentliche Verkleinerung passiert komplett unten in `compressToTarget`.
- */
-const UNREACHABLE_MAX_IMAGE_SIZE = Number.MAX_SAFE_INTEGER;
-
 /** Startqualitaet fuer die WebP-Umkodierung, wird bei Bedarf schrittweise gesenkt. */
 const INITIAL_WEBP_QUALITY = 0.9;
 const MIN_WEBP_QUALITY = 0.5;
 const QUALITY_STEP = 0.1;
+
+/**
+ * Maximale Anzahl an Halbierungen der Canvas-Dimensionen, falls selbst die
+ * niedrigste WebP-Qualitaet bei nativer Groesse noch ueber `MAX_OUTPUT_BYTES`
+ * liegt. Nach drei Halbierungen (1/8 der Kantenlaenge) wird abgebrochen und
+ * ein Fehler geworfen statt ein zu grosses Blob zurueckzugeben.
+ */
+const MAX_DIMENSION_HALVINGS = 3;
 
 async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
   const response = await fetch(dataUrl);
@@ -70,36 +69,12 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number):
   });
 }
 
-/**
- * Verkleinert ein PNG-Data-URL-Ergebnis des Zuschnitts auf unter
- * `MAX_OUTPUT_BYTES`. PNG ist fuer fotografische Screenshots verlustfrei und
- * damit gross; liegt es ueber dem Ziel, wird ueber ein Canvas nach WebP
- * umkodiert und die Qualitaet in festen Schritten gesenkt. Die Schleife ist
- * durch `MIN_WEBP_QUALITY` fest begrenzt (hoechstens 5 Durchlaeufe) — es gibt
- * keine Rekursion und keinen Pfad, der unbegrenzt weiterlaufen kann. Wird das
- * Ziel am Qualitaets-Boden nicht erreicht, wird die kleinste bisher erzeugte
- * Blob zurueckgegeben statt weiter zu versuchen.
- */
-async function compressToTarget(dataUrl: string): Promise<Blob> {
-  const pngBlob = await dataUrlToBlob(dataUrl);
-
-  if (pngBlob.size <= MAX_OUTPUT_BYTES) {
-    return pngBlob;
-  }
-
-  const image = await loadImage(dataUrl);
-  const canvas = document.createElement("canvas");
-  canvas.width = image.naturalWidth;
-  canvas.height = image.naturalHeight;
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    return pngBlob;
-  }
-
-  ctx.drawImage(image, 0, 0);
-
-  let smallestBlob = pngBlob;
+/** Durchlaeuft die Qualitaetsstufen einmal fuer die gegebene Canvas-Groesse. */
+async function smallestBlobAtCurrentSize(
+  canvas: HTMLCanvasElement,
+  floor: Blob,
+): Promise<Blob> {
+  let smallestBlob = floor;
 
   for (let quality = INITIAL_WEBP_QUALITY; quality >= MIN_WEBP_QUALITY; quality -= QUALITY_STEP) {
     const webpBlob = await canvasToBlob(canvas, "image/webp", quality);
@@ -118,6 +93,63 @@ async function compressToTarget(dataUrl: string): Promise<Blob> {
   }
 
   return smallestBlob;
+}
+
+/**
+ * Verkleinert ein PNG-Data-URL-Ergebnis des Zuschnitts auf unter
+ * `MAX_OUTPUT_BYTES`. PNG ist fuer fotografische Screenshots verlustfrei und
+ * damit gross; liegt es ueber dem Ziel, wird ueber ein Canvas nach WebP
+ * umkodiert und die Qualitaet in festen Schritten gesenkt. Bleibt das Ergebnis
+ * selbst bei der niedrigsten Qualitaet ueber dem Ziel (z. B. weil der Browser
+ * WebP nicht kodieren kann und `toBlob` lautlos auf PNG zurueckfaellt, oder
+ * weil der Crop bei `MAX_CROP_EDGE_PX` zu detailreich ist), werden die
+ * Canvas-Dimensionen bis zu `MAX_DIMENSION_HALVINGS` mal halbiert und die
+ * Qualitaetsschleife erneut durchlaufen. Beides zusammen begrenzt die
+ * Gesamtzahl an Versuchen fest — es gibt weder Rekursion noch einen Pfad ohne
+ * Obergrenze. Wird das Ziel danach immer noch nicht erreicht, wird ein Fehler
+ * geworfen statt ein zu grosses Blob stillschweigend zurueckzugeben.
+ */
+async function compressToTarget(dataUrl: string): Promise<Blob> {
+  const pngBlob = await dataUrlToBlob(dataUrl);
+
+  if (pngBlob.size <= MAX_OUTPUT_BYTES) {
+    return pngBlob;
+  }
+
+  const image = await loadImage(dataUrl);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Could not get canvas context for image compression");
+  }
+
+  let smallestBlob = pngBlob;
+  let width = image.naturalWidth;
+  let height = image.naturalHeight;
+
+  for (let attempt = 0; attempt <= MAX_DIMENSION_HALVINGS; attempt += 1) {
+    canvas.width = width;
+    canvas.height = height;
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(image, 0, 0, width, height);
+
+    const blobAtSize = await smallestBlobAtCurrentSize(canvas, smallestBlob);
+
+    if (blobAtSize.size < smallestBlob.size) {
+      smallestBlob = blobAtSize;
+    }
+
+    if (smallestBlob.size <= MAX_OUTPUT_BYTES) {
+      return smallestBlob;
+    }
+
+    width = Math.round(width / 2);
+    height = Math.round(height / 2);
+  }
+
+  throw new Error(
+    `Image is too large to compress under ${MAX_OUTPUT_BYTES} bytes (smallest result: ${smallestBlob.size} bytes)`,
+  );
 }
 
 function extensionForMimeType(mimeType: string): string {
@@ -142,6 +174,14 @@ export function ProjectImageInput({ type, currentUrl, onSelect, onClear, disable
 
   const previewUrl = resultPreviewUrl ?? currentUrl;
 
+  useEffect(() => {
+    return () => {
+      if (previousObjectUrl.current) {
+        URL.revokeObjectURL(previousObjectUrl.current);
+      }
+    };
+  }, []);
+
   function handleDrop(acceptedFiles: File[]) {
     const file = acceptedFiles.at(0);
     if (!file) {
@@ -162,19 +202,24 @@ export function ProjectImageInput({ type, currentUrl, onSelect, onClear, disable
   }
 
   async function handleCrop(dataUrl: string) {
-    const blob = await compressToTarget(dataUrl);
-    const fileName = `${type}.${extensionForMimeType(blob.type)}`;
+    try {
+      const blob = await compressToTarget(dataUrl);
+      const fileName = `${type}.${extensionForMimeType(blob.type)}`;
 
-    if (previousObjectUrl.current) {
-      URL.revokeObjectURL(previousObjectUrl.current);
+      if (previousObjectUrl.current) {
+        URL.revokeObjectURL(previousObjectUrl.current);
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+      previousObjectUrl.current = objectUrl;
+
+      setResultPreviewUrl(objectUrl);
+      setPendingFile(null);
+      onSelect(blob, fileName);
+    } catch (error) {
+      setRejectionMessage(getApiErrorMessage(error));
+      setPendingFile(null);
     }
-
-    const objectUrl = URL.createObjectURL(blob);
-    previousObjectUrl.current = objectUrl;
-
-    setResultPreviewUrl(objectUrl);
-    setPendingFile(null);
-    onSelect(blob, fileName);
   }
 
   function handleCancelCrop() {
@@ -199,13 +244,12 @@ export function ProjectImageInput({ type, currentUrl, onSelect, onClear, disable
         <ImageCrop
           file={pendingFile}
           aspect={ASPECT_RATIOS[type]}
-          maxImageSize={UNREACHABLE_MAX_IMAGE_SIZE}
           onCrop={handleCrop}
         >
           <ImageCropContent />
           <div className="flex items-center gap-2">
-            <ImageCropApply type="button" disabled={disabled}>Apply</ImageCropApply>
-            <ImageCropReset type="button" disabled={disabled}>Reset</ImageCropReset>
+            <ImageCropApply type="button" size="sm" disabled={disabled}>Apply</ImageCropApply>
+            <ImageCropReset type="button" size="sm" disabled={disabled}>Reset</ImageCropReset>
             <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={handleCancelCrop}>
               Cancel
             </Button>

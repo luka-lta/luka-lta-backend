@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   closestCenter,
@@ -18,7 +18,6 @@ import { FolderKanban, Plus } from "lucide-react";
 import { useSetPageTitle } from "@/hooks/useSetPageTitle.ts";
 import { useManagedProjects, useReorderProjects } from "@/api/projects/hooks.ts";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
-import type { Project } from "@/api/projects/schema.ts";
 import ProjectsProvider, { useProjects } from "@/feature/project-management/context/projects-context.tsx";
 import { ProjectCard } from "@/feature/project-management/components/ProjectCard.tsx";
 import { ProjectCardSkeleton } from "@/feature/project-management/components/ProjectCardSkeleton.tsx";
@@ -33,19 +32,29 @@ function ProjectList() {
   const { setOpen } = useProjects();
 
   /**
-   * Lokaler Spiegel der Reihenfolge. Nach einem Drop wird hier sofort
-   * optimistisch umsortiert; erst wenn die Invalidierung neue Query-Daten
-   * liefert, uebernimmt der Effekt unten diese Daten — so springt die Liste
-   * nicht zwischen dem Resolven der Mutation und dem Eintreffen des Refetches
-   * zurueck in die alte Reihenfolge.
+   * Lokale Reihenfolge, nur waehrend ein Reorder "dirty" ist (optimistisch
+   * nach einem Drop gesetzt, bis die Mutation abgeschlossen ist). Ausserhalb
+   * dieses Fensters wird die Reihenfolge direkt aus `projects.data` abgeleitet
+   * statt gespiegelt — ein fehlgeschlagener Reorder re-synct dadurch ueber
+   * `onError`/Invalidierung automatisch aus den Server-Daten, statt bei der
+   * alten (lokalen) Reihenfolge haengen zu bleiben.
    */
-  const [orderedProjects, setOrderedProjects] = useState<Project[]>([]);
+  const [localOrder, setLocalOrder] = useState<string[] | null>(null);
 
-  useEffect(() => {
-    if (projects.data) {
-      setOrderedProjects(projects.data);
+  const orderedProjects = useMemo(() => {
+    const data = projects.data ?? [];
+    if (!localOrder) {
+      return data;
     }
-  }, [projects.data]);
+
+    const byId = new Map(data.map((project) => [project.id, project]));
+    const ordered = localOrder.flatMap((id) => {
+      const project = byId.get(id);
+      return project ? [project] : [];
+    });
+
+    return ordered.length === data.length ? ordered : data;
+  }, [projects.data, localOrder]);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -62,12 +71,15 @@ function ProjectList() {
     }
 
     const reordered = arrayMove(orderedProjects, oldIndex, newIndex);
-    setOrderedProjects(reordered);
+    setLocalOrder(reordered.map((project) => project.id));
     reorderProjects.mutate(
       reordered.map((project, index) => ({ projectId: project.id, sortOrder: index })),
       {
         onError: (error) => {
           toast.error(getApiErrorMessage(error));
+        },
+        onSettled: () => {
+          setLocalOrder(null);
         },
       },
     );

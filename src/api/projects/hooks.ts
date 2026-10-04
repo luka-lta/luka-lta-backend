@@ -3,7 +3,6 @@ import {
   createProject,
   deleteProject,
   deleteProjectAsset,
-  getManagedProject,
   getManagedProjects,
   reorderProjects,
   updateProject,
@@ -17,14 +16,6 @@ export function useManagedProjects() {
   return useQuery({
     queryKey: ["projects", "manage"],
     queryFn: getManagedProjects,
-  });
-}
-
-export function useManagedProject(projectId: string, enabled: boolean) {
-  return useQuery({
-    queryKey: ["projects", "manage", projectId],
-    queryFn: () => getManagedProject(projectId),
-    enabled,
   });
 }
 
@@ -68,6 +59,9 @@ export function useReorderProjects() {
   return useMutation({
     mutationFn: (projects: ProjectOrderEntry[]) => reorderProjects(projects),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    },
+    onError: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });

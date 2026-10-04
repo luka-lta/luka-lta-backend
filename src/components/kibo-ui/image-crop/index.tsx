@@ -3,7 +3,7 @@
 // Abweichung vom Registry-Original: "@repo/shadcn-ui/components/ui/button" ist ein
 // monorepo-interner Pfad aus kibo-ui's eigenem Quell-Repo und laesst sich hier nicht
 // aufloesen (TS2307). Auf den tatsaechlichen Alias dieses Projekts umgebogen.
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { CropIcon, RotateCcwIcon } from "lucide-react";
 import { Slot } from "radix-ui";
 import {
@@ -60,11 +60,15 @@ const centerAspectCrop = (
 // ca. 277px Hoehe limitiert, unabhaengig von der Aufloesung der Quelldatei.
 const MAX_CROP_EDGE_PX = 2000;
 
+// Abweichung vom Registry-Original: Die eingebaute `maxImageSize`-Kompression
+// wurde entfernt. `getCroppedPngImage` nahm einen `scaleFactor` an, wendete ihn
+// aber nie auf `canvas.width`/`canvas.height`/`drawImage` an — der Rekursionszweig
+// bei Ueberschreitung von `maxImageSize` erzeugte dadurch ein byte-identisches PNG
+// und konnte nie terminieren. Die Komprimierung fuer den Upload gehoert ohnehin zu
+// `ProjectImageInput.tsx`; hier wird nur noch zugeschnitten.
 const getCroppedPngImage = async (
   imageSrc: HTMLImageElement,
-  scaleFactor: number,
-  pixelCrop: PixelCrop,
-  maxImageSize: number
+  pixelCrop: PixelCrop
 ): Promise<string> => {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -108,25 +112,11 @@ const getCroppedPngImage = async (
     canvas.height
   );
 
-  const croppedImageUrl = canvas.toDataURL("image/png");
-  const response = await fetch(croppedImageUrl);
-  const blob = await response.blob();
-
-  if (blob.size > maxImageSize) {
-    return await getCroppedPngImage(
-      imageSrc,
-      scaleFactor * 0.9,
-      pixelCrop,
-      maxImageSize
-    );
-  }
-
-  return croppedImageUrl;
+  return canvas.toDataURL("image/png");
 };
 
 type ImageCropContextType = {
   file: File;
-  maxImageSize: number;
   imgSrc: string;
   crop: PercentCrop | undefined;
   completedCrop: PixelCrop | null;
@@ -157,7 +147,6 @@ const useImageCrop = () => {
 
 export type ImageCropProps = {
   file: File;
-  maxImageSize?: number;
   onCrop?: (croppedImage: string) => void;
   children: ReactNode;
   onChange?: ReactCropProps["onChange"];
@@ -166,7 +155,6 @@ export type ImageCropProps = {
 
 export const ImageCrop = ({
   file,
-  maxImageSize = 1024 * 1024 * 5,
   onCrop,
   children,
   onChange,
@@ -224,9 +212,7 @@ export const ImageCrop = ({
 
     const croppedImage = await getCroppedPngImage(
       imgRef.current,
-      1,
-      completedCrop,
-      maxImageSize
+      completedCrop
     );
 
     onCrop?.(croppedImage);
@@ -256,7 +242,6 @@ export const ImageCrop = ({
 
   const contextValue: ImageCropContextType = {
     file,
-    maxImageSize,
     imgSrc,
     crop,
     completedCrop,
@@ -323,9 +308,10 @@ export const ImageCropContent = ({
   );
 };
 
-export type ImageCropApplyProps = ComponentProps<"button"> & {
-  asChild?: boolean;
-};
+export type ImageCropApplyProps = ComponentProps<"button"> &
+  Pick<ButtonProps, "size" | "variant"> & {
+    asChild?: boolean;
+  };
 
 export const ImageCropApply = ({
   asChild = false,
@@ -355,9 +341,10 @@ export const ImageCropApply = ({
   );
 };
 
-export type ImageCropResetProps = ComponentProps<"button"> & {
-  asChild?: boolean;
-};
+export type ImageCropResetProps = ComponentProps<"button"> &
+  Pick<ButtonProps, "size" | "variant"> & {
+    asChild?: boolean;
+  };
 
 export const ImageCropReset = ({
   asChild = false,
@@ -390,7 +377,6 @@ export const ImageCropReset = ({
 // Keep the original Cropper component for backward compatibility
 export type CropperProps = Omit<ReactCropProps, "onChange"> & {
   file: File;
-  maxImageSize?: number;
   onCrop?: (croppedImage: string) => void;
   onChange?: ReactCropProps["onChange"];
 };
@@ -402,12 +388,10 @@ export const Cropper = ({
   style,
   className,
   file,
-  maxImageSize,
   ...props
 }: CropperProps) => (
   <ImageCrop
     file={file}
-    maxImageSize={maxImageSize}
     onChange={onChange}
     onComplete={onComplete}
     onCrop={onCrop}

@@ -65,7 +65,10 @@ const projectFormSchema = z.object({
   demoUrl: z.string().url("Must be a valid http(s) URL").or(z.literal("")),
   documentationUrl: z.string().url("Must be a valid http(s) URL").or(z.literal("")),
   role: z.string().max(100).or(z.literal("")),
-  projectYear: z.string(),
+  projectYear: z
+    .string()
+    .regex(/^\d{4}$/, "Year must be a 4-digit number")
+    .or(z.literal("")),
   isClientProject: z.boolean(),
 });
 
@@ -175,6 +178,7 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
   const [coverRemoved, setCoverRemoved] = useState(false);
   const [assetErrorMessage, setAssetErrorMessage] = useState<string | null>(null);
   const [isUploadingAssets, setIsUploadingAssets] = useState(false);
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
@@ -195,6 +199,9 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
     setCoverAsset(null);
     setCoverRemoved(false);
     setAssetErrorMessage(null);
+    setCreatedProjectId(null);
+    createProject.reset();
+    updateProject.reset();
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -232,12 +239,16 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
   const onSubmit: SubmitHandler<ProjectFormValues> = async (values) => {
     setAssetErrorMessage(null);
     const data = buildProjectInput(values);
+    const targetId = mode === "edit" ? project?.id : createdProjectId;
 
     try {
-      const savedProject =
-        mode === "edit" && project
-          ? await updateProject.mutateAsync({ projectId: project.id, data })
-          : await createProject.mutateAsync(data);
+      const savedProject = targetId
+        ? await updateProject.mutateAsync({ projectId: targetId, data })
+        : await createProject.mutateAsync(data);
+
+      if (mode === "create") {
+        setCreatedProjectId(savedProject.id);
+      }
 
       try {
         setIsUploadingAssets(true);
@@ -252,7 +263,7 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
       }
 
       resetLocalState();
-      onOpenChange(false);
+      handleOpenChange(false);
       toast.success(mode === "edit" ? "Project updated successfully!" : "Project created successfully!");
     } catch (saveErrorValue) {
       const message = getApiErrorMessage(saveErrorValue);
@@ -475,7 +486,13 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
 
             {(saveError || assetErrorMessage) && (
               <Alert variant="destructive" className="animate-in fade-in-50">
-                <AlertTitle>{mode === "edit" ? "Error updating project" : "Error creating project"}</AlertTitle>
+                <AlertTitle>
+                  {assetErrorMessage
+                    ? "Image upload failed"
+                    : mode === "edit"
+                      ? "Error updating project"
+                      : "Error creating project"}
+                </AlertTitle>
                 <AlertDescription className="mt-2">
                   {assetErrorMessage ?? getApiErrorMessage(saveError)}
                 </AlertDescription>
@@ -503,6 +520,8 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
                 </>
               ) : mode === "edit" ? (
                 "Save Changes"
+              ) : createdProjectId ? (
+                "Retry image upload"
               ) : (
                 "Create Project"
               )}
