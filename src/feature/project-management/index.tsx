@@ -9,6 +9,7 @@ import { getApiErrorMessage } from "@/lib/apiError.ts";
 import ProjectsProvider, { useProjects } from "@/feature/project-management/context/projects-context.tsx";
 import { ProjectCard } from "@/feature/project-management/components/ProjectCard.tsx";
 import { ProjectCardSkeleton } from "@/feature/project-management/components/ProjectCardSkeleton.tsx";
+import { ProjectDialogs } from "@/feature/project-management/components/ProjectDialogs.tsx";
 
 /** Anzahl der Skeleton-Karten im Ladezustand. */
 const SKELETON_COUNT = 4;
@@ -94,6 +95,7 @@ function ProjectManagement() {
       <Main>
         <ProjectManagementContent />
       </Main>
+      <ProjectDialogs />
     </ProjectsProvider>
   );
 }
