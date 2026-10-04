@@ -5,6 +5,7 @@ import {
     CalendarDays,
     CloudSun,
     Container as ContainerIcon,
+    FolderKanban,
     Hammer,
     KeyRound,
     LayoutDashboardIcon,
@@ -120,6 +121,12 @@ export const sidebarData: SidebarData = {
                     icon: BookOpen,
                     url: '/dashboard/blog',
                 },
+            ],
+        },
+        {
+            title: 'Portfolio-Management',
+            items: [
+                { title: 'Projects', icon: FolderKanban, url: '/dashboard/projects' },
             ],
         },
         {
