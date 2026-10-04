@@ -27,6 +27,7 @@ import CalendarPage from "@/pages/Dashboard/CalendarPage.tsx";
 import WeatherPage from "@/pages/Dashboard/WeatherPage.tsx";
 import BusinessPage from "@/pages/Dashboard/BusinessPage.tsx";
 import NotificationsPage from "@/pages/Dashboard/NotificationsPage.tsx";
+import ProjectsPage from "@/pages/Dashboard/ProjectsPage.tsx";
 
 // eslint-disable-next-line react-refresh/only-export-components
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -127,6 +128,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'notifications',
                 element: <NotificationsPage/>
+            },
+            {
+                path: 'projects',
+                element: <ProjectsPage/>
             },
             {
                 path: 'settings',
