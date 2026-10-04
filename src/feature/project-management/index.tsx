@@ -5,7 +5,13 @@ import { ErrorState } from "@/components/error-state.tsx";
 import { FolderKanban, Plus } from "lucide-react";
 import { useSetPageTitle } from "@/hooks/useSetPageTitle.ts";
 import { useManagedProjects } from "@/api/projects/hooks.ts";
+import { getApiErrorMessage } from "@/lib/apiError.ts";
 import ProjectsProvider, { useProjects } from "@/feature/project-management/context/projects-context.tsx";
+import { ProjectCard } from "@/feature/project-management/components/ProjectCard.tsx";
+import { ProjectCardSkeleton } from "@/feature/project-management/components/ProjectCardSkeleton.tsx";
+
+/** Anzahl der Skeleton-Karten im Ladezustand. */
+const SKELETON_COUNT = 4;
 
 function ProjectList() {
   const projects = useManagedProjects();
@@ -15,14 +21,20 @@ function ProjectList() {
     return (
       <ErrorState
         title="Failed to load projects"
-        message={projects.error.message}
+        message={getApiErrorMessage(projects.error)}
         refetch={projects.refetch}
       />
     );
   }
 
   if (projects.isPending) {
-    return <p className="text-muted-foreground">Loading projects...</p>;
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: SKELETON_COUNT }, (_, index) => (
+          <ProjectCardSkeleton key={index} />
+        ))}
+      </div>
+    );
   }
 
   const items = projects.data ?? [];
@@ -42,7 +54,36 @@ function ProjectList() {
     );
   }
 
-  return <p className="text-muted-foreground">{items.length} projects</p>;
+  return (
+    <div className="space-y-3">
+      {items.map((project) => (
+        <ProjectCard key={project.id} project={project} />
+      ))}
+    </div>
+  );
+}
+
+function ProjectManagementContent() {
+  const { setOpen } = useProjects();
+
+  return (
+    <>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Projects</h2>
+          <p className="text-muted-foreground">
+            Manage the projects shown on the public portfolio.
+          </p>
+        </div>
+        <Button onClick={() => setOpen("add")}>
+          <Plus className="h-4 w-4" />
+          Project
+        </Button>
+      </div>
+
+      <ProjectList />
+    </>
+  );
 }
 
 function ProjectManagement() {
@@ -51,16 +92,7 @@ function ProjectManagement() {
   return (
     <ProjectsProvider>
       <Main>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Projects</h2>
-            <p className="text-muted-foreground">
-              Manage the projects shown on the public portfolio.
-            </p>
-          </div>
-        </div>
-
-        <ProjectList />
+        <ProjectManagementContent />
       </Main>
     </ProjectsProvider>
   );

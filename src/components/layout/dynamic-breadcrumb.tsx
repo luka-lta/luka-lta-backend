@@ -30,6 +30,8 @@ const SEGMENT_LABELS: Record<string, string> = {
     blog: 'Blog',
     'tracked-users': 'Tracked Users',
     create: 'New Post',
+    projects: 'Projects',
+    notifications: 'Notifications',
 }
 
 const DYNAMIC_LABELS: Record<string, string> = {
