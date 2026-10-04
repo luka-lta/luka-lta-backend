@@ -1,5 +1,6 @@
 import { useProjects } from "@/feature/project-management/context/projects-context.tsx";
 import { ProjectFormDialog } from "@/feature/project-management/components/ProjectFormDialog.tsx";
+import { DeleteProjectDialog } from "@/feature/project-management/components/DeleteProjectDialog.tsx";
 
 export function ProjectDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useProjects();
@@ -29,6 +30,22 @@ export function ProjectDialogs() {
           open={open === "edit"}
           onOpenChange={(state) => {
             setOpen(state ? "edit" : null);
+            if (!state) {
+              setTimeout(() => {
+                setCurrentRow(null);
+              }, 500);
+            }
+          }}
+        />
+      )}
+
+      {currentRow && (
+        <DeleteProjectDialog
+          key={`project-delete-${currentRow.id}`}
+          project={currentRow}
+          open={open === "delete"}
+          onOpenChange={(state) => {
+            setOpen(state ? "delete" : null);
             if (!state) {
               setTimeout(() => {
                 setCurrentRow(null);
