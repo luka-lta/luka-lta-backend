@@ -233,10 +233,25 @@ export const ImageCrop = ({
   };
 
   const resetCrop = () => {
-    if (initialCrop) {
-      setCrop(initialCrop);
-      setCompletedCrop(null);
+    if (!(initialCrop && imgRef.current)) {
+      return;
     }
+
+    setCrop(initialCrop);
+
+    // Abweichung vom Registry-Original: dort wurde completedCrop auf null gesetzt,
+    // woraufhin applyCrop() still abbrach — der Apply-Button sah aktiv aus, tat aber
+    // nichts, bis man den Ausschnitt erneut aufzog. Stattdessen den Ausgangs-Crop in
+    // Pixel umrechnen, damit direkt nach dem Reset wieder angewendet werden kann.
+    const { width, height } = imgRef.current;
+
+    setCompletedCrop({
+      unit: "px",
+      x: (initialCrop.x / 100) * width,
+      y: (initialCrop.y / 100) * height,
+      width: (initialCrop.width / 100) * width,
+      height: (initialCrop.height / 100) * height,
+    });
   };
 
   const contextValue: ImageCropContextType = {
