@@ -19,7 +19,8 @@
 - Pfad-Alias `@/` → `src/`.
 - Alle API-Responses werden mit Zod geparst. Die API antwortet `{status, message, data:{…}}` — geparst wird **nur** `response.data.data`.
 - Query-Keys als Array mit Domain zuerst: `["projects", …]`, `["project-tags"]`. Mutationen invalidieren domainweit.
-- Fehler nach Mutationen über `toast.error(error.message)` **und** zusätzlich als `<Alert variant="destructive">` im Formular — so macht es der Bestand (`EditUserSheet`).
+- Fehler nach Mutationen über `toast.error(getApiErrorMessage(error))` **und** zusätzlich als `<Alert variant="destructive">` im Formular — so macht es der Bestand (`EditUserSheet`).
+- **Niemals `error.message` direkt anzeigen.** Die API legt ihre echte Meldung in `data.error`; `error.message` von axios ist nur generischer HTTP-Status-Text, aus `409` würde also „Request failed with status code 409" statt der Begründung. Immer `getApiErrorMessage(error)` aus `@/lib/apiError.ts` verwenden — der Bestand macht das in `CalendarSidebar.tsx`, `EditSourceDialog.tsx` und `LocationDialog.tsx` bereits so. Das gilt für Toasts, für `<Alert>`-Boxen und für `ErrorState`.
 - Keine neuen Dependencies außer den beiden ausdrücklich beauftragten KiboUI-Komponenten.
 - **Keine Test-Infrastruktur** und kein Test-Runner im Repo (bewusste Entscheidung des Projektinhabers, identisch zu Teil 1). Niemals `vitest`, `jest` oder ein `test`-Script aufrufen.
 
@@ -630,6 +631,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Spinner } from "@/components/ui/kibo-ui/spinner/index.tsx";
 import { useCreateProjectTag, useProjectTags } from "@/api/project-tags/hooks.ts";
+import { getApiErrorMessage } from "@/lib/apiError.ts";
 
 interface Props {
   value: number[];
@@ -676,7 +678,7 @@ export function ProjectTagsField({ value, onChange }: Props) {
         toast.success(`Tag "${tag.name}" ready to use.`);
       },
       onError: (error) => {
-        toast.error(error.message);
+        toast.error(getApiErrorMessage(error));
       },
     });
   }
@@ -949,7 +951,7 @@ function ProjectList() {
     return (
       <ErrorState
         title="Failed to load projects"
-        message={projects.error.message}
+        message={getApiErrorMessage(projects.error)}
         refetch={projects.refetch}
       />
     );
