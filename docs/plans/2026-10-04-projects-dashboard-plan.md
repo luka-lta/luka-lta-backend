@@ -70,8 +70,8 @@ Diese Punkte sind von der Spec impliziert, werden aber von keinem Typecheck erfa
 | `src/api/projects/schema.ts` | Zod-Schemas für Projekt, Asset, Formular-Eingabe |
 | `src/api/projects/endpoints.ts` | CRUD, Reorder, Asset-Upload/Delete |
 | `src/api/projects/hooks.ts` | Query- und Mutation-Hooks |
-| `src/components/ui/kibo-ui/dropzone/` | per Registry installiert |
-| `src/components/ui/kibo-ui/image-crop/` | per Registry installiert |
+| `src/components/kibo-ui/dropzone/` | per Registry installiert (dort liegen auch `calendar` und `editor`) |
+| `src/components/kibo-ui/image-crop/` | per Registry installiert |
 | `src/feature/project-management/index.tsx` | Seite: Kopf, Card-Liste, Sortierung |
 | `src/feature/project-management/context/projects-context.tsx` | Dialog-/Row-State |
 | `src/feature/project-management/components/ProjectCard.tsx` | eine Karte |
@@ -782,15 +782,17 @@ EOF
 - Create: `src/feature/project-management/components/ProjectImageInput.tsx`
 
 **Interfaces:**
-- Consumes: die in **Task 3 Step 4 dokumentierten** Exports und Props von `dropzone` und `image-crop`. Diese Signaturen stehen vor der Installation nicht fest — schreib die Verdrahtung gegen das, was dort wörtlich notiert wurde, nicht gegen Vermutungen.
+- Consumes: die in **Task 3 Step 4 dokumentierten** Exports und Props von `dropzone` und `image-crop`, importiert aus `@/components/kibo-ui/dropzone` bzw. `@/components/kibo-ui/image-crop` (nicht `ui/kibo-ui` — dort liegen sie nicht). Diese Signaturen stehen vor der Installation nicht fest — schreib die Verdrahtung gegen das, was dort wörtlich notiert wurde, nicht gegen Vermutungen.
 - Produces: `<ProjectImageInput type="logo" | "cover" | "screenshot" currentUrl={string | null} onSelect={(blob: Blob, fileName: string) => void} onClear={() => void} disabled={boolean} />`
 
 **Fachliche Anforderungen, die unabhängig von der Komponenten-API gelten:**
 
 1. **Akzeptierte Typen:** nur `image/jpeg`, `image/png`, `image/webp` — das ist genau die Allowlist der API. Alles andere wird vor dem Zuschnitt abgewiesen.
 2. **Zielgröße:** das Ergebnis muss **unter 1 MiB** liegen. Begründung: das Limit der Anwendung ist 5 MiB, aber in Produktion kappt nginx derzeit bei 1 MiB (siehe Teil 1, offener Aktionspunkt). Eine Zielgröße unter dem kleinsten Deckel macht den Upload unabhängig von dieser offenen Infrastruktur-Frage.
+
+   **Die Kompression der Komponente ist defekt und darf nicht benutzt werden** (in Task 3 im Code nachgewiesen): `getCroppedPngImage` nimmt `scaleFactor` als Parameter, wendet ihn aber nie auf `canvas.width`/`canvas.height` oder `drawImage` an. Die Rekursion bei `blob.size > maxImageSize` erzeugt deshalb ein byte-identisches PNG und läuft **endlos**, bis der Stack platzt — der Tab friert ein. Konsequenz für diesen Task: `maxImageSize` auf einen Wert setzen, den die Rekursion nie auslöst (`Number.MAX_SAFE_INTEGER`), und die Verkleinerung vollständig selbst machen. Die Komponente liefert damit nur Drag-and-Drop und Zuschnitt; die Größenreduktion gehört uns.
 3. **Seitenverhältnis je Typ:** `logo` quadratisch (1:1), `cover` 16:9, `screenshot` frei. Als benannte Konstante, nicht als Literal im JSX.
-4. **Ausgabe:** die Crop-Komponente liefert eine **PNG-Data-URL**. Die API braucht Multipart, also muss die Data-URL in einen `Blob` konvertiert werden:
+4. **Ausgabe:** `onCrop?: (croppedImage: string) => void` liefert eine **PNG-Data-URL** als String, keinen Blob und keine File. Die API braucht Multipart, also muss die Data-URL in einen `Blob` konvertiert werden:
 
 ```ts
 async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
