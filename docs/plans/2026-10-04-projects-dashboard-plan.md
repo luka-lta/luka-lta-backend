@@ -505,7 +505,7 @@ TOKEN=$(cd ../luka-lta-api && docker compose -f docker-compose.development.yml r
    echo ReallySimpleJWT\Token::create("1", getenv("JWT_SECRET"), time()+86400, "backend.luka-lta.dev");' \
   2>/dev/null | tr -d "\r\n")
 curl -s http://localhost/api/v1/projects/manage \
-  -H "Authorization: $TOKEN" -H 'Origin: http://localhost:5173' \
+  -H "Authorization: $TOKEN" -H 'Origin: http://localhost:5173' -H 'Origin: http://localhost:5173' \
   | jq '.data.projects[0] | keys'
 ```
 Vergleiche die Schlüsselliste **Feld für Feld** mit `projectSchema`. Jeder Schlüssel der Response muss im Schema vorkommen (sonst wird er stillschweigend verworfen), und jedes nicht-optionale Schema-Feld muss in der Response vorhanden sein (sonst wirft Zod zur Laufzeit). Prüfe insbesondere: heißt das Jahresfeld in der Response `year`? Sind `logo`/`cover` bei einem Projekt mit Bildern Objekte mit `{id,type,url,alt,sortOrder}`? Dokumentiere das Ergebnis.
