@@ -1,6 +1,9 @@
 "use client";
 
-import { Button } from "@repo/shadcn-ui/components/ui/button";
+// Abweichung vom Registry-Original: "@repo/shadcn-ui/components/ui/button" ist ein
+// monorepo-interner Pfad aus kibo-ui's eigenem Quell-Repo und laesst sich hier nicht
+// aufloesen (TS2307). Auf den tatsaechlichen Alias dieses Projekts umgebogen.
+import { Button } from "@/components/ui/button";
 import { CropIcon, RotateCcwIcon } from "lucide-react";
 import { Slot } from "radix-ui";
 import {
@@ -103,7 +106,9 @@ type ImageCropContextType = {
   imgSrc: string;
   crop: PercentCrop | undefined;
   completedCrop: PixelCrop | null;
-  imgRef: RefObject<HTMLImageElement | null>;
+  // Abweichung vom Registry-Original: ohne "| null" im Typparameter, siehe
+  // Kommentar bei der useRef-Initialisierung unten.
+  imgRef: RefObject<HTMLImageElement>;
   onCrop?: (croppedImage: string) => void;
   reactCropProps: Omit<ReactCropProps, "onChange" | "onComplete" | "children">;
   handleChange: (pixelCrop: PixelCrop, percentCrop: PercentCrop) => void;
@@ -144,7 +149,13 @@ export const ImageCrop = ({
   onComplete,
   ...reactCropProps
 }: ImageCropProps) => {
-  const imgRef = useRef<HTMLImageElement | null>(null);
+  // Abweichung vom Registry-Original: Typparameter ohne "| null" (React-19-Ref-Typisierung),
+  // da dieses Projekt auf React 18.3.1 / @types/react 18.3.x laeuft. Mit "| null" im
+  // Typparameter war RefObject<HTMLImageElement | null> nicht an die <img ref>-Prop
+  // (LegacyRef<HTMLImageElement>) zuweisbar (TS2322). useRef<T>(null) matcht hier das
+  // Overload "useRef<T>(initialValue: T | null): RefObject<T>" und liefert weiterhin
+  // RefObject<HTMLImageElement> mit current: HTMLImageElement | null.
+  const imgRef = useRef<HTMLImageElement>(null);
   const [imgSrc, setImgSrc] = useState<string>("");
   const [crop, setCrop] = useState<PercentCrop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
