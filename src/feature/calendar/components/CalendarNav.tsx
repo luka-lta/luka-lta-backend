@@ -31,23 +31,25 @@ function formatPeriodLabel(view: CalendarViewMode, anchor: DateTime): string {
 export function CalendarNav({ view, onViewChange, anchor, onNavigate, onToday }: CalendarNavProps) {
     return (
         <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" onClick={() => onNavigate(-1)} aria-label="Zurück">
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="min-w-40 text-center text-sm font-medium capitalize">
-                    {formatPeriodLabel(view, anchor)}
-                </span>
-                <Button variant="ghost" size="icon" onClick={() => onNavigate(1)} aria-label="Vor">
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={onToday} className="ml-2">
+            <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={onToday}>
                     Heute
                 </Button>
+                <div className="flex items-center">
+                    <Button variant="ghost" size="icon" onClick={() => onNavigate(-1)} aria-label="Vorheriger Zeitraum">
+                        <ChevronLeft />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => onNavigate(1)} aria-label="Nächster Zeitraum">
+                        <ChevronRight />
+                    </Button>
+                </div>
+                <h2 className="text-base font-semibold capitalize" aria-live="polite">
+                    {formatPeriodLabel(view, anchor)}
+                </h2>
             </div>
 
             <Tabs value={view} onValueChange={(v) => onViewChange(v as CalendarViewMode)}>
-                <TabsList className="h-9">
+                <TabsList aria-label="Ansicht">
                     <TabsTrigger value="day">Tag</TabsTrigger>
                     <TabsTrigger value="week">Woche</TabsTrigger>
                     <TabsTrigger value="month">Monat</TabsTrigger>

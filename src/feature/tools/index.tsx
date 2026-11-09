@@ -1,56 +1,42 @@
-import {useState} from 'react';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
-import {Link, Newspaper} from "lucide-react";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import {LinkShortener} from "@/feature/tools/components/LinkShortener.tsx";
-import {PaywallBlocker} from "@/feature/tools/components/PaywallBlocker.tsx";
-import {Main} from "@/components/layout/main.tsx";
+import { PageContainer, PageHeader } from "@/components/layout/page.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { LinkShortener } from "@/feature/tools/components/LinkShortener.tsx";
+import { PaywallBlocker } from "@/feature/tools/components/PaywallBlocker.tsx";
 
 function Tools() {
-    const [activeTab, setActiveTab] = useState("link-shortener")
-
     return (
-        <Main>
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold tracking-tight">Tools</h1>
-                <p className="text-muted-foreground">Utilities for links and content.</p>
-            </div>
+        <PageContainer title="Tools">
+            <PageHeader title="Tools" description="Kleine Helfer für Links und Artikel." />
 
-            <Tabs defaultValue="link-shortener" value={activeTab} onValueChange={setActiveTab} className="max-w-3xl">
-                <TabsList className="mb-8">
-                    <TabsTrigger value="link-shortener" className="flex items-center gap-2">
-                        <Link className="h-4 w-4" />
-                        <span className="hidden md:inline">Link Shortener</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="paywall-blocker" className="flex items-center gap-2">
-                        <Newspaper className="h-4 w-4" />
-                        <span className="hidden md:inline">Paywall Blocker</span>
-                    </TabsTrigger>
-                </TabsList>
-
+            <div className="grid gap-4 lg:grid-cols-2">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>
-                            {activeTab === "link-shortener" && "Link Shortener"}
-                            {activeTab === "paywall-blocker" && "Paywall Blocker"}
-                        </CardTitle>
-                        <CardDescription>
-                            {activeTab === "link-shortener" && "Shorten long URLs into compact, shareable links"}
-                            {activeTab === "paywall-blocker" && "Access content behind paywalls on news sites"}
-                        </CardDescription>
+                    <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+                        <div className="space-y-1">
+                            <CardTitle>Paywall umgehen</CardTitle>
+                            <CardDescription>Öffnet Artikel über removepaywall.com.</CardDescription>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <TabsContent value="link-shortener" className="mt-0">
-                            <LinkShortener />
-                        </TabsContent>
-                        <TabsContent value="paywall-blocker" className="mt-0">
-                            <PaywallBlocker />
-                        </TabsContent>
+                        <PaywallBlocker />
                     </CardContent>
                 </Card>
-            </Tabs>
-        </Main>
-    )
+
+                <Card>
+                    <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+                        <div className="space-y-1">
+                            <CardTitle>Link kürzen</CardTitle>
+                            <CardDescription>Noch ohne Backend – erzeugt nur Beispiel-Links.</CardDescription>
+                        </div>
+                        <Badge variant="warning">Demo</Badge>
+                    </CardHeader>
+                    <CardContent>
+                        <LinkShortener />
+                    </CardContent>
+                </Card>
+            </div>
+        </PageContainer>
+    );
 }
 
 export default Tools;

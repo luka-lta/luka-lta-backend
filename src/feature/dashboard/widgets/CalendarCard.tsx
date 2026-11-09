@@ -53,7 +53,8 @@ export function CalendarCard({ onOpenDetail }: CalendarCardProps) {
                         className="py-6"
                         icon={CalendarOff}
                         title="Kein Kalender verbunden"
-                        description="Die ICS-Quelle wird in der API-Konfiguration hinterlegt."
+                        description="Binde auf der Kalender-Seite einen ICS-Kalender ein."
+                        action={<Button variant="outline" size="sm" onClick={onOpenDetail}>Kalender hinzufügen</Button>}
                     />
                 )}
 

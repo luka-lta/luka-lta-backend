@@ -19,7 +19,7 @@ export function SevenDayForecastCard({ daily }: SevenDayForecastCardProps) {
     return (
         <Card>
             <CardHeader className="pb-3">
-                <CardTitle className="text-base">7-Tage-Vorhersage</CardTitle>
+                <CardTitle>7-Tage-Vorhersage</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
                 {daily.map((day) => (
@@ -36,7 +36,7 @@ export function SevenDayForecastCard({ daily }: SevenDayForecastCardProps) {
                     <div className="relative flex-1 h-px bg-border">
                         {progress !== null && (
                             <span
-                                className="absolute -top-[3px] h-[7px] w-[7px] rounded-full bg-amber-500"
+                                className="absolute -top-[3px] h-[7px] w-[7px] rounded-full bg-warning"
                                 style={{ left: `${progress * 100}%` }}
                             />
                         )}
@@ -64,23 +64,23 @@ function DayRow({ day, bounds }: { day: WeatherForecastDay; bounds: { min: numbe
     return (
         <div className="flex items-center gap-3 py-2 text-sm">
             <span className="w-20 shrink-0 text-muted-foreground">{formatForecastWeekday(date)}</span>
-            <Icon className="h-4 w-4 text-amber-500 shrink-0" />
-            <span className="w-24 shrink-0 truncate text-muted-foreground hidden sm:inline">{day.condition}</span>
+            <Icon className="h-4 w-4 text-warning shrink-0" />
+            <span className="hidden w-24 shrink-0 truncate text-muted-foreground sm:inline lg:hidden">{day.condition}</span>
             <span className="w-8 shrink-0 text-right tabular-nums text-muted-foreground">
                 {Math.round(day.temperatureMinCelsius)}°
             </span>
             <div className="relative flex-1 h-1 rounded-full bg-muted">
                 <div
-                    className="absolute h-1 rounded-full bg-amber-500/70"
+                    className="absolute h-1 rounded-full bg-warning/70"
                     style={{ left: `${left}%`, width: `${width}%` }}
                 />
                 <span
-                    className="absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-amber-500"
+                    className="absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-warning"
                     style={{ left: `calc(${left + width}% - 4px)` }}
                 />
             </div>
             <span className="w-8 shrink-0 tabular-nums font-medium">{Math.round(day.temperatureMaxCelsius)}°</span>
-            <span className="w-10 shrink-0 text-right text-xs text-sky-500 tabular-nums">
+            <span className="w-10 shrink-0 text-right text-xs text-info tabular-nums">
                 {day.precipitationProbabilityPercent > 0 ? `${day.precipitationProbabilityPercent}%` : ""}
             </span>
         </div>

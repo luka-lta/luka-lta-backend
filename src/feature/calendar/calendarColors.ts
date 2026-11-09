@@ -17,3 +17,15 @@ export const CALENDAR_COLOR_PALETTE = [
 export function pickNextCalendarColor(existingCount: number): string {
     return CALENDAR_COLOR_PALETTE[existingCount % CALENDAR_COLOR_PALETTE.length];
 }
+
+/** Zugängliche Namen für die Farbauswahl (Reihenfolge wie die Palette). */
+export const CALENDAR_COLOR_NAMES: Record<string, string> = {
+    "#3b82f6": "Blau",
+    "#10b981": "Grün",
+    "#f59e0b": "Gelb",
+    "#ef4444": "Rot",
+    "#8b5cf6": "Violett",
+    "#06b6d4": "Cyan",
+    "#ec4899": "Pink",
+    "#84cc16": "Limette",
+};

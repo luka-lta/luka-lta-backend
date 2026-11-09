@@ -20,7 +20,7 @@ export function WeatherCard({ onOpenDetail }: WeatherCardProps) {
                     <MapPin className="size-4 text-muted-foreground" aria-hidden />
                     {data?.location ? data.location.city : "Wetter"}
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="-mr-2 text-muted-foreground" onClick={onOpenDetail} disabled={!data?.current}>
+                <Button variant="ghost" size="sm" className="-mr-2 text-muted-foreground" onClick={onOpenDetail}>
                     Vorhersage
                     <ChevronRight />
                 </Button>
@@ -49,7 +49,8 @@ export function WeatherCard({ onOpenDetail }: WeatherCardProps) {
                         className="py-6"
                         icon={CloudOff}
                         title="Kein Standort hinterlegt"
-                        description="Der Standort wird in der API-Konfiguration festgelegt."
+                        description="Lege auf der Wetter-Seite fest, für welchen Ort Daten geladen werden."
+                        action={<Button variant="outline" size="sm" onClick={onOpenDetail}>Standort festlegen</Button>}
                     />
                 )}
 

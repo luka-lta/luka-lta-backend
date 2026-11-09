@@ -1,17 +1,8 @@
 import { type FormEvent, useState } from "react";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog.tsx";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import { Spinner } from "@/components/ui/kibo-ui/spinner/index.tsx";
-import { toast } from "sonner";
+import { FormDialog } from "@/components/dialogs/form-dialog.tsx";
 import { useCalendarSources, useCreateCalendarSource } from "@/api/calendar/hooks.ts";
 import { pickNextCalendarColor } from "@/feature/calendar/calendarColors.ts";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
@@ -59,65 +50,57 @@ export function AddSourceDialog({ open, onOpenChange }: AddSourceDialogProps) {
             { name, url, color },
             {
                 onSuccess: () => {
-                    toast.success(`"${name}" hinzugefügt.`);
+                    toast.success(`Kalender „${name}“ hinzugefügt`);
                     reset();
                     onOpenChange(false);
                 },
-                onError: (error) => {
-                    // The backend already tried to reach the ICS URL and failed — surface
-                    // that real reason instead of a generic message.
-                    setUrlError(getApiErrorMessage(error));
-                },
+                // Die API hat die ICS-URL bereits abgerufen – den echten Grund zeigen.
+                onError: (error) => setUrlError(getApiErrorMessage(error)),
             },
         );
     }
 
     return (
-        <Dialog
+        <FormDialog
             open={open}
             onOpenChange={(next) => {
                 if (!next) reset();
                 onOpenChange(next);
             }}
+            size="sm"
+            title="Kalender hinzufügen"
+            description="ICS-Kalender aus Google, iCloud, Outlook & Co. einbinden."
+            onSubmit={handleSubmit}
+            submitLabel="Hinzufügen"
+            isSubmitting={createSource.isPending}
+            submitDisabled={!name.trim() || !url.trim()}
         >
-            <DialogContent className="sm:max-w-sm">
-                <DialogHeader>
-                    <DialogTitle>Kalender hinzufügen</DialogTitle>
-                    <DialogDescription>Fügt eine ICS-Kalenderquelle hinzu (Google, iCloud, Outlook, …).</DialogDescription>
-                </DialogHeader>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-1.5">
-                        <Label htmlFor="source-name">Name</Label>
-                        <Input id="source-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Privat" required />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label htmlFor="source-url">ICS-URL</Label>
-                        <Input
-                            id="source-url"
-                            type="url"
-                            value={url}
-                            onChange={(e) => {
-                                setUrl(e.target.value);
-                                setUrlError(null);
-                            }}
-                            placeholder="https://calendar.google.com/.../basic.ics"
-                            required
-                        />
-                        {urlError && <p className="text-xs text-rose-500">{urlError}</p>}
-                    </div>
-
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                            Abbrechen
-                        </Button>
-                        <Button type="submit" disabled={createSource.isPending}>
-                            {createSource.isPending && <Spinner size={14} className="mr-1" />}
-                            Kalender hinzufügen
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+            <div className="space-y-2">
+                <Label htmlFor="source-name">Name</Label>
+                <Input id="source-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="z. B. Privat" autoFocus />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="source-url" className={urlError ? "text-destructive" : undefined}>ICS-URL</Label>
+                <Input
+                    id="source-url"
+                    type="url"
+                    value={url}
+                    aria-invalid={!!urlError}
+                    aria-describedby={urlError ? "source-url-error" : "source-url-description"}
+                    onChange={(e) => {
+                        setUrl(e.target.value);
+                        setUrlError(null);
+                    }}
+                    placeholder="https://…/basic.ics"
+                />
+                {urlError ? (
+                    <p id="source-url-error" className="text-sm text-destructive">{urlError}</p>
+                ) : (
+                    <p id="source-url-description" className="text-xs text-muted-foreground">
+                        Die geheime ICS-Adresse findest du in den Freigabe-Einstellungen deines Kalenders.
+                    </p>
+                )}
+            </div>
+        </FormDialog>
     );
 }
