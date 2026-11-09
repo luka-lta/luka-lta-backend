@@ -39,23 +39,23 @@ export const NODE_TYPE_CONFIG: Record<string, NodeTypeConfig> = {
     internet: { icon: Globe, label: "Internet", category: "infrastructure" },
     cloudflare: { icon: Cloud, label: "Cloudflare", category: "infrastructure" },
 
-    "docker-network": { icon: Network, label: "Docker Network", category: "network" },
+    "docker-network": { icon: Network, label: "Docker-Netzwerk", category: "network" },
     vlan: { icon: Network, label: "VLAN", category: "network" },
     subnet: { icon: Network, label: "Subnet", category: "network" },
 
     "reverse-proxy": { icon: Waypoints, label: "Reverse Proxy", category: "service" },
     dns: { icon: Radar, label: "DNS", category: "service" },
     monitoring: { icon: MonitorCog, label: "Monitoring", category: "service" },
-    database: { icon: Database, label: "Database", category: "service" },
-    storage: { icon: HardDrive, label: "Storage", category: "service" },
-    application: { icon: Boxes, label: "Application", category: "service" },
+    database: { icon: Database, label: "Datenbank", category: "service" },
+    storage: { icon: HardDrive, label: "Speicher", category: "service" },
+    application: { icon: Boxes, label: "Anwendung", category: "service" },
     container: { icon: ContainerIcon, label: "Container", category: "service" },
 };
 
 const CATEGORY_FALLBACK: Record<NodeCategory, NodeTypeConfig> = {
-    infrastructure: { icon: Server, label: "Infrastructure", category: "infrastructure" },
-    network: { icon: Network, label: "Network", category: "network" },
-    service: { icon: Shield, label: "Service", category: "service" },
+    infrastructure: { icon: Server, label: "Infrastruktur", category: "infrastructure" },
+    network: { icon: Network, label: "Netzwerk", category: "network" },
+    service: { icon: Shield, label: "Dienst", category: "service" },
 };
 
 export function getNodeTypeConfig(type: string): NodeTypeConfig {
@@ -65,16 +65,16 @@ export function getNodeTypeConfig(type: string): NodeTypeConfig {
 export const NODE_CATEGORIES: NodeCategory[] = ["infrastructure", "network", "service"];
 
 export const STATUS_CONFIG: Record<NodeStatus, { label: string; dotClass: string; ringClass: string }> = {
-    healthy: { label: "Healthy", dotClass: "bg-emerald-500", ringClass: "ring-emerald-500/30" },
-    warning: { label: "Warning", dotClass: "bg-amber-500", ringClass: "ring-amber-500/30" },
-    offline: { label: "Offline", dotClass: "bg-rose-500", ringClass: "ring-rose-500/30" },
-    unknown: { label: "Unknown", dotClass: "bg-muted-foreground", ringClass: "ring-border" },
+    healthy: { label: "OK", dotClass: "bg-success", ringClass: "ring-success/30" },
+    warning: { label: "Warnung", dotClass: "bg-warning", ringClass: "ring-warning/30" },
+    offline: { label: "Offline", dotClass: "bg-destructive", ringClass: "ring-destructive/30" },
+    unknown: { label: "Unbekannt", dotClass: "bg-muted-foreground", ringClass: "ring-border" },
 };
 
 export const EDGE_RELATION_LABEL: Record<string, string> = {
-    routes_to: "routes to",
-    depends_on: "depends on",
-    connects_to: "connects to",
-    hosted_on: "hosted on",
-    exposes: "exposes",
+    routes_to: "leitet weiter an",
+    depends_on: "hängt ab von",
+    connects_to: "verbunden mit",
+    hosted_on: "läuft auf",
+    exposes: "stellt bereit",
 };

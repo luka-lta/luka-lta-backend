@@ -1,15 +1,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import { FormDialog } from "@/components/dialogs/form-dialog.tsx";
+import { getApiErrorMessage } from "@/lib/apiError.ts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { EDGE_RELATION_LABEL } from "@/feature/homelab/topology/constants.ts";
 import { useCreateTopologyEdge } from "@/api/homelab/topologyHooks.ts";
@@ -48,79 +41,72 @@ function CreateEdgeDialog({ open, onOpenChange, nodes }: CreateEdgeDialogProps) 
             },
             {
                 onSuccess: () => {
-                    toast.success("Connection created.");
+                    toast.success("Verbindung angelegt");
                     onOpenChange(false);
                 },
-                onError: (error) => toast.error(error.message),
+                onError: (error) => toast.error(getApiErrorMessage(error)),
             },
         );
     }
 
+    const nodeOptions = nodes.map((node) => (
+        <SelectItem key={node.id} value={node.id}>
+            {node.name}
+        </SelectItem>
+    ));
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Add connection</DialogTitle>
-                    <DialogDescription>Manually connect two nodes on the map.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                        <Label>From</Label>
-                        <Select value={sourceId} onValueChange={setSourceId}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select node" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {nodes.map((node) => (
-                                    <SelectItem key={node.id} value={node.id}>
-                                        {node.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label>Relation</Label>
-                        <Select value={relation} onValueChange={(value) => setRelation(value as EdgeRelation)}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {RELATIONS.map((rel) => (
-                                    <SelectItem key={rel} value={rel}>
-                                        {EDGE_RELATION_LABEL[rel]}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label>To</Label>
-                        <Select value={targetId} onValueChange={setTargetId}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select node" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {nodes.map((node) => (
-                                    <SelectItem key={node.id} value={node.id}>
-                                        {node.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button
-                        className="w-full"
-                        onClick={handleSubmit}
-                        disabled={createEdge.isPending || !sourceId || !targetId || sourceId === targetId}
-                    >
-                        Add connection
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <FormDialog
+            open={open}
+            onOpenChange={onOpenChange}
+            size="sm"
+            title="Verbindung hinzufügen"
+            description="Zwei Knoten auf der Karte manuell verbinden."
+            onSubmit={(event) => {
+                event.preventDefault();
+                handleSubmit();
+            }}
+            submitLabel="Verbinden"
+            isSubmitting={createEdge.isPending}
+            submitDisabled={!sourceId || !targetId || sourceId === targetId}
+        >
+            <div className="space-y-2">
+                <Label htmlFor="edge-source">Von</Label>
+                <Select value={sourceId} onValueChange={setSourceId}>
+                    <SelectTrigger id="edge-source">
+                        <SelectValue placeholder="Knoten wählen" />
+                    </SelectTrigger>
+                    <SelectContent>{nodeOptions}</SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="edge-relation">Beziehung</Label>
+                <Select value={relation} onValueChange={(value) => setRelation(value as EdgeRelation)}>
+                    <SelectTrigger id="edge-relation">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {RELATIONS.map((rel) => (
+                            <SelectItem key={rel} value={rel}>
+                                {EDGE_RELATION_LABEL[rel]}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="edge-target">Nach</Label>
+                <Select value={targetId} onValueChange={setTargetId}>
+                    <SelectTrigger id="edge-target">
+                        <SelectValue placeholder="Knoten wählen" />
+                    </SelectTrigger>
+                    <SelectContent>{nodeOptions}</SelectContent>
+                </Select>
+                {sourceId !== "" && sourceId === targetId && (
+                    <p className="text-sm text-destructive">Start und Ziel müssen verschieden sein.</p>
+                )}
+            </div>
+        </FormDialog>
     );
 }
 

@@ -1,5 +1,8 @@
+import { PageSection } from "@/components/layout/page.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { cn } from "@/lib/utils.ts";
 import { groupContainersByService, type ServiceGroup } from "@/feature/homelab/data.ts";
+import { SERVICE_STATUS } from "@/feature/homelab/status.ts";
 import type { Alert, Container } from "@/feature/homelab/types.ts";
 
 interface ServiceGroupsProps {
@@ -10,9 +13,9 @@ interface ServiceGroupsProps {
 }
 
 const STATUS_DOT: Record<ServiceGroup["status"], string> = {
-    healthy: "bg-emerald-500",
-    warning: "bg-amber-500",
-    critical: "bg-rose-500",
+    healthy: "bg-success",
+    warning: "bg-warning",
+    critical: "bg-destructive",
 };
 
 export function ServiceGroups({ containers, alerts, activeProject, onSelectProject }: ServiceGroupsProps) {
@@ -21,8 +24,17 @@ export function ServiceGroups({ containers, alerts, activeProject, onSelectProje
     if (groups.length === 0) return null;
 
     return (
-        <div className="space-y-3">
-            <h2 className="text-lg font-semibold">Services</h2>
+        <PageSection
+            title="Dienste"
+            description="Ein Klick zeigt die Container des Dienstes."
+            actions={
+                activeProject ? (
+                    <Button variant="ghost" size="sm" onClick={() => onSelectProject(null)}>
+                        Filter zurücksetzen
+                    </Button>
+                ) : undefined
+            }
+        >
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {groups.map((group) => {
                     const running = group.containers.filter((c) => c.status === "running").length;
@@ -32,23 +44,25 @@ export function ServiceGroups({ containers, alerts, activeProject, onSelectProje
                         <button
                             key={group.id}
                             type="button"
+                            aria-pressed={isActive}
                             onClick={() => onSelectProject(isActive ? null : group.id)}
                             className={cn(
-                                "text-left rounded-lg border p-3 transition-colors hover:bg-muted/50",
+                                "rounded-xl border bg-card p-3 text-left shadow-xs transition-colors duration-fast hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                 isActive && "border-primary ring-1 ring-primary",
                             )}
                         >
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className={cn("h-2 w-2 rounded-full shrink-0", STATUS_DOT[group.status])} />
-                                <span className="font-medium text-sm truncate">{group.name}</span>
+                            <div className="mb-1 flex items-center gap-2">
+                                <span className={cn("size-2 shrink-0 rounded-full", STATUS_DOT[group.status])} aria-hidden />
+                                <span className="truncate text-sm font-medium">{group.name}</span>
+                                <span className="sr-only">Status: {SERVICE_STATUS[group.status].label}</span>
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                {running} / {group.containers.length} running
+                            <p className="text-xs tabular-nums text-muted-foreground">
+                                {running} von {group.containers.length} laufen
                             </p>
                         </button>
                     );
                 })}
             </div>
-        </div>
+        </PageSection>
     );
 }

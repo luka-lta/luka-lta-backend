@@ -2,12 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.t
 import { type ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart.tsx";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import type { Host } from "@/feature/homelab/types.ts";
+import { PageSection } from "@/components/layout/page.tsx";
 
 interface ResourceChartsProps {
     hosts: Host[];
 }
 
-const timeTickFormatter = (v: string) => new Date(v).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const timeTickFormatter = (v: string) => new Date(v).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
 function aggregate(hosts: Host[], key: "cpu" | "memory" | "disk" | "networkIn" | "networkOut") {
     const length = Math.max(0, ...hosts.map((h) => h.metrics[key].length));
@@ -21,12 +22,12 @@ function aggregate(hosts: Host[], key: "cpu" | "memory" | "disk" | "networkIn" |
 }
 
 const usageConfig: ChartConfig = {
-    value: { label: "Usage", color: "hsl(var(--chart-1))" },
+    value: { label: "Auslastung", color: "hsl(var(--chart-1))" },
 };
 
 const networkConfig: ChartConfig = {
-    networkIn: { label: "In", color: "hsl(var(--chart-1))" },
-    networkOut: { label: "Out", color: "hsl(var(--chart-2))" },
+    networkIn: { label: "Ein", color: "hsl(var(--chart-1))" },
+    networkOut: { label: "Aus", color: "hsl(var(--chart-2))" },
 };
 
 function UsageAreaChart({ data, unit }: { data: { timestamp: string; value: number }[]; unit: string }) {
@@ -35,8 +36,8 @@ function UsageAreaChart({ data, unit }: { data: { timestamp: string; value: numb
             <AreaChart data={data}>
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="timestamp" tickLine={false} axisLine={false} tickFormatter={timeTickFormatter} minTickGap={40} fontSize={11} />
-                <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => `${v}${unit}`} width={40} />
-                <ChartTooltip content={<ChartTooltipContent labelFormatter={(v) => new Date(v).toLocaleTimeString()} formatter={(value) => [`${value}${unit}`, "Avg"]} />} />
+                <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => `${v} ${unit}`} width={44} />
+                <ChartTooltip content={<ChartTooltipContent labelFormatter={(v) => new Date(v).toLocaleTimeString("de-DE")} formatter={(value) => [`${value} ${unit}`, "Ø"]} />} />
                 <Area type="monotone" dataKey="value" stroke="var(--color-value)" fill="var(--color-value)" fillOpacity={0.15} strokeWidth={1.5} isAnimationActive={false} />
             </AreaChart>
         </ChartContainer>
@@ -57,12 +58,11 @@ export function ResourceCharts({ hosts }: ResourceChartsProps) {
     }));
 
     return (
-        <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Resource Usage (fleet average)</h2>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <PageSection title="Ressourcen" description="Durchschnitt über alle Hosts, letzte 12 Stunden.">
+            <div className="grid gap-4 lg:grid-cols-2">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
+                        <CardTitle className="text-sm">CPU</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <UsageAreaChart data={cpu} unit="%" />
@@ -70,7 +70,7 @@ export function ResourceCharts({ hosts }: ResourceChartsProps) {
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Memory Usage</CardTitle>
+                        <CardTitle className="text-sm">RAM</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <UsageAreaChart data={memory} unit="%" />
@@ -78,7 +78,7 @@ export function ResourceCharts({ hosts }: ResourceChartsProps) {
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Disk Usage</CardTitle>
+                        <CardTitle className="text-sm">Disk</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <UsageAreaChart data={disk} unit="%" />
@@ -86,15 +86,15 @@ export function ResourceCharts({ hosts }: ResourceChartsProps) {
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Network In / Out</CardTitle>
+                        <CardTitle className="text-sm">Netzwerk</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <ChartContainer config={networkConfig} className="h-56 w-full">
                             <LineChart data={networkData}>
                                 <CartesianGrid vertical={false} />
                                 <XAxis dataKey="timestamp" tickLine={false} axisLine={false} tickFormatter={timeTickFormatter} minTickGap={40} fontSize={11} />
-                                <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => `${v} Mbps`} width={60} />
-                                <ChartTooltip content={<ChartTooltipContent labelFormatter={(v) => new Date(v).toLocaleTimeString()} />} />
+                                <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => `${v} Mbit/s`} width={64} />
+                                <ChartTooltip content={<ChartTooltipContent labelFormatter={(v) => new Date(v).toLocaleTimeString("de-DE")} />} />
                                 <ChartLegend content={<ChartLegendContent />} />
                                 <Line type="monotone" dataKey="networkIn" stroke="var(--color-networkIn)" strokeWidth={1.5} dot={false} isAnimationActive={false} />
                                 <Line type="monotone" dataKey="networkOut" stroke="var(--color-networkOut)" strokeWidth={1.5} dot={false} isAnimationActive={false} />
@@ -103,6 +103,6 @@ export function ResourceCharts({ hosts }: ResourceChartsProps) {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </PageSection>
     );
 }

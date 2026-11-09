@@ -125,7 +125,7 @@ function TopologyMapInner({ graph, activeCategories, problemsOnly, searchQuery, 
     }, [query]);
 
     return (
-        <div className="h-[600px] w-full rounded-lg border bg-background">
+        <div className="h-[calc(100svh-19rem)] min-h-[28rem] w-full overflow-hidden rounded-xl border bg-card shadow-xs">
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -150,8 +150,8 @@ function TopologyMapInner({ graph, activeCategories, problemsOnly, searchQuery, 
                             window.requestAnimationFrame(() => fitView());
                         }}
                     >
-                        <LocateFixed className="h-3.5 w-3.5" />
-                        Reset Layout
+                        <LocateFixed />
+                        Layout neu anordnen
                     </Button>
                 </Panel>
             </ReactFlow>

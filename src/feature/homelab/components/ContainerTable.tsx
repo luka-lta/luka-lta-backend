@@ -1,17 +1,28 @@
-import { useMemo, useState } from "react";
-import { createColumnHelper, flexRender, getCoreRowModel, type SortingState, useReactTable } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
-import { SortableHead } from "@/components/SortableHead.tsx";
-import { Pagination } from "@/components/Pagination.tsx";
-import { Input } from "@/components/ui/input.tsx";
+import { useEffect, useMemo, useState } from "react";
+import {
+    createColumnHelper,
+    getCoreRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    type PaginationState,
+    type SortingState,
+    useReactTable,
+} from "@tanstack/react-table";
+import { Container as ContainerIcon, Search } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
-import { Empty, EmptyMedia, EmptyTitle } from "@/components/ui/empty.tsx";
 import { TimeCell } from "@/components/TimeCell.tsx";
-import { FilterX, Search } from "lucide-react";
+import { PageToolbar } from "@/components/layout/page.tsx";
+import { SearchInput } from "@/components/data/search-input.tsx";
+import { DataTable } from "@/components/data/data-table.tsx";
+import { TablePagination } from "@/components/data/table-pagination.tsx";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
 import { ContainerStatusBadge, HealthBadge } from "@/feature/homelab/components/ContainerStatusBadge.tsx";
-import type { Container, Host } from "@/feature/homelab/types.ts";
+import { CONTAINER_STATUS } from "@/feature/homelab/status.ts";
+import type { Container, ContainerStatus, Host } from "@/feature/homelab/types.ts";
 import { formatUptime, getComposeProjectKey } from "@/feature/homelab/data.ts";
+import { cn } from "@/lib/utils.ts";
 
 const PAGE_SIZE = 10;
 const col = createColumnHelper<Container>();
@@ -32,18 +43,18 @@ export function ContainerTable({
     onClearProjectFilter,
 }: ContainerTableProps) {
     const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [statusFilter, setStatusFilter] = useState<ContainerStatus | "all">("all");
     const [hostFilter, setHostFilter] = useState<string>("all");
-    const [page, setPage] = useState(1);
     const [sorting, setSorting] = useState<SortingState>([]);
+    const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: PAGE_SIZE });
 
     const hostNameById = useMemo(() => new Map(hosts.map((h) => [h.id, h.name])), [hosts]);
+    const hasFilter = search !== "" || statusFilter !== "all" || hostFilter !== "all" || projectFilter !== null;
 
     const filtered = useMemo(() => {
+        const query = search.trim().toLowerCase();
         return containers.filter((c) => {
-            if (search && !c.name.toLowerCase().includes(search.toLowerCase()) && !c.image.toLowerCase().includes(search.toLowerCase())) {
-                return false;
-            }
+            if (query && !c.name.toLowerCase().includes(query) && !c.image.toLowerCase().includes(query)) return false;
             if (statusFilter !== "all" && c.status !== statusFilter) return false;
             if (hostFilter !== "all" && c.hostId !== hostFilter) return false;
             if (projectFilter && getComposeProjectKey(c) !== projectFilter) return false;
@@ -51,210 +62,147 @@ export function ContainerTable({
         });
     }, [containers, search, statusFilter, hostFilter, projectFilter]);
 
-    const sorted = useMemo(() => {
-        if (!sorting[0]) return filtered;
-        const { id, desc } = sorting[0];
-        const copy = [...filtered];
-        copy.sort((a, b) => {
-            const av = (a as unknown as Record<string, unknown>)[id];
-            const bv = (b as unknown as Record<string, unknown>)[id];
-            if (typeof av === "number" && typeof bv === "number") return desc ? bv - av : av - bv;
-            return desc ? String(bv).localeCompare(String(av)) : String(av).localeCompare(String(bv));
-        });
-        return copy;
-    }, [filtered, sorting]);
+    useEffect(() => setPagination((p) => ({ ...p, pageIndex: 0 })), [search, statusFilter, hostFilter, projectFilter]);
 
-    const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
-    const pageRows = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    function resetFilters() {
+        setSearch("");
+        setStatusFilter("all");
+        setHostFilter("all");
+        onClearProjectFilter?.();
+    }
 
     const columns = [
         col.accessor("name", {
-            header: "Name",
-            enableSorting: true,
+            header: "Container",
+            meta: { skeletonClassName: "w-40" },
             cell: ({ row }) => (
-                <div>
-                    <p className="font-medium">{row.original.name}</p>
-                    <p className="text-xs text-muted-foreground">{row.original.image}</p>
+                <div className="min-w-0">
+                    <p className="truncate font-medium">{row.original.name}</p>
+                    <p className="max-w-[18rem] truncate font-mono text-xs text-muted-foreground">{row.original.image}</p>
                 </div>
             ),
         }),
         col.accessor("status", {
             header: "Status",
-            enableSorting: true,
             cell: ({ getValue }) => <ContainerStatusBadge status={getValue()} />,
         }),
-        col.accessor("hostId", {
+        col.accessor((c) => hostNameById.get(c.hostId) ?? c.hostId, {
+            id: "host",
             header: "Host",
-            enableSorting: true,
-            cell: ({ getValue }) => <span className="text-sm">{hostNameById.get(getValue()) ?? getValue()}</span>,
+            meta: { className: "hidden md:table-cell" },
+            cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
         }),
         col.accessor("uptimeSeconds", {
             header: "Uptime",
-            enableSorting: true,
-            cell: ({ getValue }) => <span className="text-sm tabular-nums">{formatUptime(getValue())}</span>,
+            meta: { className: "hidden lg:table-cell" },
+            cell: ({ getValue }) => <span className="tabular-nums">{formatUptime(getValue())}</span>,
         }),
         col.accessor("cpuUsagePercent", {
             header: "CPU",
-            enableSorting: true,
-            cell: ({ getValue }) => <span className="text-sm tabular-nums">{getValue().toFixed(1)}%</span>,
+            meta: { className: "hidden sm:table-cell text-right" },
+            cell: ({ getValue }) => <span className="tabular-nums">{getValue().toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %</span>,
         }),
         col.accessor("memoryUsedMb", {
             header: "RAM",
-            enableSorting: true,
+            meta: { className: "hidden lg:table-cell text-right" },
             cell: ({ row }) => (
-                <span className="text-sm tabular-nums">
-                    {row.original.memoryUsedMb} / {row.original.memoryLimitMb} MB
+                <span className="tabular-nums">
+                    {row.original.memoryUsedMb.toLocaleString("de-DE")} / {row.original.memoryLimitMb.toLocaleString("de-DE")} MB
                 </span>
             ),
         }),
         col.accessor("restartCount", {
-            header: "Restarts",
-            enableSorting: true,
+            header: "Neustarts",
+            meta: { className: "hidden xl:table-cell text-right" },
             cell: ({ getValue }) => {
                 const count = getValue();
-                return (
-                    <span className={count > 3 ? "text-sm font-medium text-rose-500" : "text-sm text-muted-foreground"}>
-                        {count}
-                    </span>
-                );
+                return <span className={cn("tabular-nums", count > 3 ? "font-medium text-destructive" : "text-muted-foreground")}>{count}</span>;
             },
         }),
         col.accessor("healthStatus", {
             header: "Health",
-            enableSorting: true,
+            meta: { className: "hidden md:table-cell" },
             cell: ({ getValue }) => <HealthBadge status={getValue()} />,
         }),
         col.accessor("lastHealthCheck", {
-            header: "Last check",
+            header: "Letzter Check",
             enableSorting: false,
+            meta: { className: "hidden xl:table-cell" },
             cell: ({ getValue }) => {
                 const v = getValue();
-                return v ? <TimeCell iso={v} /> : <span className="text-muted-foreground text-sm">N/A</span>;
+                return v ? <TimeCell iso={v} /> : <span className="text-muted-foreground">—</span>;
             },
         }),
     ];
 
     const table = useReactTable({
-        data: pageRows,
+        data: filtered,
         columns,
-        state: { sorting },
+        state: { sorting, pagination },
         onSortingChange: setSorting,
+        onPaginationChange: setPagination,
         getCoreRowModel: getCoreRowModel(),
-        manualSorting: true,
-        manualPagination: true,
+        getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
     });
 
     return (
-        <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="relative w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                        <Input
-                            placeholder="Search by name or image..."
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(1);
-                            }}
-                            className="pl-8"
-                        />
-                    </div>
-                    <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
-                        <SelectTrigger className="w-36">
-                            <SelectValue placeholder="Status" />
+        <div className="space-y-3">
+            <PageToolbar>
+                <SearchInput value={search} onChange={setSearch} placeholder="Name oder Image…" />
+                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as ContainerStatus | "all")}>
+                    <SelectTrigger className="w-full sm:w-40" aria-label="Nach Status filtern">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Alle Status</SelectItem>
+                        {(Object.keys(CONTAINER_STATUS) as ContainerStatus[]).map((status) => (
+                            <SelectItem key={status} value={status}>{CONTAINER_STATUS[status].label}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                {hosts.length > 1 && (
+                    <Select value={hostFilter} onValueChange={setHostFilter}>
+                        <SelectTrigger className="w-full sm:w-40" aria-label="Nach Host filtern">
+                            <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All statuses</SelectItem>
-                            <SelectItem value="running">Running</SelectItem>
-                            <SelectItem value="warning">Warning</SelectItem>
-                            <SelectItem value="unhealthy">Unhealthy</SelectItem>
-                            <SelectItem value="stopped">Stopped</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select value={hostFilter} onValueChange={(v) => { setHostFilter(v); setPage(1); }}>
-                        <SelectTrigger className="w-40">
-                            <SelectValue placeholder="Host" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All hosts</SelectItem>
+                            <SelectItem value="all">Alle Hosts</SelectItem>
                             {hosts.map((h) => (
                                 <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                    {projectFilter && (
-                        <span className="inline-flex items-center gap-1.5 rounded-md border bg-muted/50 px-2.5 py-1 text-xs font-medium">
-                            Service filter active
-                        </span>
-                    )}
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            setSearch("");
-                            setStatusFilter("all");
-                            setHostFilter("all");
-                            setPage(1);
-                            onClearProjectFilter?.();
-                        }}
-                    >
-                        <FilterX className="h-4 w-4" />
-                        Clear
-                    </Button>
-                </div>
-            </div>
+                )}
+                {projectFilter && <Badge variant="info">Dienst: {projectFilter}</Badge>}
+                {hasFilter && <Button variant="ghost" onClick={resetFilters}>Filter zurücksetzen</Button>}
+            </PageToolbar>
 
-            <div className="border rounded-lg">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((hg) => (
-                            <TableRow key={hg.id}>
-                                {hg.headers.map((header) =>
-                                    header.column.getCanSort() ? (
-                                        <SortableHead key={header.id} column={header.column}>
-                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                        </SortableHead>
-                                    ) : (
-                                        <TableHead key={header.id}>
-                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                        </TableHead>
-                                    )
-                                )}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={table.getVisibleLeafColumns().length} className="p-0">
-                                    <Empty className="border-0 py-12">
-                                        <EmptyMedia variant="icon">
-                                            <Search />
-                                        </EmptyMedia>
-                                        <EmptyTitle>No containers found</EmptyTitle>
-                                    </Empty>
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    className="cursor-pointer"
-                                    onClick={() => onSelectContainer(row.original)}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            <Pagination page={page} totalPages={totalPages} rowCount={sorted.length} onPageChange={setPage} />
+            <DataTable
+                table={table}
+                onRowClick={(row) => onSelectContainer(row.original)}
+                empty={
+                    hasFilter ? (
+                        <EmptyState
+                            variant="plain"
+                            icon={Search}
+                            title="Keine Treffer"
+                            description="Kein Container passt zu Suche oder Filter."
+                            action={<Button variant="outline" size="sm" onClick={resetFilters}>Filter zurücksetzen</Button>}
+                        />
+                    ) : (
+                        <EmptyState variant="plain" icon={ContainerIcon} title="Keine Container gemeldet" />
+                    )
+                }
+                footer={
+                    <TablePagination
+                        page={pagination.pageIndex + 1}
+                        totalPages={table.getPageCount()}
+                        rowCount={filtered.length}
+                        onPageChange={(page) => table.setPageIndex(page - 1)}
+                    />
+                }
+            />
         </div>
     );
 }
