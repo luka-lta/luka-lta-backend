@@ -3,15 +3,15 @@ import {z} from "zod";
 export const loginSchema = z.object({
     email: z
         .string()
-        .min(1, { message: 'Please enter your email' })
-        .email({ message: 'Invalid email address' }),
+        .min(1, { message: 'Bitte gib deine E-Mail ein' })
+        .email({ message: 'Ungültige E-Mail-Adresse' }),
     password: z
         .string()
         .min(1, {
-            message: 'Please enter your password',
+            message: 'Bitte gib dein Passwort ein',
         })
         .min(8, {
-            message: 'Password must be at least 8 characters long',
+            message: 'Das Passwort hat mindestens 8 Zeichen',
         }),
 })
 

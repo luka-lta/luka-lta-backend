@@ -1,42 +1,56 @@
-import {Link} from "react-router-dom";
-import {useAuthenticatedUserStore} from "@/store/authStore.ts";
+import { isRouteErrorResponse, Link, useRouteError } from 'react-router-dom'
+import { FileQuestion, TriangleAlert } from 'lucide-react'
+import { useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import AuthLayout from '@/feature/login/auth-layout.tsx'
+import { useAuthenticatedUserStore } from '@/store/authStore.ts'
 
+/** Fehlerseite außerhalb des Dashboards: unbekannte Route oder Render-Fehler. */
 function ErrorPage() {
-    const { isAuthenticated } = useAuthenticatedUserStore();
+    const error = useRouteError()
+    const isAuthenticated = useAuthenticatedUserStore((s) => s.isAuthenticated)()
+    const notFound = isRouteErrorResponse(error) && error.status === 404
+    const Icon = notFound ? FileQuestion : TriangleAlert
+    const title = notFound ? 'Seite nicht gefunden' : 'Etwas ist schiefgelaufen'
 
-    const renderGoToDashboardButton = () => {
-        if (isAuthenticated()) {
-            return (
-                <Link
-                    to={"/dashboard"}
-                    className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                >
-                    Go to dashboard
-                </Link>
-            )
-        }
-    };
+    useEffect(() => {
+        document.title = `${title} · Luka Dev Admin`
+    }, [title])
 
     return (
-        <div
-            className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8 z-20">
-            <div className="mx-auto max-w-md text-center">
-                <h1 className="text-9xl font-bold tracking-tight text-primary bg-black">404</h1>
-                <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
-                    Oops, the page you were looking for does not exist.
-                </p>
-                <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <Link
-                        to={"/"}
-                        className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    >
-                        Go to landing page
-                    </Link>
-                    {renderGoToDashboardButton()}
+        <AuthLayout>
+            <div className='flex flex-col items-center gap-4 rounded-xl border bg-card px-6 py-10 text-center shadow-xs'>
+                <div className='flex size-12 items-center justify-center rounded-lg bg-muted text-muted-foreground'>
+                    <Icon className='size-6' aria-hidden='true' />
+                </div>
+                <div className='space-y-1'>
+                    {notFound && <p className='font-mono text-sm text-muted-foreground'>404</p>}
+                    <h1 className='text-xl font-semibold'>{title}</h1>
+                    <p className='text-sm text-muted-foreground'>
+                        {notFound
+                            ? 'Die Adresse gibt es nicht oder sie wurde verschoben.'
+                            : 'Die Seite konnte nicht geladen werden. Lade sie neu oder geh zurück.'}
+                    </p>
+                </div>
+                <div className='flex flex-col gap-2 sm:flex-row'>
+                    {isAuthenticated ? (
+                        <Button asChild>
+                            <Link to='/dashboard'>Zum Dashboard</Link>
+                        </Button>
+                    ) : (
+                        <Button asChild>
+                            <Link to='/'>Zur Anmeldung</Link>
+                        </Button>
+                    )}
+                    {!notFound && (
+                        <Button variant='outline' onClick={() => window.location.reload()}>
+                            Neu laden
+                        </Button>
+                    )}
                 </div>
             </div>
-        </div>
-    );
+        </AuthLayout>
+    )
 }
 
-export default ErrorPage;
+export default ErrorPage

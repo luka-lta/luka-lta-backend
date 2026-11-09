@@ -1,24 +1,25 @@
-import SiteLogo from "@/components/SiteLogo.tsx";
+import type { ReactNode } from 'react'
+import SiteLogo from '@/components/SiteLogo.tsx'
 
 interface Props {
-  children: React.ReactNode
+    children: ReactNode
 }
 
+/** Zentrierte Fläche für Login und Fehlerseiten außerhalb des Dashboards. */
 export default function AuthLayout({ children }: Props) {
-  return (
-    <div className='relative min-h-svh flex items-center justify-center overflow-hidden bg-[#0D0D0F]'>
-      {/* Electric Blue radial glow */}
-      <div className='pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,hsl(230_100%_62%_/_0.12),transparent)]' />
-      {/* subtle grid texture */}
-      <div className='pointer-events-none absolute inset-0 bg-[linear-gradient(hsl(230_100%_62%_/_0.03)_1px,transparent_1px),linear-gradient(90deg,hsl(230_100%_62%_/_0.03)_1px,transparent_1px)] bg-[size:48px_48px]' />
-
-      <div className='relative z-10 mx-auto flex w-full flex-col justify-center space-y-2 py-8 sm:w-[480px] sm:p-8'>
-        <div className='mb-4 flex items-center justify-center gap-2.5'>
-          <SiteLogo withText={false} />
-          <h1 className='text-xl font-semibold text-white font-sora'>Luka Dev Studio</h1>
+    return (
+        <div className='relative flex min-h-svh items-center justify-center overflow-hidden bg-background px-4'>
+            <div
+                className='pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,hsl(var(--primary)/0.12),transparent)]'
+                aria-hidden='true'
+            />
+            <main className='relative z-10 mx-auto flex w-full max-w-sm flex-col gap-6 py-8'>
+                <div className='flex items-center justify-center gap-2.5'>
+                    <SiteLogo withText={false} />
+                    <span className='font-brand text-xl font-semibold'>Luka Dev Studio</span>
+                </div>
+                {children}
+            </main>
         </div>
-        {children}
-      </div>
-    </div>
-  )
+    )
 }

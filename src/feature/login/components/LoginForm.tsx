@@ -10,7 +10,7 @@ import {TextInput} from "@/components/form/TextInput.tsx";
 import {loginSchema, LoginSchema} from "@/feature/login/schema/loginSchema.ts";
 import {HTMLAttributes} from "react";
 import {cn} from "@/lib/utils.ts";
-import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
+import {Loader2} from "lucide-react";
 
 type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 
@@ -22,12 +22,12 @@ const defaultValues = {
 function getLoginError(error: unknown): string {
     if (error instanceof AxiosError) {
         const status = error.response?.status;
-        if (status === 401) return "Invalid credentials";
-        if (status === 404) return "User not found";
-        if (status === 429) return "Too many attempts. Please try again later.";
-        if (!error.response) return "Network error. Check your connection.";
+        if (status === 401) return "E-Mail oder Passwort ist falsch.";
+        if (status === 404) return "Kein Konto mit dieser E-Mail gefunden.";
+        if (status === 429) return "Zu viele Versuche. Bitte warte kurz und versuche es erneut.";
+        if (!error.response) return "Keine Verbindung zur API. Prüfe deine Internetverbindung.";
     }
-    return "Login failed. Please try again.";
+    return "Anmeldung fehlgeschlagen. Bitte versuche es erneut.";
 }
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
@@ -55,58 +55,37 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     return (
         <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className={cn('grid gap-3', className)}
+            className={cn('space-y-5', className)}
+            noValidate
             {...props}
         >
-            <div>
-                <TextInput
-                    name={'email'}
-                    id={'email-login-form'}
-                    label={'Email'}
-                    form={form}
-                    type={'email'}
-                />
-            </div>
-
-            <div>
-                <TextInput
-                    name={'password'}
-                    id={'password-login-form'}
-                    placeholder={'*********'}
-                    label={'Password'}
-                    form={form}
-                    type={'password'}
-                />
-            </div>
+            <TextInput
+                name={'email'}
+                id={'email-login-form'}
+                label={'E-Mail'}
+                form={form}
+                type={'email'}
+                autoComplete={'username'}
+            />
+            <TextInput
+                name={'password'}
+                id={'password-login-form'}
+                label={'Passwort'}
+                form={form}
+                type={'password'}
+                autoComplete={'current-password'}
+            />
 
             {form.formState.errors.root && (
-                <p className="text-sm text-red-500">{form.formState.errors.root.message}</p>
+                <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                    {form.formState.errors.root.message}
+                </p>
             )}
 
-            {/* Submit-Button */}
-            <div>
-                <Button
-                    type="submit"
-                    disabled={loginMutation.isPending}
-                    className="flex w-full justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold leading-6  shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
-                >
-                    {loginMutation.isPending && <Spinner size={16} />}
-                    {loginMutation.isPending ? "Signing in..." : "Sign In"}
-                </Button>
-            </div>
-
-            {/* Register Link */}
-            <div className="text-center">
-                <p className="text-sm text-gray-600">
-                    Don't have an account?{" "}
-                    <span
-                        className="text-indigo-600 hover:text-indigo-500 cursor-pointer font-medium"
-                        onClick={() => navigate("/register")}
-                    >
-                    Register here
-                  </span>
-                </p>
-            </div>
+            <Button type="submit" disabled={loginMutation.isPending} className="w-full">
+                {loginMutation.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
+                {loginMutation.isPending ? "Wird angemeldet…" : "Anmelden"}
+            </Button>
         </form>
     );
 }

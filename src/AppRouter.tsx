@@ -28,6 +28,7 @@ import WeatherPage from "@/pages/Dashboard/WeatherPage.tsx";
 import BusinessPage from "@/pages/Dashboard/BusinessPage.tsx";
 import NotificationsPage from "@/pages/Dashboard/NotificationsPage.tsx";
 import ProjectsPage from "@/pages/Dashboard/ProjectsPage.tsx";
+import NotFoundPage from "@/pages/Dashboard/NotFoundPage.tsx";
 
 // eslint-disable-next-line react-refresh/only-export-components
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -53,6 +54,7 @@ export const appRouter = createBrowserRouter([
     {
         path: '/dashboard',
         element: <RequireAuth><DashboardLayout/></RequireAuth>,
+        errorElement: <ErrorPage/>,
         children: [
             {
                 path: '',
@@ -171,6 +173,10 @@ export const appRouter = createBrowserRouter([
                         element: <BlogDetailPage />,
                     },
                 ],
+            },
+            {
+                path: '*',
+                element: <NotFoundPage/>
             },
         ]
     },
