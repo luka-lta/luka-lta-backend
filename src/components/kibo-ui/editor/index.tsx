@@ -154,7 +154,7 @@ export const defaultSlashSuggestions: SuggestionOptions<SuggestionItem>["items"]
       },
     },
     {
-      title: "To-do List",
+      title: "Aufgabenliste",
       description: "Track tasks with a to-do list.",
       searchTerms: ["todo", "task", "list", "check", "checkbox"],
       icon: CheckSquareIcon,
@@ -168,7 +168,7 @@ export const defaultSlashSuggestions: SuggestionOptions<SuggestionItem>["items"]
       },
     },
     {
-      title: "Heading 1",
+      title: "Überschrift 1",
       description: "Big section heading.",
       searchTerms: ["title", "big", "large"],
       icon: Heading1Icon,
@@ -182,7 +182,7 @@ export const defaultSlashSuggestions: SuggestionOptions<SuggestionItem>["items"]
       },
     },
     {
-      title: "Heading 2",
+      title: "Überschrift 2",
       description: "Medium section heading.",
       searchTerms: ["subtitle", "medium"],
       icon: Heading2Icon,
@@ -196,7 +196,7 @@ export const defaultSlashSuggestions: SuggestionOptions<SuggestionItem>["items"]
       },
     },
     {
-      title: "Heading 3",
+      title: "Überschrift 3",
       description: "Small section heading.",
       searchTerms: ["subtitle", "small"],
       icon: Heading3Icon,
@@ -210,7 +210,7 @@ export const defaultSlashSuggestions: SuggestionOptions<SuggestionItem>["items"]
       },
     },
     {
-      title: "Bullet List",
+      title: "Aufzählung",
       description: "Create a simple bullet list.",
       searchTerms: ["unordered", "point"],
       icon: ListIcon,
@@ -219,7 +219,7 @@ export const defaultSlashSuggestions: SuggestionOptions<SuggestionItem>["items"]
       },
     },
     {
-      title: "Numbered List",
+      title: "Nummerierte Liste",
       description: "Create a list with numbering.",
       searchTerms: ["ordered"],
       icon: ListOrderedIcon,
@@ -228,7 +228,7 @@ export const defaultSlashSuggestions: SuggestionOptions<SuggestionItem>["items"]
       },
     },
     {
-      title: "Quote",
+      title: "Zitat",
       description: "Capture a quote.",
       searchTerms: ["blockquote"],
       icon: TextQuoteIcon,
@@ -250,7 +250,7 @@ export const defaultSlashSuggestions: SuggestionOptions<SuggestionItem>["items"]
         editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
     },
     {
-      title: "Table",
+      title: "Tabelle",
       description: "Add a table view to organize data.",
       searchTerms: ["table"],
       icon: TableIcon,
@@ -1363,7 +1363,7 @@ export const EditorLinkSelector = ({
             className="flex-1 bg-background p-1 text-sm outline-none"
             defaultValue={defaultValue ?? ""}
             onChange={(event) => setUrl(event.target.value)}
-            placeholder="Paste a link"
+            placeholder="Link einfügen"
             ref={inputReference}
             type="text"
             value={url}
@@ -1375,14 +1375,14 @@ export const EditorLinkSelector = ({
                 editor.chain().focus().unsetLink().run();
                 onOpenChange?.(false);
               }}
-              size="icon"
+              aria-label="Link entfernen" size="icon"
               type="button"
               variant="outline"
             >
               <TrashIcon size={12} />
             </Button>
           ) : (
-            <Button className="h-8" size="icon" variant="secondary">
+            <Button className="h-8" aria-label="Link übernehmen" size="icon" variant="secondary">
               <CheckIcon size={12} />
             </Button>
           )}
@@ -1538,7 +1538,7 @@ export const EditorTableColumnMenu = ({
         )}
         style={{ top, left }}
       >
-        <Button size="icon" variant="ghost">
+        <Button aria-label="Spaltenoptionen" size="icon" variant="ghost">
           <EllipsisIcon className="text-muted-foreground" size={16} />
         </Button>
       </DropdownMenuTrigger>
@@ -1602,7 +1602,7 @@ export const EditorTableRowMenu = ({ children }: EditorTableRowMenuProps) => {
               hidden: !(left || top),
             }
           )}
-          size="icon"
+          aria-label="Zeilenoptionen" size="icon"
           style={{ top, left }}
           variant="ghost"
         >
@@ -1630,7 +1630,7 @@ export const EditorTableColumnBefore = () => {
   return (
     <DropdownMenuItem className="flex items-center gap-2" onClick={handleClick}>
       <ArrowLeftIcon className="text-muted-foreground" size={16} />
-      <span>Add column before</span>
+      <span>Spalte davor einfügen</span>
     </DropdownMenuItem>
   );
 };
@@ -1651,7 +1651,7 @@ export const EditorTableColumnAfter = () => {
   return (
     <DropdownMenuItem className="flex items-center gap-2" onClick={handleClick}>
       <ArrowRightIcon className="text-muted-foreground" size={16} />
-      <span>Add column after</span>
+      <span>Spalte danach einfügen</span>
     </DropdownMenuItem>
   );
 };
@@ -1672,7 +1672,7 @@ export const EditorTableRowBefore = () => {
   return (
     <DropdownMenuItem className="flex items-center gap-2" onClick={handleClick}>
       <ArrowUpIcon className="text-muted-foreground" size={16} />
-      <span>Add row before</span>
+      <span>Zeile davor einfügen</span>
     </DropdownMenuItem>
   );
 };
@@ -1693,7 +1693,7 @@ export const EditorTableRowAfter = () => {
   return (
     <DropdownMenuItem className="flex items-center gap-2" onClick={handleClick}>
       <ArrowDownIcon className="text-muted-foreground" size={16} />
-      <span>Add row after</span>
+      <span>Zeile danach einfügen</span>
     </DropdownMenuItem>
   );
 };
@@ -1714,7 +1714,7 @@ export const EditorTableColumnDelete = () => {
   return (
     <DropdownMenuItem className="flex items-center gap-2" onClick={handleClick}>
       <TrashIcon className="text-destructive" size={16} />
-      <span>Delete column</span>
+      <span>Spalte löschen</span>
     </DropdownMenuItem>
   );
 };
@@ -1735,7 +1735,7 @@ export const EditorTableRowDelete = () => {
   return (
     <DropdownMenuItem className="flex items-center gap-2" onClick={handleClick}>
       <TrashIcon className="text-destructive" size={16} />
-      <span>Delete row</span>
+      <span>Zeile löschen</span>
     </DropdownMenuItem>
   );
 };
@@ -1759,14 +1759,14 @@ export const EditorTableHeaderColumnToggle = () => {
         <Button
           className="flex items-center gap-2 rounded-full"
           onClick={handleClick}
-          size="icon"
+          aria-label="Kopfspalte umschalten" size="icon"
           variant="ghost"
         >
           <ColumnsIcon className="text-muted-foreground" size={16} />
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <span>Toggle header column</span>
+        <span>Kopfspalte umschalten</span>
       </TooltipContent>
     </Tooltip>
   );
@@ -1791,14 +1791,14 @@ export const EditorTableHeaderRowToggle = () => {
         <Button
           className="flex items-center gap-2 rounded-full"
           onClick={handleClick}
-          size="icon"
+          aria-label="Kopfzeile umschalten" size="icon"
           variant="ghost"
         >
           <RowsIcon className="text-muted-foreground" size={16} />
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <span>Toggle header row</span>
+        <span>Kopfzeile umschalten</span>
       </TooltipContent>
     </Tooltip>
   );
@@ -1823,14 +1823,14 @@ export const EditorTableDelete = () => {
         <Button
           className="flex items-center gap-2 rounded-full"
           onClick={handleClick}
-          size="icon"
+          aria-label="Tabelle löschen" size="icon"
           variant="ghost"
         >
           <TrashIcon className="text-destructive" size={16} />
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <span>Delete table</span>
+        <span>Tabelle löschen</span>
       </TooltipContent>
     </Tooltip>
   );
@@ -1855,14 +1855,14 @@ export const EditorTableMergeCells = () => {
         <Button
           className="flex items-center gap-2 rounded-full"
           onClick={handleClick}
-          size="icon"
+          aria-label="Zellen verbinden" size="icon"
           variant="ghost"
         >
           <TableCellsMergeIcon className="text-muted-foreground" size={16} />
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <span>Merge cells</span>
+        <span>Zellen verbinden</span>
       </TooltipContent>
     </Tooltip>
   );
@@ -1887,14 +1887,14 @@ export const EditorTableSplitCell = () => {
         <Button
           className="flex items-center gap-2 rounded-full"
           onClick={handleClick}
-          size="icon"
+          aria-label="Zelle teilen" size="icon"
           variant="ghost"
         >
           <TableColumnsSplitIcon className="text-muted-foreground" size={16} />
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <span>Split cell</span>
+        <span>Zelle teilen</span>
       </TooltipContent>
     </Tooltip>
   );
@@ -1919,14 +1919,14 @@ export const EditorTableFix = () => {
         <Button
           className="flex items-center gap-2 rounded-full"
           onClick={handleClick}
-          size="icon"
+          aria-label="Tabelle reparieren" size="icon"
           variant="ghost"
         >
           <BoltIcon className="text-muted-foreground" size={16} />
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <span>Fix table</span>
+        <span>Tabelle reparieren</span>
       </TooltipContent>
     </Tooltip>
   );

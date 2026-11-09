@@ -60,6 +60,7 @@ function Overview() {
             <QuickStats
                 totalClicks={clickSummary.data?.summary.totalClicks}
                 clicksMonthly={clickSummary.data?.summary.clicksMonthly}
+                clicksFailed={Boolean(clickSummary.error)}
             />
 
             <QuickActions />

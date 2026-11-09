@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/feedback/empty-state'
 export default function NotFoundPage() {
     return (
         <PageContainer title='Seite nicht gefunden'>
+            <h1 className='sr-only'>Seite nicht gefunden</h1>
             <EmptyState
                 icon={FileQuestion}
                 title='Seite nicht gefunden'

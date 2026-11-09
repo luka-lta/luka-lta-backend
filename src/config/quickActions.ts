@@ -10,9 +10,9 @@ export interface QuickAction {
 
 /** Häufige Anlegen-Aktionen; Übersicht und ⌘K-Menü nutzen dieselbe Liste. */
 export const QUICK_ACTIONS: QuickAction[] = [
-    { label: 'Blogbeitrag schreiben', description: 'Neuen Entwurf im Editor öffnen', icon: FilePlus2, to: '/dashboard/blog/create' },
-    { label: 'Link anlegen', description: 'Eintrag für die Link-Seite', icon: Link2, to: withCreateIntent('/dashboard/linktree') },
-    { label: 'Projekt anlegen', description: 'Neues Portfolio-Projekt', icon: FolderPlus, to: withCreateIntent('/dashboard/projects') },
-    { label: 'Benutzer anlegen', description: 'Zugang für das Dashboard', icon: UserPlus, to: withCreateIntent('/dashboard/users') },
-    { label: 'API-Key erstellen', description: 'Schlüssel für eine Origin', icon: KeyRound, to: withCreateIntent('/dashboard/api-keys') },
+    { label: 'Beitrag schreiben', description: 'Entwurf im Editor', icon: FilePlus2, to: '/dashboard/blog/create' },
+    { label: 'Link anlegen', description: 'Für die Link-Seite', icon: Link2, to: withCreateIntent('/dashboard/linktree') },
+    { label: 'Projekt anlegen', description: 'Fürs Portfolio', icon: FolderPlus, to: withCreateIntent('/dashboard/projects') },
+    { label: 'Benutzer anlegen', description: 'Dashboard-Zugang', icon: UserPlus, to: withCreateIntent('/dashboard/users') },
+    { label: 'API-Key erstellen', description: 'Für eine Origin', icon: KeyRound, to: withCreateIntent('/dashboard/api-keys') },
 ]

@@ -41,7 +41,7 @@ function isFontOption(value: string): value is FontOption {
 /** Miniatur des Dashboards; nutzt die echten Tokens des jeweiligen Themes. */
 function ThemePreview({ mode }: { mode: 'light' | 'dark' }) {
     return (
-        <div className={cn(mode, 'rounded-md bg-background p-2 text-foreground')} aria-hidden='true'>
+        <div className={cn(mode, 'h-20 overflow-hidden rounded-md bg-background p-2 text-foreground')} aria-hidden='true'>
             <div className='flex gap-1.5'>
                 <div className='w-1/4 space-y-1 rounded-sm bg-muted p-1.5'>
                     <div className='h-1.5 rounded-full bg-primary' />
@@ -102,12 +102,12 @@ function AppearanceForm() {
                         <Label key={value} htmlFor={`theme-${value}`} className={optionCardClass}>
                             <RadioGroupItem id={`theme-${value}`} value={value} className='sr-only' />
                             {value === 'system' ? (
-                                <div className='grid grid-cols-2 overflow-hidden rounded-md' aria-hidden='true'>
+                                <div className='grid h-20 grid-cols-2 overflow-hidden rounded-md' aria-hidden='true'>
                                     <div className='light bg-background p-2'>
-                                        <div className='h-12 rounded-sm border bg-card' />
+                                        <div className='h-full rounded-sm border bg-card' />
                                     </div>
                                     <div className='dark bg-background p-2'>
-                                        <div className='h-12 rounded-sm border bg-card' />
+                                        <div className='h-full rounded-sm border bg-card' />
                                     </div>
                                 </div>
                             ) : (

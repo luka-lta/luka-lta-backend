@@ -9,6 +9,8 @@ const euro = (value: number) => `${value.toLocaleString("de-DE")} €`;
 interface QuickStatsProps {
     totalClicks: number | undefined;
     clicksMonthly: ClicksMonthlyTypeSchema[] | undefined;
+    /** Klick-Abfrage fehlgeschlagen: statt endlosem Skeleton einen Strich zeigen. */
+    clicksFailed?: boolean;
 }
 
 function monthOverMonthTrend(clicksMonthly: ClicksMonthlyTypeSchema[] | undefined): StatTrend | undefined {
@@ -30,17 +32,18 @@ function monthOverMonthTrend(clicksMonthly: ClicksMonthlyTypeSchema[] | undefine
 }
 
 /** Klicks sind echte Daten; Umsatz, MRR und Rechnungen stammen aus Demo-Daten und sind markiert. */
-export function QuickStats({ totalClicks, clicksMonthly }: QuickStatsProps) {
+export function QuickStats({ totalClicks, clicksMonthly, clicksFailed }: QuickStatsProps) {
     const appList = useAppList();
     const apps = appList.data;
     const trackspireApp = apps?.find((app) => app.category === "saas");
-    const trackspireMrr = apps ? (trackspireApp?.metrics?.mrr ?? 0) : undefined;
+    const trackspireMrr = apps ? (trackspireApp?.metrics?.mrr ?? 0) : appList.error ? "–" : undefined;
 
     return (
         <StatGrid>
             <StatCard
                 label="Klicks gesamt"
-                value={totalClicks}
+                value={clicksFailed ? "–" : totalClicks}
+                hint={clicksFailed ? "Nicht verfügbar" : undefined}
                 icon={MousePointerClick}
                 trend={monthOverMonthTrend(clicksMonthly)}
                 href="/dashboard/clicks"

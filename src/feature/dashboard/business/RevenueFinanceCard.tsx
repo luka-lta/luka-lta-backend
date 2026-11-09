@@ -38,7 +38,7 @@ export function RevenueFinanceCard() {
                 </div>
                 <Badge variant="warning">Demo</Badge>
             </CardHeader>
-            <CardContent className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+            <CardContent className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
                 <ChartContainer config={chartConfig} className="h-[260px] w-full">
                     <BarChart accessibilityLayer data={monthlyRevenue} margin={{ left: 4 }}>
                         <CartesianGrid vertical={false} />
