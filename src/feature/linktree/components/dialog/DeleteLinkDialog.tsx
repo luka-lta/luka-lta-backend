@@ -1,9 +1,8 @@
-import {toast} from "sonner";
-import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
-import {ConfirmDialog} from "@/components/confirm-dialog.tsx";
-import {AlertTriangle} from "lucide-react";
-import {LinkItemTypeSchema} from "@/feature/linktree/schema/LinktreeSchema.ts";
-import {useDeleteLink} from "@/api/linktree/hooks.ts";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog.tsx";
+import { LinkItemTypeSchema } from "@/feature/linktree/schema/LinktreeSchema.ts";
+import { useDeleteLink } from "@/api/linktree/hooks.ts";
+import { getApiErrorMessage } from "@/lib/apiError.ts";
 
 interface Props {
     open: boolean
@@ -12,7 +11,7 @@ interface Props {
     onDeleted?: () => void
 }
 
-function DeleteLinkDialog({open, onOpenChange, currentRow, onDeleted}: Props) {
+function DeleteLinkDialog({ open, onOpenChange, currentRow, onDeleted }: Props) {
     const deleteLink = useDeleteLink();
 
     const handleConfirm = () => {
@@ -20,12 +19,9 @@ function DeleteLinkDialog({open, onOpenChange, currentRow, onDeleted}: Props) {
             onSuccess: () => {
                 onOpenChange(false);
                 onDeleted?.();
-                toast.success('Link deleted successfully!');
+                toast.success('Link gelöscht');
             },
-            onError: (error) => {
-                toast.error(error.message);
-                console.error(error);
-            },
+            onError: (error) => toast.error(getApiErrorMessage(error)),
         });
     };
 
@@ -33,38 +29,17 @@ function DeleteLinkDialog({open, onOpenChange, currentRow, onDeleted}: Props) {
         <ConfirmDialog
             open={open}
             onOpenChange={onOpenChange}
-            handleConfirm={handleConfirm}
-            title={
-                <span className='text-destructive'>
-                  <AlertTriangle
-                      className='stroke-destructive mr-1 inline-block'
-                      size={18}
-                  />{' '}
-                    Delete Link
-                </span>
-            }
-            desc={
-                <div className='space-y-4'>
-                    <p className='mb-2'>
-                        Are you sure you want to delete{' '}
-                        <span className='font-bold'>{currentRow.displayname}</span>?
-                        <br/>
-                        This action will permanently remove the link. This cannot be undone.
-                    </p>
-
-                    <Alert variant='destructive'>
-                        <AlertTitle>Warning!</AlertTitle>
-                        <AlertDescription>
-                            Please be carefull, this operation can not be rolled back.
-                        </AlertDescription>
-                    </Alert>
-                </div>
-            }
-            confirmText={
-                deleteLink.isPending ? 'Deleting...' : 'Delete'
-            }
+            onConfirm={handleConfirm}
             isLoading={deleteLink.isPending}
             destructive
+            title="Link löschen?"
+            description={
+                <>
+                    <span className="font-medium text-foreground">{currentRow.displayname}</span> und seine Klick-Historie
+                    werden dauerhaft entfernt. Das kann nicht rückgängig gemacht werden.
+                </>
+            }
+            confirmLabel="Löschen"
         />
     );
 }

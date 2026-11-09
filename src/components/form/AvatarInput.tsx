@@ -1,70 +1,58 @@
-import {FieldPath, FieldValues, UseFormReturn} from "react-hook-form";
-import {useState} from "react";
-import {Label} from "@/components/ui/label.tsx";
-import {cn} from "@/lib/utils.ts";
-import {Input} from "@/components/ui/input.tsx";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
+import { FieldPath, FieldValues, UseFormReturn } from "react-hook-form";
+import { useState } from "react";
+import { Label } from "@/components/ui/label.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { UserAvatar } from "@/components/data/user-avatar.tsx";
 
 type AvatarInputProps<TFieldValues extends FieldValues> = {
     name: FieldPath<TFieldValues>
-    id: string,
-    label: string,
-    form: UseFormReturn<TFieldValues>,
-    avatarUrl?: string | null,
+    id: string
+    label: string
+    form: UseFormReturn<TFieldValues>
+    avatarUrl?: string | null
+    fallbackName?: string
 }
 
-export const AvatarInput = <TFieldValues extends FieldValues>({
-                                                                form,
-                                                                name,
-                                                                label,
-                                                                id,
-                                                                avatarUrl
-                                                            }: AvatarInputProps<TFieldValues>) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const {register, getFieldState, formState: {errors: _ } } = form;
-    const {error} = getFieldState(name);
-    const [avatar, setAvatar] = useState<string | null>(avatarUrl ?? null);
+/**
+ * Datei-Feld für Profilbilder mit Vorschau. Die Datei wird über das native
+ * <input name> per FormData übertragen.
+ */
+export const AvatarInput = <TFieldValues extends FieldValues>({ form, name, label, id, avatarUrl, fallbackName }: AvatarInputProps<TFieldValues>) => {
+    const { error } = form.getFieldState(name, form.formState);
+    const [preview, setPreview] = useState<string | null>(null);
+    const field = form.register(name);
 
-    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]; // Erste Datei aus der Datei-Liste
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                setAvatar(reader.result as string); // Setze die Data-URL als Avatar
-            };
-            reader.readAsDataURL(file); // Lies die Datei als Data-URL
-
-            // @ts-ignore
-            form.setValue('avatarUrl', e.target.files!, { shouldDirty: true})
-        }
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        void field.onChange(e);
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => setPreview(typeof reader.result === 'string' ? reader.result : null);
+        reader.readAsDataURL(file);
     };
 
     return (
-        <div className="flex flex-col items-start gap-2">
-            <Label
-                htmlFor={id}
-                className={cn('text-right', {'text-red-500': error})}
-            >
-                {label}
+        <div className="space-y-2">
+            <Label htmlFor={id} className={error ? 'text-destructive' : undefined}>
+                {label} <span className="font-normal text-muted-foreground">(optional)</span>
             </Label>
-
-            <Avatar>
-                {avatar ? (
-                    <AvatarImage src={avatar} alt="Avatar"/>
+            <div className="flex items-center gap-3">
+                {preview ? (
+                    <img src={preview} alt="" className="size-12 rounded-lg object-cover" />
                 ) : (
-                    <AvatarFallback>?</AvatarFallback>
+                    <UserAvatar name={fallbackName} avatarUrl={avatarUrl} size="md" className="size-12" />
                 )}
-            </Avatar>
-
-            <Input
-                {...register(name)}
-                id={id}
-                type={'file'}
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className={cn('col-span-3', {'border-red-500': error})}
-            />
-            {error && <span className="text-red-500 col-span-3">{error.message}</span>}
+                <Input
+                    {...field}
+                    id={id}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleChange}
+                    aria-invalid={error ? true : undefined}
+                    className="cursor-pointer file:mr-3 file:cursor-pointer"
+                />
+            </div>
+            {error && <p className="text-xs font-medium text-destructive">{error.message}</p>}
         </div>
     );
 }
