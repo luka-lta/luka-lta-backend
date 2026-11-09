@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card.tsx";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import {
     type ChartConfig,
     ChartContainer,
@@ -9,64 +9,70 @@ import {
 } from "@/components/ui/chart.tsx";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Badge } from "@/components/ui/badge.tsx";
-import { chartColor } from "@/feature/dashboard/chartColor.ts";
 import { monthlyRevenue, openInvoices } from "@/feature/dashboard/business/demoData.ts";
+import { DateTime } from "luxon";
 
 const chartConfig: ChartConfig = {
-    clientProjects: { label: "Kundenprojekte", color: chartColor[0] },
-    appStore: { label: "App Store", color: chartColor[6] },
-    trackspire: { label: "Trackspire", color: chartColor[2] },
+    clientProjects: { label: "Kundenprojekte", color: "hsl(var(--chart-1))" },
+    appStore: { label: "App Store", color: "hsl(var(--chart-2))" },
+    trackspire: { label: "Trackspire", color: "hsl(var(--chart-3))" },
 };
 
-function formatEuro(value: number): string {
-    return `${value.toLocaleString("de-DE")} €`;
-}
+const euro = (value: number) => `${value.toLocaleString("de-DE")} €`;
 
-function formatDueDate(dueDate: string): string {
-    return new Date(dueDate).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+function dueLabel(dueDate: string): { text: string; overdue: boolean } {
+    const due = DateTime.fromISO(dueDate).startOf("day");
+    const days = Math.round(due.diff(DateTime.now().startOf("day"), "days").days);
+    if (days < 0) return { text: `${Math.abs(days)} T überfällig`, overdue: true };
+    if (days === 0) return { text: "heute fällig", overdue: false };
+    return { text: `fällig ${due.toFormat("dd.MM.")}`, overdue: false };
 }
 
 export function RevenueFinanceCard() {
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>Revenue & Finance</CardTitle>
-                <CardDescription>Umsatz nach Quelle, letzte 6 Monate (Demo-Daten)</CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+                <div className="space-y-1">
+                    <CardTitle>Umsatz nach Quelle</CardTitle>
+                    <CardDescription>Letzte 6 Monate</CardDescription>
+                </div>
+                <Badge variant="warning">Demo</Badge>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
                 <ChartContainer config={chartConfig} className="h-[260px] w-full">
-                    <BarChart accessibilityLayer data={monthlyRevenue}>
+                    <BarChart accessibilityLayer data={monthlyRevenue} margin={{ left: 4 }}>
                         <CartesianGrid vertical={false} />
                         <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
-                        <YAxis
-                            stroke="#888888"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            tickFormatter={(value) => `${value}€`}
-                        />
+                        <YAxis width={52} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value: number) => euro(value)} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <ChartLegend content={<ChartLegendContent />} />
-                        <Bar dataKey="clientProjects" stackId="a" fill={chartColor[0]} />
-                        <Bar dataKey="appStore" stackId="a" fill={chartColor[6]} />
-                        <Bar dataKey="trackspire" stackId="a" fill={chartColor[2]} radius={4} />
+                        <Bar dataKey="clientProjects" stackId="a" fill="var(--color-clientProjects)" />
+                        <Bar dataKey="appStore" stackId="a" fill="var(--color-appStore)" />
+                        <Bar dataKey="trackspire" stackId="a" fill="var(--color-trackspire)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                 </ChartContainer>
 
-                <div>
-                    <h3 className="text-sm font-medium mb-2">Offene Rechnungen</h3>
-                    <ul className="space-y-2">
-                        {openInvoices.map((invoice) => (
-                            <li key={invoice.id} className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">{invoice.client}</span>
-                                <div className="flex items-center gap-2">
-                                    <Badge variant="outline">fällig {formatDueDate(invoice.dueDate)}</Badge>
-                                    <span className="font-medium tabular-nums">{formatEuro(invoice.amount)}</span>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <section aria-labelledby="open-invoices" className="space-y-3 lg:border-l lg:pl-6">
+                    <h3 id="open-invoices" className="text-sm font-semibold">Offene Rechnungen</h3>
+                    {openInvoices.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">Keine offenen Rechnungen.</p>
+                    ) : (
+                        <ul className="divide-y text-sm">
+                            {openInvoices.map((invoice) => {
+                                const due = dueLabel(invoice.dueDate);
+                                return (
+                                    <li key={invoice.id} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                                        <div className="min-w-0">
+                                            <p className="truncate font-medium">{invoice.client}</p>
+                                            <p className={due.overdue ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>{due.text}</p>
+                                        </div>
+                                        <span className="font-semibold tabular-nums">{euro(invoice.amount)}</span>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </section>
             </CardContent>
         </Card>
     );

@@ -1,10 +1,11 @@
-import { KpiCard } from "@/components/KpiCard.tsx";
-import { Wallet, TrendingUp, Smartphone, FileWarning } from "lucide-react";
+import { FileWarning, Smartphone, TrendingUp, Wallet } from "lucide-react";
+import { StatCard, StatGrid } from "@/components/data/stat-card.tsx";
 import { useAppList } from "@/api/apps/hooks.ts";
-import { totalRevenueThisMonth, totalOpenInvoiceAmount } from "@/feature/dashboard/business/demoData.ts";
+import { openInvoices, totalOpenInvoiceAmount, totalRevenueThisMonth } from "@/feature/dashboard/business/demoData.ts";
 
-const euroFormatter = (value: number) => `${value.toLocaleString("de-DE")} €`;
+const euro = (value: number) => `${value.toLocaleString("de-DE")} €`;
 
+/** Alle Werte stammen aus Demo-Daten bzw. der Mock-App-Registry und sind entsprechend markiert. */
 export function BusinessKpis() {
     const appList = useAppList();
     const apps = appList.data;
@@ -12,44 +13,23 @@ export function BusinessKpis() {
     const appStoreRevenue = apps
         ? apps.filter((app) => app.category === "app-store").reduce((sum, app) => sum + (app.metrics?.revenue ?? 0), 0)
         : undefined;
-
     const trackspireApp = apps?.find((app) => app.category === "saas");
     const trackspireMrr = apps ? (trackspireApp?.metrics?.mrr ?? 0) : undefined;
 
     return (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <KpiCard
-                title="Umsatz diesen Monat"
-                value={totalRevenueThisMonth()}
-                valueFormatter={euroFormatter}
-                icon={Wallet}
-                iconBg="bg-emerald-100 dark:bg-emerald-500/10"
-                iconColor="text-emerald-600 dark:text-emerald-400"
-            />
-            <KpiCard
-                title="Trackspire MRR"
-                value={trackspireMrr}
-                valueFormatter={euroFormatter}
-                icon={TrendingUp}
-                iconBg="bg-violet-100 dark:bg-violet-500/10"
-                iconColor="text-violet-600 dark:text-violet-400"
-            />
-            <KpiCard
-                title="App Store Revenue"
-                value={appStoreRevenue}
-                valueFormatter={euroFormatter}
-                icon={Smartphone}
-                iconBg="bg-sky-100 dark:bg-sky-500/10"
-                iconColor="text-sky-600 dark:text-sky-400"
-            />
-            <KpiCard
-                title="Offene Rechnungen"
+        <StatGrid>
+            <StatCard label="Umsatz diesen Monat" value={totalRevenueThisMonth()} format={euro} icon={Wallet} demo />
+            <StatCard label="Trackspire MRR" value={trackspireMrr} format={euro} icon={TrendingUp} href="/dashboard/apps" demo />
+            <StatCard label="App-Store-Umsatz" value={appStoreRevenue} format={euro} icon={Smartphone} href="/dashboard/apps" demo />
+            <StatCard
+                label="Offene Rechnungen"
                 value={totalOpenInvoiceAmount()}
-                valueFormatter={euroFormatter}
+                format={euro}
                 icon={FileWarning}
-                iconBg="bg-amber-100 dark:bg-amber-500/10"
-                iconColor="text-amber-600 dark:text-amber-400"
+                hint={`${openInvoices.length} ${openInvoices.length === 1 ? "Rechnung" : "Rechnungen"}`}
+                tone={openInvoices.length > 0 ? "warning" : "default"}
+                demo
             />
-        </div>
+        </StatGrid>
     );
 }
