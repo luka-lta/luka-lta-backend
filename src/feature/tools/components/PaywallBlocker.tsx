@@ -1,137 +1,93 @@
-"use client"
+import { type FormEvent, useState } from "react";
+import { ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { CopyButton } from "@/components/CopyButton.tsx";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button.tsx"
-import { Input } from "@/components/ui/input.tsx"
-import { Label } from "@/components/ui/label.tsx"
-import { Copy, ExternalLink } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert.tsx"
-import { Card, CardContent } from "@/components/ui/card.tsx"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx"
+const SERVICE = "https://www.removepaywall.com/search?url=";
+const BOOKMARKLET = `javascript:(function(){window.location.href='${SERVICE}'+window.location.href})();`;
 
 export function PaywallBlocker() {
-    const [url, setUrl] = useState("")
-    const [bypassUrl, setBypassUrl] = useState("")
-    const [copied, setCopied] = useState(false)
-    const [error, setError] = useState("")
+    const [url, setUrl] = useState("");
+    const [bypassUrl, setBypassUrl] = useState("");
+    const [error, setError] = useState("");
 
-    const bypassPaywall = () => {
-        setError("")
-        setBypassUrl("")
-        setCopied(false)
-
-        if (!url) {
-            setError("Please enter a URL")
-            return
-        }
+    function bypassPaywall(event: FormEvent) {
+        event.preventDefault();
+        setError("");
+        setBypassUrl("");
 
         try {
-            const parsedUrl = new URL(url)
-            setBypassUrl(`https://www.removepaywall.com/search?url=${parsedUrl}`)
-        } catch (e) {
-            setError("Please enter a valid URL including http:// or https://")
-            console.log(e)
+            const parsedUrl = new URL(url);
+            setBypassUrl(`${SERVICE}${parsedUrl}`);
+        } catch {
+            setError("Bitte eine vollständige URL mit http:// oder https:// eingeben.");
         }
     }
-
-    const copyToClipboard = async (text: string) => {
-        try {
-            await navigator.clipboard.writeText(text)
-            setCopied(true)
-            setTimeout(() => setCopied(false), 2000)
-        } catch (error) {
-            console.log(error)
-            setError("Failed to copy to clipboard")
-        }
-    }
-
-    const bookmarkletCode = `javascript:(function(){window.location.href='https://www.removepaywall.com/search?url='+window.location.href})();`
 
     return (
-        <div className="space-y-6">
-            <Tabs defaultValue="url" className="w-full">
-                <TabsList className="grid grid-cols-2 mb-4">
-                    <TabsTrigger value="url">URL Method</TabsTrigger>
-                    <TabsTrigger value="bookmarklet">Bookmarklet</TabsTrigger>
-                </TabsList>
+        <Tabs defaultValue="url" className="space-y-4">
+            <TabsList>
+                <TabsTrigger value="url">Per URL</TabsTrigger>
+                <TabsTrigger value="bookmarklet">Lesezeichen</TabsTrigger>
+            </TabsList>
 
-                <TabsContent value="url" className="space-y-4">
+            <TabsContent value="url" className="mt-0">
+                <form onSubmit={bypassPaywall} className="space-y-4" noValidate>
                     <div className="space-y-2">
-                        <Label htmlFor="paywall-url">Enter a paywalled article URL</Label>
-                        <Input
-                            id="paywall-url"
-                            placeholder="https://example.com/paywalled-article"
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                        />
+                        <Label htmlFor="paywall-url" className={error ? "text-destructive" : undefined}>Artikel-URL</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                id="paywall-url"
+                                type="url"
+                                placeholder="https://…"
+                                value={url}
+                                aria-invalid={!!error}
+                                aria-describedby={error ? "paywall-url-error" : undefined}
+                                onChange={(e) => {
+                                    setUrl(e.target.value);
+                                    setError("");
+                                }}
+                            />
+                            <Button type="submit" disabled={!url}>Umgehen</Button>
+                        </div>
+                        {error && <p id="paywall-url-error" className="text-sm text-destructive">{error}</p>}
                     </div>
-
-                    <Button onClick={bypassPaywall} className="w-full" disabled={!url}>
-                        Bypass Paywall
-                    </Button>
-
-                    {error && (
-                        <Alert variant="destructive">
-                            <AlertDescription>{error}</AlertDescription>
-                        </Alert>
-                    )}
 
                     {bypassUrl && (
-                        <div className="space-y-2 pt-2">
-                            <Label htmlFor="bypass-url">Bypassed URL</Label>
-                            <div className="flex gap-2">
-                                <Input id="bypass-url" value={bypassUrl} readOnly className="font-medium" />
-                                <Button onClick={() => copyToClipboard(bypassUrl)} variant="secondary" size="icon">
-                                    <Copy className="h-4 w-4" />
-                                </Button>
-                                <Button onClick={() => window.open(bypassUrl, "_blank")} variant="outline" size="icon">
-                                    <ExternalLink className="h-4 w-4" />
+                        <div className="space-y-2">
+                            <Label htmlFor="bypass-url">Freier Link</Label>
+                            <div className="flex items-center gap-2">
+                                <Input id="bypass-url" value={bypassUrl} readOnly className="font-mono text-xs" />
+                                <CopyButton value={bypassUrl} />
+                                <Button variant="outline" size="icon" asChild>
+                                    <a href={bypassUrl} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink />
+                                        <span className="sr-only">In neuem Tab öffnen</span>
+                                    </a>
                                 </Button>
                             </div>
-                            {copied && <p className="text-sm text-green-600 dark:text-green-400">Copied to clipboard!</p>}
                         </div>
                     )}
-                </TabsContent>
+                </form>
+            </TabsContent>
 
-                <TabsContent value="bookmarklet" className="space-y-4">
-                    <Alert>
-                        <AlertDescription>
-                            Drag the button below to your bookmarks bar. When you're on a paywalled site, click the bookmark to bypass
-                            it.
-                        </AlertDescription>
-                    </Alert>
-
-                    <div className="flex justify-center py-4">
-                        <Button variant="outline" className="cursor-grab" draggable onClick={(e) => e.preventDefault()}>
-                            🔓 Bypass Paywall
-                        </Button>
+            <TabsContent value="bookmarklet" className="mt-0 space-y-4">
+                <ol className="list-inside list-decimal space-y-1.5 text-sm text-muted-foreground">
+                    <li>Code unten kopieren.</li>
+                    <li>Neues Lesezeichen anlegen und den Code als URL einfügen.</li>
+                    <li>Auf einem Artikel mit Paywall das Lesezeichen anklicken.</li>
+                </ol>
+                <div className="space-y-2">
+                    <Label htmlFor="bookmarklet-code">Lesezeichen-Code</Label>
+                    <div className="flex items-center gap-2">
+                        <Input id="bookmarklet-code" value={BOOKMARKLET} readOnly className="font-mono text-xs" />
+                        <CopyButton value={BOOKMARKLET} />
                     </div>
-
-                    <Card>
-                        <CardContent className="pt-6">
-                            <h3 className="font-medium mb-2">Instructions:</h3>
-                            <ol className="list-decimal list-inside space-y-2 text-sm">
-                                <li>Drag the button above to your bookmarks bar</li>
-                                <li>Navigate to a paywalled article</li>
-                                <li>Click the "Bypass Paywall" bookmark</li>
-                                <li>Wait for the archive.is version to load</li>
-                            </ol>
-                        </CardContent>
-                    </Card>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="bookmarklet-code">Bookmarklet Code</Label>
-                        <div className="flex gap-2">
-                            <Input id="bookmarklet-code" value={bookmarkletCode} readOnly className="font-mono text-xs" />
-                            <Button onClick={() => copyToClipboard(bookmarkletCode)} variant="secondary" size="icon">
-                                <Copy className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        {copied && <p className="text-sm text-green-600 dark:text-green-400">Copied to clipboard!</p>}
-                    </div>
-                </TabsContent>
-            </Tabs>
-        </div>
-    )
+                </div>
+            </TabsContent>
+        </Tabs>
+    );
 }
-

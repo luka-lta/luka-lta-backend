@@ -1,33 +1,18 @@
-import {useEffect, useState} from "react";
-import {
-    createColumnHelper,
-    flexRender,
-    getCoreRowModel,
-    type SortingState,
-    useReactTable,
-} from "@tanstack/react-table";
-import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
-import {useQueryClient} from "@tanstack/react-query";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import {SortableHead} from "@/components/SortableHead.tsx";
-import {TableSkeleton, SkeletonCell} from "@/components/TableSkeleton.tsx";
-import {Pagination} from "@/components/Pagination.tsx";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
-import {splitAvatarUrl} from "@/lib/utils.ts";
-import {TimeCell} from "@/components/TimeCell.tsx";
-import {Status, StatusIndicator, StatusLabel} from "@/components/ui/kibo-ui/status/index.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {Input} from "@/components/ui/input.tsx";
-import {EllipsisVertical, FilterX, Pencil, Plus, Search, Trash} from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu.tsx";
-import {Empty, EmptyMedia, EmptyTitle} from "@/components/ui/empty.tsx";
-import {useUsers} from "@/feature/user/context/users-context.tsx";
-import {RefreshButton} from "@/components/refresh-button.tsx";
+import { useEffect, useState } from "react";
+import { createColumnHelper, getCoreRowModel, type SortingState, useReactTable } from "@tanstack/react-table";
+import { Pencil, Search, Trash2 } from "lucide-react";
+import { UserTypeSchema } from "@/feature/user/schema/UserSchema.ts";
+import { TimeCell } from "@/components/TimeCell.tsx";
+import { useUsers } from "@/feature/user/context/users-context.tsx";
+import { DataTable } from "@/components/data/data-table.tsx";
+import { TablePagination } from "@/components/data/table-pagination.tsx";
+import { SearchInput } from "@/components/data/search-input.tsx";
+import { RowActions } from "@/components/data/row-actions.tsx";
+import { UserAvatar } from "@/components/data/user-avatar.tsx";
+import { StatusBadge } from "@/components/feedback/status-badge.tsx";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
+import { PageToolbar } from "@/components/layout/page.tsx";
+import { useDebouncedValue } from "@/hooks/use-debounced-value.ts";
 
 const PAGE_SIZE = 20;
 const col = createColumnHelper<UserTypeSchema>();
@@ -39,22 +24,14 @@ interface UserTableProps {
     setFilterData: (filterData: Record<string, string>) => void;
 }
 
-function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
-    const queryClient = useQueryClient();
-    const {setOpen, setCurrentRow} = useUsers();
-
+function UserTable({ users, maxPages, loading, setFilterData }: UserTableProps) {
+    const { setOpen, setCurrentRow } = useUsers();
     const [page, setPage] = useState(1);
-    const [searchInput, setSearchInput] = useState("");
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [search, setSearch] = useState("");
+    const debouncedSearch = useDebouncedValue(search);
     const [sorting, setSorting] = useState<SortingState>([]);
 
-    useEffect(() => {
-        const t = setTimeout(() => {
-            setDebouncedSearch(searchInput);
-            setPage(1);
-        }, 400);
-        return () => clearTimeout(t);
-    }, [searchInput]);
+    useEffect(() => setPage(1), [debouncedSearch]);
 
     useEffect(() => {
         setFilterData({
@@ -67,85 +44,71 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, debouncedSearch, sorting]);
 
+    function open(kind: 'info' | 'edit' | 'delete', user: UserTypeSchema) {
+        setCurrentRow(user);
+        setOpen(kind);
+    }
+
     const columns = [
-        col.display({
-            id: 'avatar',
-            header: 'Avatar',
-            enableSorting: false,
-            cell: ({row}) => (
-                <Avatar>
-                    <AvatarImage src={splitAvatarUrl(row.original.avatarUrl)} alt={row.original.email}/>
-                    <AvatarFallback>{row.original.email[0]}</AvatarFallback>
-                </Avatar>
+        col.accessor('username', {
+            header: 'Benutzer',
+            enableSorting: true,
+            meta: { skeletonClassName: 'w-40' },
+            cell: ({ row }) => (
+                <div className="flex items-center gap-3">
+                    <UserAvatar name={row.original.username} email={row.original.email} avatarUrl={row.original.avatarUrl} />
+                    <div className="min-w-0">
+                        <p className="truncate font-medium">{row.original.username}</p>
+                        <p className="truncate text-xs text-muted-foreground md:hidden">{row.original.email}</p>
+                    </div>
+                </div>
             ),
         }),
-        col.accessor('username', {
-            header: 'Username',
-            enableSorting: true,
-        }),
         col.accessor('email', {
-            header: 'Email',
+            header: 'E-Mail',
             enableSorting: true,
+            meta: { className: 'hidden md:table-cell', skeletonClassName: 'w-48' },
+            cell: ({ getValue }) => <span className="text-muted-foreground">{getValue()}</span>,
         }),
         col.accessor('isActive', {
             id: 'is_active',
             header: 'Status',
             enableSorting: true,
-            cell: ({getValue}) => (
-                <Status status={getValue() ? "online" : "offline"}>
-                    <StatusIndicator/>
-                    <StatusLabel>{getValue() ? "Active" : "Inactive"}</StatusLabel>
-                </Status>
+            cell: ({ getValue }) => (
+                <StatusBadge tone={getValue() ? 'success' : 'neutral'}>{getValue() ? 'Aktiv' : 'Inaktiv'}</StatusBadge>
             ),
         }),
         col.accessor('lastActive', {
             id: 'last_active',
-            header: 'Last active',
+            header: 'Zuletzt aktiv',
             enableSorting: true,
-            cell: ({getValue}) => {
+            meta: { className: 'hidden lg:table-cell' },
+            cell: ({ getValue }) => {
                 const v = getValue();
-                return v ? <TimeCell iso={v.toString()}/> : <span className="text-muted-foreground">N/A</span>;
+                return v ? <TimeCell iso={v.toString()} /> : <span className="text-sm text-muted-foreground">—</span>;
             },
         }),
         col.display({
             id: 'actions',
-            header: '',
+            header: () => <span className="sr-only">Aktionen</span>,
             enableSorting: false,
-            cell: ({row}) => {
-                const user = row.original;
-                return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" onClick={(e) => e.stopPropagation()}><EllipsisVertical/></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onClick={(event) => {
-                                event.stopPropagation();
-                                setOpen('edit');
-                                setCurrentRow(user);
-                            }}>
-                                <Pencil/>
-                                Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(event) => {
-                                event.stopPropagation();
-                                setOpen('delete');
-                                setCurrentRow(user);
-                            }}>
-                                <Trash/>
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                );
-            },
+            meta: { className: 'w-12 text-right', skeletonClassName: 'w-6' },
+            cell: ({ row }) => (
+                <RowActions
+                    label={row.original.username}
+                    actions={[
+                        { label: 'Bearbeiten', icon: Pencil, onSelect: () => open('edit', row.original) },
+                        { label: 'Löschen', icon: Trash2, destructive: true, onSelect: () => open('delete', row.original) },
+                    ]}
+                />
+            ),
         }),
     ];
 
     const table = useReactTable({
         data: users,
         columns,
-        state: {sorting},
+        state: { sorting },
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         manualSorting: true,
@@ -154,103 +117,22 @@ function UserTable({users, maxPages, loading, setFilterData}: UserTableProps) {
     });
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
-                <div className="relative w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none"/>
-                    <Input
-                        placeholder="Search by email..."
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                        className="pl-8"
-                    />
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={() => setSearchInput("")}>
-                        <FilterX className="h-4 w-4"/>
-                        Clear
-                    </Button>
-                    <RefreshButton onRefresh={() => queryClient.invalidateQueries({queryKey: ['users', 'list']})}/>
-                    <Button onClick={() => setOpen('add')}>
-                        <Plus className="h-4 w-4"/>
-                        New
-                    </Button>
-                </div>
-            </div>
-
-            <div className="border rounded-lg">
-                {loading ? (
-                    <TableSkeleton>
-                        {() => (
-                            <>
-                                <SkeletonCell width="w-8"/>
-                                <SkeletonCell width="w-32"/>
-                                <SkeletonCell width="w-48"/>
-                                <SkeletonCell width="w-20"/>
-                                <SkeletonCell width="w-24"/>
-                            </>
-                        )}
-                    </TableSkeleton>
-                ) : (
-                    <Table>
-                        <TableHeader>
-                            {table.getHeaderGroups().map((hg) => (
-                                <TableRow key={hg.id}>
-                                    {hg.headers.map((header) =>
-                                        header.column.getCanSort() ? (
-                                            <SortableHead key={header.id} column={header.column}>
-                                                {flexRender(header.column.columnDef.header, header.getContext())}
-                                            </SortableHead>
-                                        ) : (
-                                            <TableHead key={header.id}>
-                                                {flexRender(header.column.columnDef.header, header.getContext())}
-                                            </TableHead>
-                                        )
-                                    )}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={table.getVisibleLeafColumns().length} className="p-0">
-                                        <Empty className="border-0 py-12">
-                                            <EmptyMedia variant="icon">
-                                                <Search/>
-                                            </EmptyMedia>
-                                            <EmptyTitle>No users found</EmptyTitle>
-                                        </Empty>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        className="cursor-pointer"
-                                        onClick={() => {
-                                            setOpen('info');
-                                            setCurrentRow(row.original);
-                                        }}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                )}
-            </div>
-
-            <Pagination
-                page={page}
-                totalPages={maxPages}
-                rowCount={users.length}
-                isLoading={loading}
-                onPageChange={setPage}
+        <div className="space-y-3">
+            <PageToolbar>
+                <SearchInput value={search} onChange={setSearch} placeholder="Nach E-Mail suchen…" />
+            </PageToolbar>
+            <DataTable
+                table={table}
+                loading={loading}
+                onRowClick={(row) => open('info', row.original)}
+                empty={
+                    debouncedSearch ? (
+                        <EmptyState variant="plain" icon={Search} title="Keine Treffer" description={`Kein Benutzer passt zu „${debouncedSearch}“.`} />
+                    ) : (
+                        <EmptyState variant="plain" title="Noch keine Benutzer" />
+                    )
+                }
+                footer={<TablePagination page={page} totalPages={maxPages} rowCount={users.length} isLoading={loading} onPageChange={setPage} />}
             />
         </div>
     );

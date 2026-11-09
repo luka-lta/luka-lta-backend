@@ -1,8 +1,8 @@
-import {toast} from "sonner";
-import {ConfirmDialog} from "@/components/confirm-dialog.tsx";
-import {PowerOff} from "lucide-react";
-import {LinkItemTypeSchema} from "@/feature/linktree/schema/LinktreeSchema.ts";
-import {useDeactivateLink} from "@/api/linktree/hooks.ts";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog.tsx";
+import { LinkItemTypeSchema } from "@/feature/linktree/schema/LinktreeSchema.ts";
+import { useDeactivateLink } from "@/api/linktree/hooks.ts";
+import { getApiErrorMessage } from "@/lib/apiError.ts";
 
 interface Props {
     open: boolean
@@ -10,19 +10,16 @@ interface Props {
     currentRow: LinkItemTypeSchema
 }
 
-function DeactivateLinkDialog({open, onOpenChange, currentRow}: Props) {
+function DeactivateLinkDialog({ open, onOpenChange, currentRow }: Props) {
     const deactivateLink = useDeactivateLink();
 
     const handleConfirm = () => {
         deactivateLink.mutate(currentRow.id, {
             onSuccess: () => {
                 onOpenChange(false);
-                toast.success('Link deactivated successfully!');
+                toast.success('Link deaktiviert');
             },
-            onError: (error) => {
-                toast.error(error.message);
-                console.error(error);
-            },
+            onError: (error) => toast.error(getApiErrorMessage(error)),
         });
     };
 
@@ -30,25 +27,16 @@ function DeactivateLinkDialog({open, onOpenChange, currentRow}: Props) {
         <ConfirmDialog
             open={open}
             onOpenChange={onOpenChange}
-            handleConfirm={handleConfirm}
-            title={
-                <span className='flex items-center gap-1'>
-                    <PowerOff className='inline-block' size={18}/>
-                    Deactivate Link
-                </span>
-            }
-            desc={
-                <p>
-                    Are you sure you want to deactivate{' '}
-                    <span className='font-bold'>{currentRow.displayname}</span>?
-                    <br/>
-                    The link will stop redirecting visitors, but stays visible here. This cannot be undone.
-                </p>
-            }
-            confirmText={
-                deactivateLink.isPending ? 'Deactivating...' : 'Deactivate'
-            }
+            onConfirm={handleConfirm}
             isLoading={deactivateLink.isPending}
+            title="Link deaktivieren?"
+            description={
+                <>
+                    <span className="font-medium text-foreground">{currentRow.displayname}</span> leitet Besucher dann
+                    nicht mehr weiter. Du kannst ihn jederzeit wieder aktivieren.
+                </>
+            }
+            confirmLabel="Deaktivieren"
         />
     );
 }

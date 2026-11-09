@@ -9,9 +9,9 @@ interface NotificationItemProps {
 }
 
 const SEVERITY_CONFIG: Record<Notification["severity"], { icon: typeof CircleAlert; className: string }> = {
-    critical: { icon: OctagonAlert, className: "text-rose-500 bg-rose-500/10" },
-    warning: { icon: CircleAlert, className: "text-amber-500 bg-amber-500/10" },
-    info: { icon: Info, className: "text-sky-500 bg-sky-500/10" },
+    critical: { icon: OctagonAlert, className: "bg-destructive/10 text-destructive" },
+    warning: { icon: CircleAlert, className: "bg-warning/10 text-warning" },
+    info: { icon: Info, className: "bg-info/10 text-info" },
 };
 
 export function NotificationItem({ notification, onRead }: NotificationItemProps) {
@@ -23,12 +23,12 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
             type="button"
             onClick={() => !notification.isRead && onRead(notification.id)}
             className={cn(
-                "flex w-full items-start gap-3 rounded-md p-2 text-left transition-colors hover:bg-muted/50",
-                !notification.isRead && "bg-muted/30",
+                "flex w-full items-start gap-3 rounded-lg p-2 text-left transition-colors duration-fast hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                !notification.isRead && "bg-primary/5",
             )}
         >
-            <div className={cn("rounded-md p-1.5 shrink-0", config.className)}>
-                <Icon className="h-4 w-4" />
+            <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", config.className)}>
+                <Icon className="size-4" aria-hidden />
             </div>
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">{notification.title}</p>
@@ -37,10 +37,15 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
                 )}
                 <p className="text-xs text-muted-foreground mt-0.5">
                     {notification.source} · {formatRel(notification.lastOccurredAt)}
-                    {notification.occurrenceCount > 1 && ` · ${notification.occurrenceCount}x`}
+                    {notification.occurrenceCount > 1 && ` · ${notification.occurrenceCount}×`}
                 </p>
             </div>
-            {!notification.isRead && <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />}
+            {!notification.isRead && (
+                <>
+                    <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden />
+                    <span className="sr-only">Ungelesen – zum Markieren als gelesen anklicken</span>
+                </>
+            )}
         </button>
     );
 }

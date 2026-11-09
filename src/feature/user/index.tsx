@@ -1,48 +1,49 @@
-import {useUserList} from "@/api/user/hooks.ts";
+import { useCreateIntent } from "@/hooks/useCreateIntent";
+import { Plus } from "lucide-react";
+import { useUserList } from "@/api/user/hooks.ts";
 import UserTable from "@/feature/user/components/UserTable.tsx";
-import {Main} from "@/components/layout/main.tsx";
-import UsersProvider from "@/feature/user/context/users-context.tsx";
+import UsersProvider, { useUsers } from "@/feature/user/context/users-context.tsx";
 import UserDialogs from "@/feature/user/components/UserDialogs.tsx";
-import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
-import {ErrorState} from "@/components/error-state.tsx";
+import { PageContainer, PageHeader } from "@/components/layout/page.tsx";
+import { ErrorState } from "@/components/feedback/error-state.tsx";
+import { Button } from "@/components/ui/button.tsx";
 
-function Users() {
+function UsersContent() {
     const [userList, setFilterData] = useUserList();
-    useSetPageTitle('Backend - User Overview');
-
-    if (userList.error) {
-        return (
-            <div className='p-6'>
-                <h2 className='text-2xl font-bold tracking-tight mb-4'>User List</h2>
-                <ErrorState
-                    title="Failed to load users"
-                    message={userList.error.message}
-                    refetch={userList.refetch}
-                />
-            </div>
-        )
-    }
+    const { setOpen } = useUsers();
+    useCreateIntent(() => setOpen('add'));
 
     return (
-        <UsersProvider>
-            <Main>
-                <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
-                    <div>
-                        <h2 className='text-2xl font-bold tracking-tight'>User List</h2>
-                        <p className='text-muted-foreground'>
-                            Manage your users and their roles here.
-                        </p>
-                    </div>
-                </div>
+        <PageContainer title="Benutzer">
+            <PageHeader
+                title="Benutzer"
+                description="Zugänge zum Admin-Bereich verwalten."
+                actions={
+                    <Button onClick={() => setOpen('add')}>
+                        <Plus />
+                        Benutzer anlegen
+                    </Button>
+                }
+            />
 
+            {userList.error ? (
+                <ErrorState title="Benutzer konnten nicht geladen werden" error={userList.error} onRetry={() => userList.refetch()} />
+            ) : (
                 <UserTable
                     users={userList.data?.users ?? []}
                     maxPages={userList.data?.totalPages}
                     loading={userList.isPending}
                     setFilterData={setFilterData}
                 />
-            </Main>
+            )}
+        </PageContainer>
+    );
+}
 
+function Users() {
+    return (
+        <UsersProvider>
+            <UsersContent />
             <UserDialogs />
         </UsersProvider>
     );

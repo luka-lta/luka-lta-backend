@@ -1,4 +1,4 @@
-import {LucideIcon} from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
 interface BaseNavItem {
     title: string
@@ -19,12 +19,15 @@ type NavCollapsible = BaseNavItem & {
 type NavItem = NavCollapsible | NavLink
 
 interface NavGroup {
-    title: string
+    /** Ohne Titel wird die Gruppe ohne Überschrift dargestellt. */
+    title?: string
     items: NavItem[]
 }
 
 interface SidebarData {
     navGroups: NavGroup[]
+    /** Sekundäre Ziele (Profil-Menü & Befehlspalette), nicht in der Hauptnavigation. */
+    accountLinks: NavLink[]
 }
 
 export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink }

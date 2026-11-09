@@ -12,7 +12,7 @@ function UserDialogs() {
             <CreateUserDialog
                 key='user-add'
                 open={open === 'add'}
-                onOpenChange={() => setOpen('add')}
+                onOpenChange={(next) => setOpen(next ? 'add' : null)}
             />
 
             {currentRow && (

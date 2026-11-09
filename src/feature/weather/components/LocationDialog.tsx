@@ -1,15 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import { FormDialog } from "@/components/dialogs/form-dialog.tsx";
 import { toast } from "sonner";
 import { useUpdateWeatherLocation, useWeatherLocation } from "@/api/weather/hooks.ts";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
@@ -41,7 +33,7 @@ export function LocationDialog({ open, onOpenChange }: LocationDialogProps) {
             { city, latitude: Number(latitude), longitude: Number(longitude) },
             {
                 onSuccess: () => {
-                    toast.success("Standort aktualisiert.");
+                    toast.success("Standort gespeichert");
                     onOpenChange(false);
                 },
                 onError: (error) => toast.error(getApiErrorMessage(error)),
@@ -49,51 +41,54 @@ export function LocationDialog({ open, onOpenChange }: LocationDialogProps) {
         );
     }
 
+    const latValid = latitude !== "" && Number.isFinite(Number(latitude)) && Math.abs(Number(latitude)) <= 90;
+    const lonValid = longitude !== "" && Number.isFinite(Number(longitude)) && Math.abs(Number(longitude)) <= 180;
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-sm">
-                <DialogHeader>
-                    <DialogTitle>Standort</DialogTitle>
-                    <DialogDescription>Bestimmt, für welchen Ort die Wetterdaten geladen werden.</DialogDescription>
-                </DialogHeader>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-1.5">
-                        <Label htmlFor="weather-city">Stadt</Label>
-                        <Input id="weather-city" value={city} onChange={(e) => setCity(e.target.value)} required />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="weather-lat">Breitengrad</Label>
-                            <Input
-                                id="weather-lat"
-                                type="number"
-                                step="0.00001"
-                                value={latitude}
-                                onChange={(e) => setLatitude(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="weather-lon">Längengrad</Label>
-                            <Input
-                                id="weather-lon"
-                                type="number"
-                                step="0.00001"
-                                value={longitude}
-                                onChange={(e) => setLongitude(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <DialogFooter>
-                        <Button type="submit" disabled={updateLocation.isPending}>
-                            Speichern
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <FormDialog
+            open={open}
+            onOpenChange={onOpenChange}
+            size="sm"
+            title="Standort"
+            description="Für diesen Ort werden die Wetterdaten abgerufen."
+            onSubmit={handleSubmit}
+            submitLabel="Speichern"
+            isSubmitting={updateLocation.isPending}
+            submitDisabled={!city.trim() || !latValid || !lonValid}
+        >
+            <div className="space-y-2">
+                <Label htmlFor="weather-city">Stadt</Label>
+                <Input id="weather-city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="z. B. Berlin" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                    <Label htmlFor="weather-lat">Breitengrad</Label>
+                    <Input
+                        id="weather-lat"
+                        type="number"
+                        inputMode="decimal"
+                        step="0.00001"
+                        className="tabular-nums"
+                        aria-invalid={latitude !== "" && !latValid}
+                        value={latitude}
+                        onChange={(e) => setLatitude(e.target.value)}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="weather-lon">Längengrad</Label>
+                    <Input
+                        id="weather-lon"
+                        type="number"
+                        inputMode="decimal"
+                        step="0.00001"
+                        className="tabular-nums"
+                        aria-invalid={longitude !== "" && !lonValid}
+                        value={longitude}
+                        onChange={(e) => setLongitude(e.target.value)}
+                    />
+                </div>
+            </div>
+            <p className="text-xs text-muted-foreground">Koordinaten findest du z. B. per Rechtsklick in einer Kartenanwendung.</p>
+        </FormDialog>
     );
 }

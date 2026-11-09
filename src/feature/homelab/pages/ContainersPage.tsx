@@ -19,13 +19,13 @@ function ContainersPage() {
 
     return (
         <div className="space-y-6">
-            <Tabs defaultValue="list">
+            <Tabs defaultValue="list" className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="list">Containers</TabsTrigger>
+                    <TabsTrigger value="list">Liste</TabsTrigger>
                     <TabsTrigger value="ports">Ports</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="list" className="space-y-6 pt-4">
+                <TabsContent value="list" className="mt-0 space-y-6">
                     <ContainerTable
                         containers={containers}
                         hosts={hosts}
@@ -37,7 +37,7 @@ function ContainersPage() {
                     <ResourceCharts hosts={hosts} />
                 </TabsContent>
 
-                <TabsContent value="ports" className="pt-4">
+                <TabsContent value="ports" className="mt-0">
                     <PortsOverview containers={containers} hosts={hosts} />
                 </TabsContent>
             </Tabs>

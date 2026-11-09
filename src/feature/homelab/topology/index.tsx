@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
-import { ErrorState } from "@/components/error-state.tsx";
+import { ErrorState } from "@/components/feedback/error-state.tsx";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { PageToolbar } from "@/components/layout/page.tsx";
 import { Plus, Waypoints } from "lucide-react";
 import { useTopologyGraph } from "@/api/homelab/topologyHooks.ts";
 import { useContainer, useHosts } from "@/api/homelab/hooks.ts";
@@ -59,9 +62,9 @@ function InfrastructureMap() {
     if (topology.isError) {
         return (
             <ErrorState
-                title="Failed to load infrastructure map"
-                message={topology.error.message}
-                refetch={topology.refetch}
+                title="Topologie konnte nicht geladen werden"
+                error={topology.error}
+                onRetry={() => topology.refetch()}
             />
         );
     }
@@ -69,36 +72,39 @@ function InfrastructureMap() {
     const graph = topology.data ?? { nodes: [], edges: [] };
 
     return (
-        <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+            <PageToolbar
+                actions={
+                    <>
+                        <Button variant="outline" onClick={() => setCreateEdgeOpen(true)} disabled={graph.nodes.length < 2}>
+                            <Waypoints />
+                            Verbinden
+                        </Button>
+                        <Button variant="outline" onClick={() => setCreateNodeOpen(true)}>
+                            <Plus />
+                            Knoten
+                        </Button>
+                    </>
+                }
+            >
+                <TopologySearch value={searchQuery} onChange={setSearchQuery} />
                 <TopologyFilters
                     activeCategories={activeCategories}
                     onToggleCategory={toggleCategory}
                     problemsOnly={problemsOnly}
                     onToggleProblemsOnly={setProblemsOnly}
                 />
-                <div className="flex items-center gap-2">
-                    <TopologySearch value={searchQuery} onChange={setSearchQuery} />
-                    <Button variant="outline" size="sm" onClick={() => setCreateEdgeOpen(true)}>
-                        <Waypoints className="h-3.5 w-3.5" />
-                        Connect
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setCreateNodeOpen(true)}>
-                        <Plus className="h-3.5 w-3.5" />
-                        Add node
-                    </Button>
-                </div>
-            </div>
+            </PageToolbar>
 
             {topology.isPending ? (
-                <div className="flex h-[600px] items-center justify-center rounded-lg border text-sm text-muted-foreground">
-                    Loading infrastructure map…
-                </div>
+                <Skeleton className="h-[calc(100svh-19rem)] min-h-[28rem] w-full rounded-xl" aria-label="Wird geladen" />
             ) : graph.nodes.length === 0 ? (
-                <div className="flex h-[600px] flex-col items-center justify-center gap-2 rounded-lg border text-sm text-muted-foreground">
-                    <Waypoints className="h-8 w-8" />
-                    No infrastructure discovered yet.
-                </div>
+                <EmptyState
+                    icon={Waypoints}
+                    title="Noch keine Infrastruktur erkannt"
+                    description="Sobald Hosts und Container gemeldet werden, erscheinen sie hier. Externe Knoten kannst du manuell anlegen."
+                    action={<Button variant="outline" size="sm" onClick={() => setCreateNodeOpen(true)}>Knoten hinzufügen</Button>}
+                />
             ) : (
                 <TopologyMap
                     graph={graph}
@@ -108,7 +114,6 @@ function InfrastructureMap() {
                     onNodeClick={handleNodeClick}
                 />
             )}
-
             <NodeDetailSheet
                 node={selectedNode}
                 host={selectedHostForNode}

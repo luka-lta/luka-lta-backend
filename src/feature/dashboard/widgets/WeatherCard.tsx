@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { Empty, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty.tsx";
-import { CloudOff, Droplets, MapPin, Wind } from "lucide-react";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
+import { ChevronRight, CloudOff, Droplets, MapPin, Wind } from "lucide-react";
 import { useWeatherSummary } from "@/api/weather/hooks.ts";
 import { getWeatherIcon } from "@/feature/dashboard/widgets/weatherIcons.ts";
 
@@ -16,12 +16,13 @@ export function WeatherCard({ onOpenDetail }: WeatherCardProps) {
     return (
         <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                    {data?.location && <MapPin className="h-4 w-4 text-muted-foreground" />}
-                    Wetter{data?.location ? ` · ${data.location.city}` : ""}
+                <CardTitle className="flex items-center gap-2">
+                    <MapPin className="size-4 text-muted-foreground" aria-hidden />
+                    {data?.location ? data.location.city : "Wetter"}
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={onOpenDetail} disabled={!data?.current}>
-                    Details
+                <Button variant="ghost" size="sm" className="-mr-2 text-muted-foreground" onClick={onOpenDetail}>
+                    Vorhersage
+                    <ChevronRight />
                 </Button>
             </CardHeader>
             <CardContent>
@@ -33,29 +34,28 @@ export function WeatherCard({ onOpenDetail }: WeatherCardProps) {
                 )}
 
                 {isError && !isPending && (
-                    <Empty className="border-0 py-6">
-                        <EmptyMedia variant="icon">
-                            <CloudOff className="text-amber-500" />
-                        </EmptyMedia>
-                        <EmptyTitle>Wetter momentan nicht erreichbar</EmptyTitle>
-                        <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
-                            Erneut versuchen
-                        </Button>
-                    </Empty>
+                    <EmptyState
+                        variant="plain"
+                        className="py-6"
+                        icon={CloudOff}
+                        title="Wetter gerade nicht erreichbar"
+                        action={<Button variant="outline" size="sm" onClick={() => refetch()}>Erneut versuchen</Button>}
+                    />
                 )}
 
                 {!isPending && !isError && data?.status === "not_configured" && (
-                    <Empty className="border-0 py-6">
-                        <EmptyMedia variant="icon">
-                            <CloudOff />
-                        </EmptyMedia>
-                        <EmptyTitle>Kein Standort konfiguriert</EmptyTitle>
-                        <EmptyDescription>Der Standort kann in den Einstellungen festgelegt werden.</EmptyDescription>
-                    </Empty>
+                    <EmptyState
+                        variant="plain"
+                        className="py-6"
+                        icon={CloudOff}
+                        title="Kein Standort hinterlegt"
+                        description="Lege auf der Wetter-Seite fest, für welchen Ort Daten geladen werden."
+                        action={<Button variant="outline" size="sm" onClick={onOpenDetail}>Standort festlegen</Button>}
+                    />
                 )}
 
                 {!isPending && !isError && data?.status !== "not_configured" && data?.current === null && (
-                    <p className="text-sm text-muted-foreground py-6 text-center">Wetterdaten werden geladen…</p>
+                    <p className="py-6 text-center text-sm text-muted-foreground">Wetterdaten werden abgerufen…</p>
                 )}
 
                 {!isPending && !isError && data?.current && (
@@ -72,10 +72,10 @@ function WeatherCardBody({ current }: { current: NonNullable<NonNullable<ReturnT
     return (
         <div className="space-y-3">
             <div className="flex items-center gap-3">
-                <Icon className="h-10 w-10 text-amber-500 shrink-0" />
+                <Icon className="size-10 shrink-0 text-warning" aria-hidden />
                 <div>
-                    <p className="text-3xl font-bold tabular-nums leading-none">{Math.round(current.temperatureCelsius)}°C</p>
-                    <p className="text-sm text-muted-foreground">Gefühlt {Math.round(current.apparentTemperatureCelsius)}°C</p>
+                    <p className="text-3xl font-semibold tabular-nums leading-none">{Math.round(current.temperatureCelsius)} °C</p>
+                    <p className="text-sm text-muted-foreground">gefühlt {Math.round(current.apparentTemperatureCelsius)} °C</p>
                 </div>
             </div>
 
@@ -83,11 +83,13 @@ function WeatherCardBody({ current }: { current: NonNullable<NonNullable<ReturnT
 
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
-                    <Droplets className="h-3.5 w-3.5" />
-                    {current.humidityPercent}%
+                    <Droplets className="size-3.5" aria-hidden />
+                    <span className="sr-only">Luftfeuchte</span>
+                    {current.humidityPercent} %
                 </span>
                 <span className="flex items-center gap-1">
-                    <Wind className="h-3.5 w-3.5" />
+                    <Wind className="size-3.5" aria-hidden />
+                    <span className="sr-only">Wind</span>
                     {Math.round(current.windSpeedKmh)} km/h
                 </span>
             </div>

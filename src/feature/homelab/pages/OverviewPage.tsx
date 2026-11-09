@@ -19,7 +19,6 @@ function OverviewPage() {
             <SummaryKpis containers={containers} hosts={hosts} alerts={alerts} events={events} />
 
             <AlertsPanel alerts={alerts} />
-
             <ServiceGroups
                 containers={containers}
                 alerts={alerts}

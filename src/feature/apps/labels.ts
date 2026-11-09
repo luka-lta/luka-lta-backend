@@ -1,4 +1,5 @@
-import type { AppAnalyticsSourceType, AppCategory, AppStatus } from "@/api/apps/schema";
+import type { AppAnalyticsSourceType, AppCategory, AppEntity, AppStatus } from "@/api/apps/schema";
+import type { StatusTone } from "@/components/feedback/status-badge";
 
 export const CATEGORY_LABELS: Record<AppCategory, string> = {
     "app-store": "App Store",
@@ -16,12 +17,12 @@ export const STATUS_LABELS: Record<AppStatus, string> = {
     planned: "Geplant",
 };
 
-export const STATUS_BADGE_CLASS: Record<AppStatus, string> = {
-    active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-transparent",
-    inactive: "bg-muted text-muted-foreground border-transparent",
-    maintenance: "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-transparent",
-    archived: "bg-muted text-muted-foreground border-transparent",
-    planned: "bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 border-transparent",
+export const STATUS_TONE: Record<AppStatus, StatusTone> = {
+    active: "success",
+    inactive: "neutral",
+    maintenance: "warning",
+    archived: "neutral",
+    planned: "info",
 };
 
 export const ANALYTICS_SOURCE_TYPE_LABELS: Record<AppAnalyticsSourceType, string> = {
@@ -55,8 +56,24 @@ export const ANALYTICS_CREDENTIAL_FIELDS: Record<AppAnalyticsSourceType, Analyti
 export const METRIC_LABELS = {
     revenue: "Umsatz",
     downloads: "Downloads",
-    rating: "Rating",
+    rating: "Bewertung",
     mrr: "MRR",
-    activeUsers: "Aktive User",
+    activeUsers: "Aktive Nutzer",
     churnPercent: "Churn",
 } as const;
+
+export type MetricKey = keyof NonNullable<AppEntity["metrics"]>;
+
+export function formatMetricValue(key: MetricKey, value: number): string {
+    if (key === "revenue" || key === "mrr") return `${value.toLocaleString("de-DE")} €`;
+    if (key === "rating") return value.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    if (key === "churnPercent") return `${value.toLocaleString("de-DE")} %`;
+    return value.toLocaleString("de-DE");
+}
+
+/** Nur gesetzte Kennzahlen, in fester Reihenfolge. */
+export function getMetricEntries(app: AppEntity): [MetricKey, number][] {
+    if (!app.metrics) return [];
+    return (Object.entries(app.metrics) as [MetricKey, number | undefined][])
+        .filter((entry): entry is [MetricKey, number] => entry[1] !== undefined);
+}

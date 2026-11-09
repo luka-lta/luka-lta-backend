@@ -8,9 +8,12 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-background text-foreground",
+        default: "bg-card text-foreground",
         destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+          "border-destructive/30 bg-destructive/5 text-destructive [&>svg]:text-destructive",
+        warning: "border-warning/30 bg-warning/5 text-foreground [&>svg]:text-warning",
+        info: "border-info/30 bg-info/5 text-foreground [&>svg]:text-info",
+        success: "border-success/30 bg-success/5 text-foreground [&>svg]:text-success",
       },
     },
     defaultVariants: {
@@ -38,7 +41,7 @@ const AlertTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h5
     ref={ref}
-    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
+    className={cn("mb-1 text-sm font-medium leading-none tracking-tight", className)}
     {...props}
   />
 ))

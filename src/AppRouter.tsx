@@ -12,7 +12,7 @@ import DetailLinktree from "@/feature/linktree/childPages/detail/DetailLinktree.
 import DashboardLayout from "@/components/layout/dashboard-layout.tsx";
 import Settings from "@/feature/SelfOverview";
 import SettingsProfile from "@/feature/SelfOverview/profile";
-import ComingSoon from "@/components/coming-soon.tsx";
+import SettingsAccount from "@/feature/SelfOverview/account";
 import SettingsAppearance from "@/feature/SelfOverview/appearance";
 import ClicksPage from "@/pages/Dashboard/ClicksPage.tsx";
 import BlogPage from "@/pages/Dashboard/BlogPage.tsx";
@@ -28,6 +28,7 @@ import WeatherPage from "@/pages/Dashboard/WeatherPage.tsx";
 import BusinessPage from "@/pages/Dashboard/BusinessPage.tsx";
 import NotificationsPage from "@/pages/Dashboard/NotificationsPage.tsx";
 import ProjectsPage from "@/pages/Dashboard/ProjectsPage.tsx";
+import NotFoundPage from "@/pages/Dashboard/NotFoundPage.tsx";
 
 // eslint-disable-next-line react-refresh/only-export-components
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -53,6 +54,7 @@ export const appRouter = createBrowserRouter([
     {
         path: '/dashboard',
         element: <RequireAuth><DashboardLayout/></RequireAuth>,
+        errorElement: <ErrorPage/>,
         children: [
             {
                 path: '',
@@ -146,8 +148,12 @@ export const appRouter = createBrowserRouter([
                         element: <SettingsAppearance/>
                     },
                     {
+                        path: 'account',
+                        element: <SettingsAccount/>
+                    },
+                    {
                         path: '*',
-                        element: <ComingSoon/>
+                        element: <Navigate to="/dashboard/settings" replace/>
                     }
                 ],
             },
@@ -167,6 +173,10 @@ export const appRouter = createBrowserRouter([
                         element: <BlogDetailPage />,
                     },
                 ],
+            },
+            {
+                path: '*',
+                element: <NotFoundPage/>
             },
         ]
     },

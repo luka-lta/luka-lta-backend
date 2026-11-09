@@ -1,28 +1,27 @@
 import { toast } from 'sonner'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import { AlertTriangle } from 'lucide-react'
+import { ConfirmDialog } from '@/components/dialogs/confirm-dialog'
 import { BlogPostType } from '@/feature/blog/schema/BlogSchema'
 import { useDeleteBlogPost } from '@/api/blog/hooks.ts'
+import { getApiErrorMessage } from '@/lib/apiError'
 
 interface Props {
     open: boolean
     onOpenChange: (open: boolean) => void
-    currentRow: BlogPostType
+    currentRow: Pick<BlogPostType, 'blogId' | 'title'>
+    onDeleted?: () => void
 }
 
-function DeleteBlogDialog({ open, onOpenChange, currentRow }: Props) {
+function DeleteBlogDialog({ open, onOpenChange, currentRow, onDeleted }: Props) {
     const deleteBlog = useDeleteBlogPost()
 
     const handleConfirm = () => {
         deleteBlog.mutate(currentRow.blogId, {
             onSuccess: () => {
                 onOpenChange(false)
-                toast.success('Blog post deleted!')
+                onDeleted?.()
+                toast.success('Beitrag gelöscht')
             },
-            onError: (error) => {
-                toast.error(error.message)
-            },
+            onError: (error) => toast.error(getApiErrorMessage(error)),
         })
     }
 
@@ -30,35 +29,17 @@ function DeleteBlogDialog({ open, onOpenChange, currentRow }: Props) {
         <ConfirmDialog
             open={open}
             onOpenChange={onOpenChange}
-            handleConfirm={handleConfirm}
-            title={
-                <span className="text-destructive">
-                    <AlertTriangle
-                        className="stroke-destructive mr-1 inline-block"
-                        size={18}
-                    />{' '}
-                    Delete Blog Post
-                </span>
-            }
-            desc={
-                <div className="space-y-4">
-                    <p>
-                        Are you sure you want to delete{' '}
-                        <span className="font-bold">{currentRow.title}</span>?
-                        <br />
-                        This cannot be undone.
-                    </p>
-                    <Alert variant="destructive">
-                        <AlertTitle>Warning!</AlertTitle>
-                        <AlertDescription>
-                            This operation cannot be rolled back.
-                        </AlertDescription>
-                    </Alert>
-                </div>
-            }
-            confirmText={deleteBlog.isPending ? 'Deleting...' : 'Delete'}
+            onConfirm={handleConfirm}
             isLoading={deleteBlog.isPending}
             destructive
+            title='Beitrag löschen?'
+            description={
+                <>
+                    <span className='font-medium text-foreground'>{currentRow.title}</span> wird dauerhaft entfernt.
+                    Das kann nicht rückgängig gemacht werden.
+                </>
+            }
+            confirmLabel='Löschen'
         />
     )
 }

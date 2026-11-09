@@ -1,21 +1,33 @@
-import { Main } from '@/components/layout/main.tsx'
+import { useState } from 'react'
+import { DateTime } from 'luxon'
+import { RefreshCcw } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button.tsx'
+import { PageContainer, PageHeader } from '@/components/layout/page.tsx'
+import { StatusBadge } from '@/components/feedback/status-badge.tsx'
 import Overview from '@/feature/dashboard/components/Overview.tsx'
-import { DashboardHeader } from '@/feature/dashboard/components/DashboardHeader.tsx'
 import { useClickSummary } from '@/api/dashboard/hooks.ts'
 import { useLinktreeList } from '@/api/linktree/hooks.ts'
 import { useBlogList } from '@/api/blog/hooks.ts'
 import { useUserList } from '@/api/user/hooks.ts'
 import { useAuthenticatedUserStore } from '@/store/authStore.ts'
-import { useSetPageTitle } from '@/hooks/useSetPageTitle.ts'
-import { useQueryClient } from '@tanstack/react-query'
-import { motion } from 'motion/react'
+import { cn } from '@/lib/utils.ts'
+
+function getGreeting(name: string | undefined): string {
+    const hour = new Date().getHours()
+    const suffix = name ? `, ${name}` : ''
+    if (hour < 5) return `Gute Nacht${suffix}`
+    if (hour < 11) return `Guten Morgen${suffix}`
+    if (hour < 18) return `Hallo${suffix}`
+    return `Guten Abend${suffix}`
+}
 
 function Dashboard() {
     const { user } = useAuthenticatedUserStore()
     const queryClient = useQueryClient()
-    useSetPageTitle('Backend - Dashboard')
+    const [refreshing, setRefreshing] = useState(false)
 
-    // Cheap: shares the react-query cache with Overview's own subscriptions, no extra fetch.
+    // Teilt sich den react-query-Cache mit Overview – kein zusätzlicher Request.
     const [clickSummary] = useClickSummary()
     const [linktreeList] = useLinktreeList()
     const [blogList] = useBlogList()
@@ -23,38 +35,42 @@ function Dashboard() {
     const hasErrors = Boolean(clickSummary.error || linktreeList.error || blogList.error || userList.error)
 
     async function handleRefresh() {
-        await Promise.all([
-            queryClient.invalidateQueries({ queryKey: ['summary'] }),
-            queryClient.invalidateQueries({ queryKey: ['clicks'] }),
-            queryClient.invalidateQueries({ queryKey: ['linktree'] }),
-            queryClient.invalidateQueries({ queryKey: ['blog'] }),
-            queryClient.invalidateQueries({ queryKey: ['users'] }),
-        ])
+        setRefreshing(true)
+        try {
+            await Promise.all(
+                ['summary', 'clicks', 'linktree', 'blog', 'users', 'calendar', 'weather', 'apps'].map((key) =>
+                    queryClient.invalidateQueries({ queryKey: [key] }),
+                ),
+            )
+        } finally {
+            setRefreshing(false)
+        }
     }
 
     return (
-        <Main>
-            <motion.div
-                initial={{ opacity: 0, y: -12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-                className='mb-6'
-            >
-                <DashboardHeader
-                    username={user?.username ?? 'there'}
-                    status={hasErrors ? "degraded" : "online"}
-                    onRefresh={handleRefresh}
-                />
-            </motion.div>
-
-            <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: 0.1, ease: 'easeOut' }}
-            >
-                <Overview />
-            </motion.div>
-        </Main>
+        <PageContainer title='Übersicht'>
+            <PageHeader
+                title={getGreeting(user?.username)}
+                description={
+                    <span className='flex flex-wrap items-center gap-2'>
+                        <span>{DateTime.now().toFormat('cccc, d. LLLL')}</span>
+                        <span aria-hidden>·</span>
+                        {hasErrors ? (
+                            <StatusBadge tone='warning'>Einige Daten fehlen</StatusBadge>
+                        ) : (
+                            <StatusBadge tone='success'>Alles erreichbar</StatusBadge>
+                        )}
+                    </span>
+                }
+                actions={
+                    <Button variant='outline' onClick={handleRefresh} disabled={refreshing}>
+                        <RefreshCcw className={cn(refreshing && 'animate-spin')} />
+                        Aktualisieren
+                    </Button>
+                }
+            />
+            <Overview />
+        </PageContainer>
     )
 }
 

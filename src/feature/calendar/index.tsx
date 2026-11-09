@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
-import { Main } from "@/components/layout/main.tsx";
-import { useSetPageTitle } from "@/hooks/useSetPageTitle.ts";
-import { ErrorState } from "@/components/error-state.tsx";
+import { CalendarPlus } from "lucide-react";
+import { Button } from "@/components/ui/button.tsx";
+import { PageContainer, PageHeader } from "@/components/layout/page.tsx";
+import { ErrorState } from "@/components/feedback/error-state.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { useCalendarEvents, useCalendarSources } from "@/api/calendar/hooks.ts";
 import { useCalendarMonth, useCalendarYear } from "@/components/kibo-ui/calendar/index.tsx";
@@ -24,8 +25,6 @@ function loadedRangeFor(date: DateTime): { from: DateTime; to: DateTime } {
 }
 
 function CalendarPage() {
-    useSetPageTitle("Backend - Calendar");
-
     const [view, setView] = useState<CalendarViewMode>("month");
     const [selectedDate, setSelectedDate] = useState(() => DateTime.now());
     const [loadedRange, setLoadedRange] = useState(() => loadedRangeFor(DateTime.now()));
@@ -93,66 +92,73 @@ function CalendarPage() {
         return source ? source.isEnabled : true;
     });
 
-    if (eventsQuery.isError) {
-        return (
-            <Main>
-                <h2 className="text-2xl font-bold tracking-tight mb-1">Kalender</h2>
-                <p className="text-muted-foreground mb-4">{selectedDate.setLocale("de").toFormat("cccc, d. MMMM")}</p>
-                <ErrorState
-                    title="Kalender konnte nicht geladen werden"
-                    message={eventsQuery.error.message}
-                    refetch={eventsQuery.refetch}
-                />
-            </Main>
-        );
-    }
+    const header = (
+        <PageHeader
+            title="Kalender"
+            description={`Heute ist ${DateTime.now().toFormat("cccc, d. LLLL")}. Termine sind nur lesbar und kommen aus deinen ICS-Kalendern.`}
+            actions={
+                <Button onClick={() => setAddSourceOpen(true)}>
+                    <CalendarPlus />
+                    Kalender hinzufügen
+                </Button>
+            }
+        />
+    );
 
     return (
-        <Main>
-            <div className="mb-4">
-                <h2 className="text-2xl font-bold tracking-tight">Kalender</h2>
-                <p className="text-muted-foreground">{DateTime.now().setLocale("de").toFormat("cccc, d. MMMM")}</p>
-            </div>
+        <PageContainer title="Kalender">
+            {header}
 
-            <div className="mb-4">
-                <CalendarNav
-                    view={view}
-                    onViewChange={handleViewChange}
-                    anchor={selectedDate}
-                    onNavigate={handleNavigate}
-                    onToday={handleToday}
+            {eventsQuery.isError ? (
+                <ErrorState
+                    title="Termine konnten nicht geladen werden"
+                    error={eventsQuery.error}
+                    onRetry={() => eventsQuery.refetch()}
                 />
-            </div>
+            ) : (
+                <>
+                    <CalendarNav
+                        view={view}
+                        onViewChange={handleViewChange}
+                        anchor={selectedDate}
+                        onNavigate={handleNavigate}
+                        onToday={handleToday}
+                    />
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_280px]">
-                <div className="rounded-lg border overflow-hidden" style={{ minHeight: view === "month" ? 600 : undefined }}>
-                    {eventsQuery.isPending ? (
-                        <div className="p-4 space-y-2">
-                            <Skeleton className="h-8 w-full" />
-                            <Skeleton className="h-[520px] w-full" />
+                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_17rem]">
+                        <div
+                            className="overflow-hidden rounded-xl border bg-card shadow-xs"
+                            style={{ minHeight: view === "month" ? 600 : undefined }}
+                        >
+                            {eventsQuery.isPending ? (
+                                <div className="space-y-2 p-4" aria-busy="true" aria-label="Wird geladen">
+                                    <Skeleton className="h-8 w-full" />
+                                    <Skeleton className="h-[520px] w-full" />
+                                </div>
+                            ) : view === "month" ? (
+                                <MonthGrid events={visibleEvents} onSelectEvent={setSelectedEvent} onSelectDay={handleSelectDay} />
+                            ) : (
+                                <TimeGridView
+                                    days={view === "week" ? getWeekDays(selectedDate) : [selectedDate]}
+                                    events={visibleEvents}
+                                    onSelectEvent={setSelectedEvent}
+                                />
+                            )}
                         </div>
-                    ) : view === "month" ? (
-                        <MonthGrid events={visibleEvents} onSelectEvent={setSelectedEvent} onSelectDay={handleSelectDay} />
-                    ) : (
-                        <TimeGridView
-                            days={view === "week" ? getWeekDays(selectedDate) : [selectedDate]}
-                            events={visibleEvents}
-                            onSelectEvent={setSelectedEvent}
-                        />
-                    )}
-                </div>
 
-                <CalendarSidebar
-                    sources={sources}
-                    onAddClick={() => setAddSourceOpen(true)}
-                    onEditClick={setEditingSource}
-                />
-            </div>
+                        <CalendarSidebar
+                            sources={sources}
+                            onAddClick={() => setAddSourceOpen(true)}
+                            onEditClick={setEditingSource}
+                        />
+                    </div>
+                </>
+            )}
 
             <AddSourceDialog open={addSourceOpen} onOpenChange={setAddSourceOpen} />
             <EditSourceDialog source={editingSource} onOpenChange={(open) => !open && setEditingSource(null)} />
             <EventDetailDialog event={selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)} />
-        </Main>
+        </PageContainer>
     );
 }
 

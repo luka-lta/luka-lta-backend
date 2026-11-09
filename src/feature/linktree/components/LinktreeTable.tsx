@@ -1,35 +1,23 @@
-import {useEffect, useMemo, useState} from "react";
-import {
-    createColumnHelper,
-    flexRender,
-    getCoreRowModel,
-    type SortingState,
-    useReactTable,
-} from "@tanstack/react-table";
-import {LinkItemTypeSchema} from "@/feature/linktree/schema/LinktreeSchema.ts";
-import {TooltipProvider} from "@/components/ui/tooltip.tsx";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import {SortableHead} from "@/components/SortableHead.tsx";
-import {TableSkeleton, SkeletonCell} from "@/components/TableSkeleton.tsx";
-import {Pagination} from "@/components/Pagination.tsx";
-import {EllipsisVertical, FilterX, ListTree, Pencil, Plus, Power, PowerOff, Search, Trash} from "lucide-react";
-import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
-import {LinkIcon} from "@/components/LinkIcon.tsx";
-import {Link, useNavigate} from "react-router-dom";
-import {TimeCell} from "@/components/TimeCell.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {Input} from "@/components/ui/input.tsx";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu.tsx";
-import {useLinksContext} from "@/feature/linktree/context/links-context.tsx";
-import LongText from "@/components/long-text.tsx";
-import {Empty, EmptyMedia, EmptyTitle} from "@/components/ui/empty.tsx";
-import {Status, StatusIndicator, StatusLabel} from "@/components/ui/kibo-ui/status/index.tsx";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
+import { useEffect, useMemo, useState } from "react";
+import { createColumnHelper, getCoreRowModel, type SortingState, useReactTable } from "@tanstack/react-table";
+import { useNavigate } from "react-router-dom";
+import { ExternalLink, Link2, Pencil, Power, PowerOff, Search, Trash2 } from "lucide-react";
+import { LinkItemTypeSchema } from "@/feature/linktree/schema/LinktreeSchema.ts";
+import { LinkIcon } from "@/components/LinkIcon.tsx";
+import { TimeCell } from "@/components/TimeCell.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { useLinksContext } from "@/feature/linktree/context/links-context.tsx";
+import { DataTable } from "@/components/data/data-table.tsx";
+import { TablePagination } from "@/components/data/table-pagination.tsx";
+import { SearchInput } from "@/components/data/search-input.tsx";
+import { RowActions } from "@/components/data/row-actions.tsx";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
+import { PageToolbar } from "@/components/layout/page.tsx";
+import { useDebouncedValue } from "@/hooks/use-debounced-value.ts";
+import { getLinkStatus, LINK_STATUS, type LinkStatus } from "@/feature/linktree/linkStatus.ts";
+import { LinkStatusBadge } from "@/feature/linktree/components/LinkStatusBadge.tsx";
+import { useReactivateLink } from "@/feature/linktree/components/useToggleLinkActivation.ts";
 
 const PAGE_SIZE = 20;
 const col = createColumnHelper<LinkItemTypeSchema>();
@@ -41,23 +29,19 @@ interface LinktreeTableProps {
     setFilterData: (filterData: Record<string, string>) => void;
 }
 
-function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableProps) {
+function LinktreeTable({ links, maxPages, loading, setFilterData }: LinktreeTableProps) {
     const navigate = useNavigate();
-    const {setOpen, setCurrentRow} = useLinksContext();
+    const { setOpen, setCurrentRow } = useLinksContext();
+    const reactivate = useReactivateLink();
 
     const [page, setPage] = useState(1);
-    const [searchInput, setSearchInput] = useState("");
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [search, setSearch] = useState("");
+    const debouncedSearch = useDebouncedValue(search);
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [statusFilter, setStatusFilter] = useState<LinkStatus | "all">("all");
+    const hasFilter = debouncedSearch !== "" || statusFilter !== "all";
 
-    useEffect(() => {
-        const t = setTimeout(() => {
-            setDebouncedSearch(searchInput);
-            setPage(1);
-        }, 400);
-        return () => clearTimeout(t);
-    }, [searchInput]);
+    useEffect(() => setPage(1), [debouncedSearch]);
 
     useEffect(() => {
         setFilterData({
@@ -68,125 +52,96 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
             sortDirection: sorting[0] ? (sorting[0].desc ? 'desc' : 'asc') : '',
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, debouncedSearch, statusFilter, sorting]);
+    }, [page, debouncedSearch, sorting]);
 
-    const visibleLinks = useMemo(() => links.filter((l) => {
-        if (statusFilter === "all") return true;
-        if (statusFilter === "deactivated") return l.deactivated;
-        if (statusFilter === "active") return !l.deactivated && l.isActive;
-        return !l.deactivated && !l.isActive; // inactive
-    }), [links, statusFilter]);
+    // Der Statusfilter wirkt auf die geladene Seite (die API kennt keinen Statusfilter).
+    const visibleLinks = useMemo(
+        () => (statusFilter === "all" ? links : links.filter((l) => getLinkStatus(l) === statusFilter)),
+        [links, statusFilter],
+    );
+
+    function openDialog(kind: 'delete' | 'deactivate', link: LinkItemTypeSchema) {
+        setCurrentRow(link);
+        setOpen(kind);
+    }
+
+    function resetFilters() {
+        setSearch("");
+        setStatusFilter("all");
+        setPage(1);
+    }
 
     const columns = [
-        col.accessor('clickTag', {
-            header: 'Click Tag',
-            enableSorting: false,
-            cell: ({getValue}) => getValue().toUpperCase(),
-        }),
         col.accessor('displayname', {
             id: 'displayname',
             header: 'Link',
             enableSorting: true,
-            cell: ({row}) => (
-                <div className="flex items-center gap-2 min-w-0">
-                    <Avatar>
-                        <AvatarFallback>
-                            <LinkIcon name={row.original.iconName}/>
-                        </AvatarFallback>
-                    </Avatar>
+            meta: { skeletonClassName: 'w-48' },
+            cell: ({ row }) => (
+                <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <LinkIcon name={row.original.iconName} className="size-4" />
+                    </div>
                     <div className="min-w-0">
-                        <p className="font-medium truncate">{row.original.displayname}</p>
-                        <LongText className="max-w-48 text-xs text-muted-foreground">
-                            {row.original.description || "No description"}
-                        </LongText>
+                        <p className="truncate font-medium">{row.original.displayname}</p>
+                        <p className="max-w-[16rem] truncate text-xs text-muted-foreground">{row.original.description || row.original.url}</p>
                     </div>
                 </div>
             ),
         }),
         col.accessor('url', {
-            header: 'URL',
+            header: 'Ziel',
             enableSorting: false,
-            cell: ({getValue}) => (
-                <Link to={getValue()} className="text-muted-foreground hover:text-blue-500 transition-colors" onClick={(e) => e.stopPropagation()}>
-                    <LongText className="max-w-36">{getValue()}</LongText>
-                </Link>
+            meta: { className: 'hidden lg:table-cell', skeletonClassName: 'w-40' },
+            cell: ({ getValue }) => (
+                <a
+                    href={getValue()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex max-w-[14rem] items-center gap-1 text-muted-foreground hover:text-primary"
+                >
+                    <span className="truncate">{getValue().replace(/^https?:\/\//, '')}</span>
+                    <ExternalLink className="size-3 shrink-0" aria-hidden />
+                </a>
             ),
+        }),
+        col.accessor('clickTag', {
+            header: 'Tag',
+            enableSorting: false,
+            meta: { className: 'hidden xl:table-cell' },
+            cell: ({ getValue }) => <code className="font-mono text-xs text-muted-foreground">{getValue()}</code>,
         }),
         col.accessor('isActive', {
             id: 'is_active',
             header: 'Status',
             enableSorting: true,
-            cell: ({row, getValue}) => {
-                if (row.original.deactivated) {
-                    return (
-                        <Status status="maintenance">
-                            <StatusIndicator/>
-                            <StatusLabel>Deactivated</StatusLabel>
-                        </Status>
-                    );
-                }
-                return (
-                    <Status status={getValue() ? "online" : "offline"}>
-                        <StatusIndicator/>
-                        <StatusLabel>{getValue() ? "Active" : "Inactive"}</StatusLabel>
-                    </Status>
-                );
-            },
+            cell: ({ row }) => <LinkStatusBadge link={row.original} />,
         }),
         col.accessor('createdOn', {
             id: 'created_at',
-            header: 'Created At',
+            header: 'Erstellt',
             enableSorting: true,
-            cell: ({getValue}) => <TimeCell iso={getValue()}/>,
+            meta: { className: 'hidden md:table-cell' },
+            cell: ({ getValue }) => <TimeCell iso={getValue()} />,
         }),
         col.display({
             id: 'actions',
-            header: '',
-            enableSorting: false,
-            cell: ({row}) => {
+            header: () => <span className="sr-only">Aktionen</span>,
+            meta: { className: 'w-12 text-right', skeletonClassName: 'w-6' },
+            cell: ({ row }) => {
                 const link = row.original;
                 return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" onClick={(e) => e.stopPropagation()}><EllipsisVertical/></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onClick={(event) => {
-                                event.stopPropagation();
-                                navigate(`/dashboard/linktree/${link.id}`);
-                            }}>
-                                <Pencil/>
-                                Edit
-                            </DropdownMenuItem>
-                            {link.deactivated ? (
-                                <DropdownMenuItem onClick={(event) => {
-                                    event.stopPropagation();
-                                    setOpen('activate');
-                                    setCurrentRow(link);
-                                }}>
-                                    <Power/>
-                                    Activate
-                                </DropdownMenuItem>
-                            ) : (
-                                <DropdownMenuItem onClick={(event) => {
-                                    event.stopPropagation();
-                                    setOpen('deactivate');
-                                    setCurrentRow(link);
-                                }}>
-                                    <PowerOff/>
-                                    Deactivate
-                                </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={(event) => {
-                                event.stopPropagation();
-                                setOpen('delete');
-                                setCurrentRow(link);
-                            }}>
-                                <Trash/>
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <RowActions
+                        label={link.displayname}
+                        actions={[
+                            { label: 'Bearbeiten', icon: Pencil, onSelect: () => navigate(`/dashboard/linktree/${link.id}`) },
+                            { label: 'Öffnen', icon: ExternalLink, onSelect: () => window.open(link.url, '_blank', 'noopener') },
+                            { label: 'Aktivieren', icon: Power, hidden: !link.deactivated, onSelect: () => reactivate(link) },
+                            { label: 'Deaktivieren', icon: PowerOff, hidden: link.deactivated, onSelect: () => openDialog('deactivate', link) },
+                            { label: 'Löschen', icon: Trash2, destructive: true, onSelect: () => openDialog('delete', link) },
+                        ]}
+                    />
                 );
             },
         }),
@@ -195,7 +150,7 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
     const table = useReactTable({
         data: visibleLinks,
         columns,
-        state: {sorting},
+        state: { sorting },
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         manualSorting: true,
@@ -204,112 +159,49 @@ function LinktreeTable({links, maxPages, loading, setFilterData}: LinktreeTableP
     });
 
     return (
-        <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="relative w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none"/>
-                        <Input
-                            placeholder="Search links..."
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                            className="pl-8"
-                        />
-                    </div>
-                    <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
-                        <SelectTrigger className="w-40">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All statuses</SelectItem>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="inactive">Inactive</SelectItem>
-                            <SelectItem value="deactivated">Deactivated</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Button variant="outline" onClick={() => { setSearchInput(""); setStatusFilter("all"); setPage(1); }}>
-                        <FilterX className="h-4 w-4"/>
-                        Clear
-                    </Button>
-                </div>
-                <Button onClick={() => setOpen('add')}>
-                    <Plus className="h-4 w-4"/>
-                    New
-                </Button>
-            </div>
-
-            <div className="border rounded-lg">
-                {loading ? (
-                    <TableSkeleton>
-                        {() => (
-                            <>
-                                <SkeletonCell width="w-16"/>
-                                <SkeletonCell width="w-40"/>
-                                <SkeletonCell width="w-36" flex/>
-                                <SkeletonCell width="w-20"/>
-                                <SkeletonCell width="w-24"/>
-                            </>
-                        )}
-                    </TableSkeleton>
-                ) : (
-                    <TooltipProvider>
-                        <Table>
-                            <TableHeader>
-                                {table.getHeaderGroups().map((hg) => (
-                                    <TableRow key={hg.id}>
-                                        {hg.headers.map((header) =>
-                                            header.column.getCanSort() ? (
-                                                <SortableHead key={header.id} column={header.column}>
-                                                    {flexRender(header.column.columnDef.header, header.getContext())}
-                                                </SortableHead>
-                                            ) : (
-                                                <TableHead key={header.id}>
-                                                    {flexRender(header.column.columnDef.header, header.getContext())}
-                                                </TableHead>
-                                            )
-                                        )}
-                                    </TableRow>
-                                ))}
-                            </TableHeader>
-                            <TableBody>
-                                {table.getRowModel().rows.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={table.getVisibleLeafColumns().length} className="p-0">
-                                            <Empty className="border-0 py-12">
-                                                <EmptyMedia variant="icon">
-                                                    <ListTree/>
-                                                </EmptyMedia>
-                                                <EmptyTitle>No links found</EmptyTitle>
-                                            </Empty>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    table.getRowModel().rows.map((row) => (
-                                        <TableRow
-                                            key={row.id}
-                                            className="cursor-pointer"
-                                            onClick={() => navigate(`/dashboard/linktree/${row.original.id}`)}
-                                        >
-                                            {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>
-                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                </TableCell>
-                                            ))}
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TooltipProvider>
+        <div className="space-y-3">
+            <PageToolbar>
+                <SearchInput value={search} onChange={setSearch} placeholder="Links durchsuchen…" />
+                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as LinkStatus | "all")}>
+                    <SelectTrigger className="w-full sm:w-40" aria-label="Nach Status filtern">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Alle Status</SelectItem>
+                        {(Object.keys(LINK_STATUS) as LinkStatus[]).map((status) => (
+                            <SelectItem key={status} value={status}>{LINK_STATUS[status].label}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                {hasFilter && (
+                    <Button variant="ghost" onClick={resetFilters}>Filter zurücksetzen</Button>
                 )}
-            </div>
+            </PageToolbar>
 
-            <Pagination
-                page={page}
-                totalPages={maxPages}
-                rowCount={visibleLinks.length}
-                isLoading={loading}
-                onPageChange={setPage}
+            <DataTable
+                table={table}
+                loading={loading}
+                onRowClick={(row) => navigate(`/dashboard/linktree/${row.original.id}`)}
+                empty={
+                    hasFilter ? (
+                        <EmptyState
+                            variant="plain"
+                            icon={Search}
+                            title="Keine Treffer"
+                            description="Kein Link passt zu Suche oder Filter."
+                            action={<Button variant="outline" size="sm" onClick={resetFilters}>Filter zurücksetzen</Button>}
+                        />
+                    ) : (
+                        <EmptyState
+                            variant="plain"
+                            icon={Link2}
+                            title="Noch keine Links"
+                            description="Lege deinen ersten Link an, um Klicks zu tracken."
+                            action={<Button variant="outline" size="sm" onClick={() => setOpen('add')}>Link anlegen</Button>}
+                        />
+                    )
+                }
+                footer={<TablePagination page={page} totalPages={maxPages} rowCount={visibleLinks.length} isLoading={loading} onPageChange={setPage} />}
             />
         </div>
     );

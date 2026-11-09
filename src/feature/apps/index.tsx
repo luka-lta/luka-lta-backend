@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { Main } from "@/components/layout/main";
+import { Boxes, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { PageContainer, PageHeader } from "@/components/layout/page";
+import { CardGridSkeleton } from "@/components/feedback/loading-state";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { ErrorState } from "@/components/feedback/error-state";
 import { useAppList } from "@/api/apps/hooks";
 import type { AppEntity } from "@/api/apps/schema";
 import { AppCard } from "@/feature/apps/components/AppCard";
-import { EmptyAppsState } from "@/feature/apps/components/EmptyAppsState";
 import { AppFormDialog } from "@/feature/apps/components/AppFormDialog";
 import { DeleteAppDialog } from "@/feature/apps/components/DeleteAppDialog";
 
@@ -19,48 +20,38 @@ function Apps() {
     const [deleteOpen, setDeleteOpen] = useState(false);
 
     const apps = appList.data ?? [];
+    const openCreate = () => {
+        setFormState({ mode: "create" });
+        setFormOpen(true);
+    };
 
     return (
-        <Main>
-            <div className="mb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Apps</h1>
-                    <p className="text-muted-foreground">Verwalte alle Apps, Webseiten und Produkte an einem Ort.</p>
-                </div>
-                {apps.length > 0 && (
-                    <Button onClick={() => { setFormState({ mode: "create" }); setFormOpen(true); }}>
-                        <Plus className="h-4 w-4" />
-                        Neue App
+        <PageContainer title="Apps">
+            <PageHeader
+                title="Apps"
+                meta={<Badge variant="warning">Demo</Badge>}
+                description="Apps, Webseiten und Produkte an einem Ort. Die Registry läuft noch gegen lokale Beispieldaten – Änderungen gehen beim Neuladen verloren."
+                actions={
+                    <Button onClick={openCreate}>
+                        <Plus />
+                        App anlegen
                     </Button>
-                )}
-            </div>
+                }
+            />
 
-            {appList.isLoading && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-48 w-full rounded-lg" />
-                    ))}
-                </div>
-            )}
-
-            {appList.isError && (
-                <Alert variant="destructive">
-                    <AlertTitle>Apps konnten nicht geladen werden</AlertTitle>
-                    <AlertDescription className="flex items-center justify-between gap-4">
-                        <span>{appList.error.message}</span>
-                        <Button variant="outline" size="sm" onClick={() => appList.refetch()}>
-                            Erneut versuchen
-                        </Button>
-                    </AlertDescription>
-                </Alert>
-            )}
-
-            {!appList.isLoading && !appList.isError && apps.length === 0 && (
-                <EmptyAppsState onCreate={() => { setFormState({ mode: "create" }); setFormOpen(true); }} />
-            )}
-
-            {!appList.isLoading && !appList.isError && apps.length > 0 && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {appList.isPending ? (
+                <CardGridSkeleton count={3} className="lg:grid-cols-3" itemClassName="h-52" />
+            ) : appList.isError ? (
+                <ErrorState title="Apps konnten nicht geladen werden" error={appList.error} onRetry={() => appList.refetch()} />
+            ) : apps.length === 0 ? (
+                <EmptyState
+                    icon={Boxes}
+                    title="Noch keine Apps"
+                    description="Lege deine erste App an – z. B. eine App-Store-App, eine Kundenwebseite oder ein SaaS-Produkt."
+                    action={<Button variant="outline" size="sm" onClick={openCreate}>App anlegen</Button>}
+                />
+            ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {apps.map((app) => (
                         <AppCard
                             key={app.id}
@@ -77,7 +68,7 @@ function Apps() {
                     open={formOpen}
                     onOpenChange={(open) => {
                         setFormOpen(open);
-                        if (!open) setTimeout(() => setFormState(null), 500);
+                        if (!open) setTimeout(() => setFormState(null), 300);
                     }}
                     mode={formState.mode}
                     defaultValues={formState.app}
@@ -89,12 +80,12 @@ function Apps() {
                     open={deleteOpen}
                     onOpenChange={(open) => {
                         setDeleteOpen(open);
-                        if (!open) setTimeout(() => setAppToDelete(null), 500);
+                        if (!open) setTimeout(() => setAppToDelete(null), 300);
                     }}
                     app={appToDelete}
                 />
             )}
-        </Main>
+        </PageContainer>
     );
 }
 
