@@ -1,159 +1,89 @@
 import { type SidebarData } from '../types'
 import {
+    BarChart3,
+    Bell,
     BookOpen,
     Boxes,
     CalendarDays,
     CloudSun,
     Container as ContainerIcon,
     FolderKanban,
-    Hammer,
     KeyRound,
-    LayoutDashboardIcon,
+    LayoutDashboard,
     LayoutGrid,
-    ListTree, MousePointerClickIcon, Network, Palette, Server, Settings,
+    Link2,
+    MousePointerClick,
+    Network,
+    Palette,
+    Server,
+    ShieldCheck,
     UserCog,
-    UsersIcon, Wallet, Wrench
+    Users,
+    Wrench,
 } from "lucide-react";
 
+/**
+ * Hauptnavigation, gruppiert nach Aufgaben (nicht nach Technik).
+ * Reihenfolge = Nutzungshäufigkeit innerhalb der Gruppe.
+ */
 export const sidebarData: SidebarData = {
     navGroups: [
         {
-            title: 'General',
             items: [
-                {
-                    title: 'Dashboard',
-                    url: '/dashboard',
-                    icon: LayoutDashboardIcon,
-                },
-                {
-                    title: 'Apps',
-                    url: '/dashboard/apps',
-                    icon: Boxes,
-                },
-                {
-                    title: "Tools",
-                    url: '/dashboard/tools',
-                    icon: Hammer,
-                },
-                {
-                    title: 'Business',
-                    url: '/dashboard/business',
-                    icon: Wallet,
-                }
+                { title: 'Übersicht', url: '/dashboard', icon: LayoutDashboard },
             ],
         },
         {
-            title: 'Access-Management',
+            title: 'Inhalte',
             items: [
-                {
-                    title: 'Users',
-                    icon: UsersIcon,
-                    url: '/dashboard/users',
-                },
-                {
-                    title: 'API Keys',
-                    icon: KeyRound,
-                    url: '/dashboard/api-keys',
-                }
+                { title: 'Projekte', url: '/dashboard/projects', icon: FolderKanban },
+                { title: 'Blog', url: '/dashboard/blog', icon: BookOpen },
+                { title: 'Links', url: '/dashboard/linktree', icon: Link2 },
             ],
         },
         {
-            title: 'Linktree-Management',
+            title: 'Analyse',
             items: [
-                {
-                    title: "Linktree",
-                    icon: ListTree,
-                    url: '/dashboard/linktree',
-                },
-                {
-                    title: "Clicks",
-                    icon: MousePointerClickIcon,
-                    url: '/dashboard/clicks',
-                }
+                { title: 'Klicks', url: '/dashboard/clicks', icon: MousePointerClick },
+                { title: 'Business', url: '/dashboard/business', icon: BarChart3 },
+                { title: 'Apps', url: '/dashboard/apps', icon: Boxes },
             ],
         },
         {
-            title: 'Homelab',
+            title: 'Infrastruktur',
             items: [
                 {
                     title: 'Homelab',
                     icon: Server,
                     items: [
-                        {
-                            title: 'Overview',
-                            url: '/dashboard/homelab',
-                            icon: LayoutGrid,
-                        },
-                        {
-                            title: 'Containers',
-                            url: '/dashboard/homelab/containers',
-                            icon: ContainerIcon,
-                        },
-                        {
-                            title: 'Topology',
-                            url: '/dashboard/homelab/topology',
-                            icon: Network,
-                        },
+                        { title: 'Überblick', url: '/dashboard/homelab', icon: LayoutGrid },
+                        { title: 'Container', url: '/dashboard/homelab/containers', icon: ContainerIcon },
+                        { title: 'Topologie', url: '/dashboard/homelab/topology', icon: Network },
                     ],
                 },
             ],
         },
         {
-            title: 'Personal',
+            title: 'Persönlich',
             items: [
-                {
-                    title: 'Calendar',
-                    icon: CalendarDays,
-                    url: '/dashboard/calendar',
-                },
-                {
-                    title: 'Weather',
-                    icon: CloudSun,
-                    url: '/dashboard/weather',
-                },
+                { title: 'Kalender', url: '/dashboard/calendar', icon: CalendarDays },
+                { title: 'Wetter', url: '/dashboard/weather', icon: CloudSun },
+                { title: 'Tools', url: '/dashboard/tools', icon: Wrench },
             ],
         },
         {
-            title: 'Blog-Management',
+            title: 'Administration',
             items: [
-                {
-                    title: 'Blog',
-                    icon: BookOpen,
-                    url: '/dashboard/blog',
-                },
-            ],
-        },
-        {
-            title: 'Portfolio-Management',
-            items: [
-                { title: 'Projects', icon: FolderKanban, url: '/dashboard/projects' },
-            ],
-        },
-        {
-            title: 'Other',
-            items: [
-                {
-                    title: 'Settings',
-                    icon: Settings,
-                    items: [
-                        {
-                            title: 'Profile',
-                            url: '/dashboard/settings',
-                            icon: UserCog,
-                        },
-                        {
-                            title: 'Account',
-                            url: '/dashboard/settings/account',
-                            icon: Wrench
-                        },
-                        {
-                            title: 'Appearance',
-                            url: '/dashboard/settings/appearance',
-                            icon: Palette,
-                        },
-                    ]
-                },
+                { title: 'Benutzer', url: '/dashboard/users', icon: Users },
+                { title: 'API-Keys', url: '/dashboard/api-keys', icon: KeyRound },
             ],
         },
     ],
+    accountLinks: [
+        { title: 'Profil', url: '/dashboard/settings', icon: UserCog },
+        { title: 'Konto & Sicherheit', url: '/dashboard/settings/account', icon: ShieldCheck },
+        { title: 'Darstellung', url: '/dashboard/settings/appearance', icon: Palette },
+        { title: 'Benachrichtigungen', url: '/dashboard/notifications', icon: Bell },
+    ],
 }
+

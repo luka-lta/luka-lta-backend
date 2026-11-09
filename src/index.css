@@ -2,90 +2,185 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design-Tokens — die einzige Quelle für Farben, Radien, Schatten und Bewegung.
+ * Dokumentation: docs/design-system.md
+ * Farben als HSL-Kanäle, damit Tailwind-Opacity-Modifier (bg-success/10) funktionieren.
+ */
 @layer base {
   :root {
-    /* Luka Dev Studio — Electric Blue / Cloud / Slate */
-    --background: 240 10% 96%;        /* Cloud #F4F4F6 */
-    --foreground: 240 7% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 7% 12%;
+    /* Brand */
+    --brand: 230 100% 62%;            /* Electric Blue #3D5CFF */
+    --brand-teal: 168 100% 42%;       /* Cyber Teal #00D4AA — nur Logo/Charts */
+
+    /* Flächen */
+    --background: 240 10% 97%;        /* App-Hintergrund */
+    --foreground: 240 10% 10%;
+    --card: 0 0% 100%;                /* Surface: Cards, Tabellen, Dialoge */
+    --card-foreground: 240 10% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 7% 12%;
-    --primary: 230 100% 62%;          /* Electric Blue #3D5CFF */
+    --popover-foreground: 240 10% 10%;
+
+    /* Interaktion */
+    --primary: 230 100% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 10% 92%;
-    --secondary-foreground: 240 7% 12%;
-    --muted: 240 10% 92%;
-    --muted-foreground: 240 9% 46%;   /* Slate #6B6B80 */
-    --accent: 168 100% 42%;           /* Cyber Teal #00D4AA */
-    --accent-foreground: 240 7% 6%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 87%;
-    --input: 240 10% 87%;
-    --ring: 230 100% 62%;
-    --chart-1: 230 100% 62%;          /* Electric Blue */
-    --chart-2: 168 100% 42%;          /* Cyber Teal */
-    --chart-3: 198 93% 50%;
-    --chart-4: 43 96% 52%;
-    --chart-5: 338 85% 55%;
-    --radius: 0.65rem;
-    --sidebar-background: 240 10% 93%;
-    --sidebar-foreground: 240 7% 20%;
-    --sidebar-primary: 230 100% 62%;
+    --secondary: 240 8% 93%;
+    --secondary-foreground: 240 10% 12%;
+    --muted: 240 8% 94%;
+    --muted-foreground: 240 6% 40%;   /* AA auf card + background */
+    --accent: 240 8% 94%;             /* neutrale Hover-/Fokus-Fläche */
+    --accent-foreground: 240 10% 10%;
+
+    /* Linien */
+    --border: 240 8% 89%;
+    --input: 240 8% 85%;
+    --ring: 230 100% 60%;
+
+    /* Status */
+    --success: 152 65% 32%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 38%;
+    --warning-foreground: 0 0% 100%;
+    --info: 205 85% 40%;
+    --info-foreground: 0 0% 100%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Charts */
+    --chart-1: 230 100% 62%;
+    --chart-2: 168 80% 38%;
+    --chart-3: 198 90% 48%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 338 80% 55%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 6% 30%;
+    --sidebar-primary: 230 100% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 230 80% 95%;        /* light blue tint for hover */
-    --sidebar-accent-foreground: 230 100% 40%;
-    --sidebar-border: 240 10% 87%;
-    --sidebar-ring: 230 100% 62%;
+    --sidebar-accent: 240 8% 95%;
+    --sidebar-accent-foreground: 240 10% 10%;
+    --sidebar-border: 240 8% 91%;
+    --sidebar-ring: 230 100% 60%;
+
+    /* Form */
+    --radius: 0.5rem;
+
+    /* Schatten — bewusst flach; Tiefe entsteht über Border */
+    --shadow-color: 240 10% 10%;
+    --shadow-xs: 0 1px 2px 0 hsl(var(--shadow-color) / 0.04);
+    --shadow-sm: 0 1px 3px 0 hsl(var(--shadow-color) / 0.06), 0 1px 2px -1px hsl(var(--shadow-color) / 0.06);
+    --shadow-md: 0 4px 12px -2px hsl(var(--shadow-color) / 0.08), 0 2px 4px -2px hsl(var(--shadow-color) / 0.05);
+    --shadow-lg: 0 12px 32px -8px hsl(var(--shadow-color) / 0.16), 0 4px 8px -4px hsl(var(--shadow-color) / 0.06);
+
+    /* Bewegung */
+    --duration-fast: 120ms;
+    --duration-base: 180ms;
+    --duration-slow: 280ms;
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+    /* Schrift (per FontProvider umschaltbar) */
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
   .dark {
-    /* Luka Dev Studio — Midnight dark */
-    --background: 240 7% 6%;          /* Midnight #0D0D0F */
-    --foreground: 240 10% 88%;
+    --brand: 230 100% 66%;
+    --brand-teal: 168 80% 46%;
+
+    --background: 240 8% 6%;          /* Midnight #0D0D0F */
+    --foreground: 240 8% 92%;
     --card: 240 7% 9%;
-    --card-foreground: 240 10% 88%;
-    --popover: 240 7% 9%;
-    --popover-foreground: 240 10% 88%;
-    --primary: 230 100% 65%;          /* Electric Blue — lightened for dark bg */
+    --card-foreground: 240 8% 92%;
+    --popover: 240 7% 10%;
+    --popover-foreground: 240 8% 92%;
+
+    --primary: 230 100% 66%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 7% 13%;
-    --secondary-foreground: 240 10% 88%;
-    --muted: 240 7% 13%;
-    --muted-foreground: 240 9% 52%;
-    --accent: 168 70% 36%;            /* Cyber Teal — toned for dark */
-    --accent-foreground: 168 100% 88%;
-    --destructive: 0 63% 48%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 7% 16%;
-    --input: 240 7% 16%;
-    --ring: 230 100% 65%;
-    --chart-1: 230 100% 65%;
-    --chart-2: 168 80% 46%;
-    --chart-3: 198 93% 60%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 338 85% 60%;
-    --sidebar-background: 240 7% 5%;
-    --sidebar-foreground: 240 10% 78%;
-    --sidebar-primary: 230 100% 65%;
+    --secondary: 240 6% 15%;
+    --secondary-foreground: 240 8% 92%;
+    --muted: 240 6% 14%;
+    --muted-foreground: 240 6% 64%;
+    --accent: 240 6% 15%;
+    --accent-foreground: 240 8% 96%;
+
+    --border: 240 6% 17%;
+    --input: 240 6% 22%;
+    --ring: 230 100% 66%;
+
+    --success: 152 55% 50%;
+    --success-foreground: 240 8% 6%;
+    --warning: 38 92% 58%;
+    --warning-foreground: 240 8% 6%;
+    --info: 199 89% 62%;
+    --info-foreground: 240 8% 6%;
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 240 8% 6%;
+
+    --chart-1: 230 100% 68%;
+    --chart-2: 168 70% 48%;
+    --chart-3: 198 90% 60%;
+    --chart-4: 38 92% 58%;
+    --chart-5: 338 80% 64%;
+
+    --sidebar-background: 240 8% 7%;
+    --sidebar-foreground: 240 6% 70%;
+    --sidebar-primary: 230 100% 66%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 230 40% 16%;        /* dark blue tint for hover */
-    --sidebar-accent-foreground: 230 100% 78%;
-    --sidebar-border: 240 7% 12%;
-    --sidebar-ring: 230 100% 65%;
+    --sidebar-accent: 240 6% 13%;
+    --sidebar-accent-foreground: 240 8% 96%;
+    --sidebar-border: 240 6% 13%;
+    --sidebar-ring: 230 100% 66%;
+
+    --shadow-color: 0 0% 0%;
+    --shadow-xs: 0 1px 2px 0 hsl(var(--shadow-color) / 0.3);
+    --shadow-sm: 0 1px 3px 0 hsl(var(--shadow-color) / 0.35);
+    --shadow-md: 0 4px 12px -2px hsl(var(--shadow-color) / 0.45);
+    --shadow-lg: 0 12px 32px -8px hsl(var(--shadow-color) / 0.6);
+  }
+
+  html.font-inter { --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  html.font-manrope { --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif; }
+  html.font-sora { --font-sans: 'Sora', ui-sans-serif, system-ui, sans-serif; }
+  html.font-system { --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  html {
+    @apply overflow-x-hidden;
+    color-scheme: light;
+  }
+  html.dark { color-scheme: dark; }
+  body {
+    @apply min-h-svh w-full bg-background font-sans text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  :focus-visible {
+    @apply outline-none;
   }
 }
 
+@layer components {
+  /* Typografie-Rollen — in Komponenten bevorzugt über PageHeader/SectionHeader */
+  .text-page-title { @apply text-xl font-semibold tracking-tight sm:text-2xl; }
+  .text-section-title { @apply text-base font-semibold tracking-tight; }
+  .text-caption { @apply text-xs text-muted-foreground; }
+  .text-metric { @apply text-2xl font-semibold tabular-nums tracking-tight; }
+}
 
 .CollapsibleContent {
   overflow: hidden;
 }
 .CollapsibleContent[data-state='open'] {
-  animation: slideDown 200ms ease-out;
+  animation: slideDown var(--duration-base) var(--ease-standard);
 }
 .CollapsibleContent[data-state='closed'] {
-  animation: slideUp 200ms ease-out;
+  animation: slideUp var(--duration-base) var(--ease-standard);
 }
 
 @keyframes slideDown {
@@ -97,9 +192,19 @@
   to { height: 0; }
 }
 
+/* iOS-Zoom beim Fokussieren verhindern */
 @media screen and (max-width: 767px) {
   input, select, textarea {
     font-size: 16px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -109,26 +214,4 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .faded-bottom {
-    @apply after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:hidden after:h-32 after:w-full after:bg-[linear-gradient(180deg,_transparent_10%,_hsl(var(--background))_70%)] after:md:block;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
-  }
-  html { @apply overflow-x-hidden; }
-  body { @apply min-h-svh w-full bg-background text-foreground font-sora; }
-}
-
-/* Subtle card hover lift */
-.card-hover {
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-.card-hover:hover {
-  box-shadow: 0 4px 20px -4px hsl(var(--primary) / 0.15);
-  transform: translateY(-1px);
 }

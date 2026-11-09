@@ -10,23 +10,22 @@ import { NavUser } from '@/components/layout/nav-user'
 import { sidebarData } from './data/sidebar-data'
 import SiteLogo from "@/components/SiteLogo.tsx";
 import React from "react";
-import {useAuthenticatedUserStore} from "@/store/authStore.ts";
+import { useAuthenticatedUserStore } from "@/store/authStore.ts";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const {getUser} = useAuthenticatedUserStore();
-    const user = getUser();
+    const user = useAuthenticatedUserStore((s) => s.getUser());
 
     return (
-        <Sidebar collapsible='icon' variant='sidebar' {...props}>
-            <SidebarHeader>
-                <SiteLogo/>
+        <Sidebar collapsible='icon' variant='sidebar' aria-label='Hauptnavigation' {...props}>
+            <SidebarHeader className='h-14 justify-center border-b border-sidebar-border px-3'>
+                <SiteLogo />
             </SidebarHeader>
-            <SidebarContent>
-                {sidebarData.navGroups.map((props) => (
-                    <NavGroup key={props.title} {...props} />
+            <SidebarContent className='py-2'>
+                {sidebarData.navGroups.map((group, index) => (
+                    <NavGroup key={group.title ?? index} {...group} />
                 ))}
             </SidebarContent>
-            <SidebarFooter>
+            <SidebarFooter className='border-t border-sidebar-border'>
                 <NavUser user={user} />
             </SidebarFooter>
             <SidebarRail />

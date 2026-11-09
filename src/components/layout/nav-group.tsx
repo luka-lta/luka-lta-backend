@@ -31,8 +31,8 @@ import { Link, useLocation } from 'react-router-dom'
 export function NavGroup({ title, items }: NavGroup) {
     const { state } = useSidebar()
     return (
-        <SidebarGroup>
-            <SidebarGroupLabel className="uppercase text-[10px] font-semibold tracking-widest opacity-50 mt-2">{title}</SidebarGroupLabel>
+        <SidebarGroup className='py-1'>
+            {title && <SidebarGroupLabel className='h-7 text-[11px] font-medium text-sidebar-foreground/60'>{title}</SidebarGroupLabel>}
             <SidebarMenu>
                 {items.map((item) => {
                     const key = `${item.title}-${item.url}`
@@ -51,7 +51,7 @@ export function NavGroup({ title, items }: NavGroup) {
 }
 
 const NavBadge = ({ children }: { children: ReactNode }) => (
-    <Badge className='rounded-full px-1 py-0 text-xs'>{children}</Badge>
+    <Badge variant='default' className='ml-auto px-1.5 py-0 text-[10px]'>{children}</Badge>
 )
 
 const SidebarMenuLink = ({ item }: { item: NavLink }) => {
@@ -64,7 +64,7 @@ const SidebarMenuLink = ({ item }: { item: NavLink }) => {
                 isActive={checkIsActive(pathname, item)}
                 tooltip={item.title}
             >
-                <Link to={item.url} onClick={() => setOpenMobile(false)}>
+                <Link to={item.url} onClick={() => setOpenMobile(false)} aria-current={checkIsActive(pathname, item) ? 'page' : undefined}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                     {item.badge && <NavBadge>{item.badge}</NavBadge>}
@@ -80,7 +80,7 @@ const SidebarMenuCollapsible = ({ item }: { item: NavCollapsible }) => {
     return (
         <Collapsible
             asChild
-            defaultOpen={checkIsActive(pathname, item, true)}
+            defaultOpen={checkIsActive(pathname, item)}
             className='group/collapsible'
         >
             <SidebarMenuItem>
@@ -98,9 +98,9 @@ const SidebarMenuCollapsible = ({ item }: { item: NavCollapsible }) => {
                             <SidebarMenuSubItem key={subItem.title}>
                                 <SidebarMenuSubButton
                                     asChild
-                                    isActive={checkIsActive(pathname, subItem)}
+                                    isActive={checkIsActive(pathname, subItem, item.items)}
                                 >
-                                    <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
+                                    <Link to={subItem.url} onClick={() => setOpenMobile(false)} aria-current={checkIsActive(pathname, subItem, item.items) ? 'page' : undefined}>
                                         {subItem.icon && <subItem.icon />}
                                         <span>{subItem.title}</span>
                                         {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
@@ -140,7 +140,7 @@ const SidebarMenuCollapsedDropdown = ({ item }: { item: NavCollapsible }) => {
                         <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>
                             <Link
                                 to={sub.url}
-                                className={`${checkIsActive(pathname, sub) ? 'bg-secondary' : ''}`}
+                                className={checkIsActive(pathname, sub, item.items) ? 'bg-accent font-medium' : undefined}
                             >
                                 {sub.icon && <sub.icon />}
                                 <span className='max-w-52 text-wrap'>{sub.title}</span>
@@ -156,13 +156,17 @@ const SidebarMenuCollapsedDropdown = ({ item }: { item: NavCollapsible }) => {
     )
 }
 
-function checkIsActive(href: string, item: NavItem, mainNav = false) {
-    return (
-        href === item.url || // /endpint?search=param
-        href.split('?')[0] === item.url || // endpoint
-        !!item?.items?.filter((i) => i.url === href).length || // if child nav is active
-        (mainNav &&
-            href.split('/')[1] !== '' &&
-            href.split('/')[1] === item?.url?.split('/')[1])
-    )
+/** Aktiv bei exakter Übereinstimmung oder bei Unterseiten (z. B. /links/42). Die Startseite nur exakt. */
+function matchesPath(pathname: string, url: string, exact: boolean) {
+    const path = pathname.split('?')[0].replace(/\/$/, '')
+    if (path === url) return true
+    if (exact || url === '/dashboard') return false
+    return path.startsWith(url + '/')
+}
+
+function checkIsActive(pathname: string, item: NavItem | (NavLink & { items?: never }), siblings: { url: string }[] = []): boolean {
+    if (item.items) return item.items.some((sub) => matchesPath(pathname, sub.url, false))
+    // Ein Ziel, das Präfix eines Geschwister-Ziels ist (Homelab › Überblick), zählt nur exakt.
+    const exact = siblings.some((s) => s.url !== item.url && s.url.startsWith(item.url + '/'))
+    return matchesPath(pathname, item.url, exact)
 }

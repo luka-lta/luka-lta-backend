@@ -3,46 +3,21 @@ import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 
-interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
-    fixed?: boolean
-    ref?: React.Ref<HTMLElement>
-}
+type HeaderProps = React.HTMLAttributes<HTMLElement>
 
-export const Header = ({
-                           className,
-                           fixed,
-                           children,
-                           ...props
-                       }: HeaderProps) => {
-    const [offset, setOffset] = React.useState(0)
-
-    React.useEffect(() => {
-        const onScroll = () => {
-            setOffset(document.body.scrollTop || document.documentElement.scrollTop)
-        }
-
-        // Add scroll listener to the body
-        document.addEventListener('scroll', onScroll, { passive: true })
-
-        // Clean up the event listener on unmount
-        return () => document.removeEventListener('scroll', onScroll)
-    }, [])
-
-    return (
-        <header
-            className={cn(
-                'flex h-14 items-center gap-3 bg-background/80 backdrop-blur-sm p-4 sm:gap-4 border-b border-border/60',
-                fixed && 'header-fixed peer/header fixed z-50 w-[inherit] rounded-md',
-                offset > 10 && fixed ? 'shadow-sm' : 'shadow-none',
-                className
-            )}
-            {...props}
-        >
-            <SidebarTrigger variant='outline' className='scale-125 sm:scale-100 shrink-0' />
-            <Separator orientation='vertical' className='h-5 shrink-0' />
-            {children}
-        </header>
-    )
-}
+/** Sticky App-Header: Sidebar-Toggle, Breadcrumb, globale Aktionen. */
+export const Header = ({ className, children, ...props }: HeaderProps) => (
+    <header
+        className={cn(
+            'sticky top-0 z-header flex h-14 shrink-0 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-6',
+            className,
+        )}
+        {...props}
+    >
+        <SidebarTrigger className='-ml-1.5 shrink-0' />
+        <Separator orientation='vertical' className='mr-1 h-5 shrink-0' />
+        {children}
+    </header>
+)
 
 Header.displayName = 'Header'
