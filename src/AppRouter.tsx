@@ -12,7 +12,7 @@ import DetailLinktree from "@/feature/linktree/childPages/detail/DetailLinktree.
 import DashboardLayout from "@/components/layout/dashboard-layout.tsx";
 import Settings from "@/feature/SelfOverview";
 import SettingsProfile from "@/feature/SelfOverview/profile";
-import ComingSoon from "@/components/coming-soon.tsx";
+import SettingsAccount from "@/feature/SelfOverview/account";
 import SettingsAppearance from "@/feature/SelfOverview/appearance";
 import ClicksPage from "@/pages/Dashboard/ClicksPage.tsx";
 import BlogPage from "@/pages/Dashboard/BlogPage.tsx";
@@ -146,8 +146,12 @@ export const appRouter = createBrowserRouter([
                         element: <SettingsAppearance/>
                     },
                     {
+                        path: 'account',
+                        element: <SettingsAccount/>
+                    },
+                    {
                         path: '*',
-                        element: <ComingSoon/>
+                        element: <Navigate to="/dashboard/settings" replace/>
                     }
                 ],
             },

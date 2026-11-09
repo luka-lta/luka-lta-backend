@@ -1,30 +1,23 @@
 import ContentSection from "@/feature/SelfOverview/components/content-section.tsx";
 import ProfileForm from "@/feature/SelfOverview/profile/profile-form.tsx";
-import {useSelfUser} from "@/api/self/hooks.ts";
-import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
+import { useSelfUser } from "@/api/self/hooks.ts";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { ErrorState } from "@/components/feedback/error-state.tsx";
 
 function SettingsProfile() {
     const [selfUser] = useSelfUser();
 
-    if (selfUser.isLoading) {
-        return (
-            <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
-                <Spinner size={16} />
-                Loading...
-            </div>
-        );
+    if (selfUser.isPending) {
+        return <Skeleton className="h-96 rounded-xl" aria-label="Wird geladen" />;
     }
 
     if (selfUser.isError) {
-        return <div>Error: {selfUser.error.message}</div>;
+        return <ErrorState title="Profil konnte nicht geladen werden" error={selfUser.error} onRetry={() => selfUser.refetch()} />;
     }
 
     return (
-        <ContentSection
-            title='Profile'
-            desc='This is how others will see you on the site.'
-        >
-            <ProfileForm user={selfUser.data?.user ?? undefined}/>
+        <ContentSection title="Profil" desc="Name, E-Mail und Avatar deines Kontos.">
+            <ProfileForm user={selfUser.data?.user ?? undefined} />
         </ContentSection>
     );
 }

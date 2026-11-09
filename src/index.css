@@ -8,7 +8,8 @@
  * Farben als HSL-Kanäle, damit Tailwind-Opacity-Modifier (bg-success/10) funktionieren.
  */
 @layer base {
-  :root {
+  :root,
+  .light {
     /* Brand */
     --brand: 230 100% 62%;            /* Electric Blue #3D5CFF */
     --brand-teal: 168 100% 42%;       /* Cyber Teal #00D4AA — nur Logo/Charts */

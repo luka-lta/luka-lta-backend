@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
-import { Empty, EmptyMedia, EmptyTitle } from "@/components/ui/empty.tsx";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
 import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications } from "@/api/notifications/hooks.ts";
 import { NotificationItem } from "@/feature/notifications/components/NotificationItem.tsx";
 
@@ -24,16 +24,22 @@ export function NotificationBell() {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="h-4 w-4" />
+                <Button variant="ghost" size="icon-sm" className="relative">
+                    <Bell />
+                    <span className="sr-only">
+                        Benachrichtigungen{unreadCount > 0 ? `, ${unreadCount} ungelesen` : ""}
+                    </span>
                     {unreadCount > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-semibold text-white">
+                        <span
+                            className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground"
+                            aria-hidden
+                        >
                             {badgeLabel}
                         </span>
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-96 p-0">
+            <PopoverContent align="end" className="w-[min(24rem,calc(100vw-2rem))] p-0">
                 <div className="flex items-center justify-between p-3">
                     <p className="text-sm font-semibold">Benachrichtigungen</p>
                     {unreadCount > 0 && (
@@ -44,12 +50,7 @@ export function NotificationBell() {
                 </div>
                 <Separator />
                 {notifications.length === 0 ? (
-                    <Empty className="border-0 py-8">
-                        <EmptyMedia variant="icon">
-                            <ShieldCheck />
-                        </EmptyMedia>
-                        <EmptyTitle>Keine Benachrichtigungen</EmptyTitle>
-                    </Empty>
+                    <EmptyState variant="plain" className="py-8" icon={ShieldCheck} title="Alles ruhig" description="Keine Benachrichtigungen." />
                 ) : (
                     <ScrollArea className="max-h-96">
                         <div className="p-2 space-y-1">
@@ -67,9 +68,9 @@ export function NotificationBell() {
                 <Link
                     to="/dashboard/notifications"
                     onClick={() => setOpen(false)}
-                    className="block p-3 text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="block p-3 text-center text-sm font-medium text-primary transition-colors duration-fast hover:bg-accent"
                 >
-                    Alle Benachrichtigungen →
+                    Alle Benachrichtigungen ansehen
                 </Link>
             </PopoverContent>
         </Popover>
