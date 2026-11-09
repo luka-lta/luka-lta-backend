@@ -1,3 +1,4 @@
+import { useCreateIntent } from "@/hooks/useCreateIntent";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -173,6 +174,7 @@ function ProjectList() {
 
 function ProjectManagementContent() {
   const { setOpen } = useProjects();
+  useCreateIntent(() => setOpen("add"));
 
   return (
     <PageContainer title="Projekte" width="narrow">

@@ -1,3 +1,4 @@
+import { useCreateIntent } from "@/hooks/useCreateIntent";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page.tsx";
@@ -12,6 +13,7 @@ import DeleteApiKeyDialog from "@/feature/apiKeys/components/DeleteApiKeyDialog.
 function ApiKeys() {
     const apiKeys = useApiKeys();
     const [createOpen, setCreateOpen] = useState(false);
+    useCreateIntent(() => setCreateOpen(true));
     const [deleteTarget, setDeleteTarget] = useState<ApiKeyType | null>(null);
 
     return (

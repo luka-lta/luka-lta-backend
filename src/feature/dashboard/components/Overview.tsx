@@ -3,6 +3,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { DayOverviewSection } from '@/feature/dashboard/widgets/DayOverviewSection.tsx'
 import { QuickStats } from '@/feature/dashboard/components/QuickStats.tsx'
+import { QuickActions } from '@/feature/dashboard/components/QuickActions.tsx'
 import { RecentActivity } from '@/feature/dashboard/components/RecentActivity.tsx'
 import { useClickSummary } from '@/api/dashboard/hooks.ts'
 import { useLinktreeList } from '@/api/linktree/hooks.ts'
@@ -60,6 +61,8 @@ function Overview() {
                 totalClicks={clickSummary.data?.summary.totalClicks}
                 clicksMonthly={clickSummary.data?.summary.clicksMonthly}
             />
+
+            <QuickActions />
 
             <DayOverviewSection />
 

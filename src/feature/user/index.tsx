@@ -1,3 +1,4 @@
+import { useCreateIntent } from "@/hooks/useCreateIntent";
 import { Plus } from "lucide-react";
 import { useUserList } from "@/api/user/hooks.ts";
 import UserTable from "@/feature/user/components/UserTable.tsx";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button.tsx";
 function UsersContent() {
     const [userList, setFilterData] = useUserList();
     const { setOpen } = useUsers();
+    useCreateIntent(() => setOpen('add'));
 
     return (
         <PageContainer title="Benutzer">

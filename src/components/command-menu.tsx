@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, FilePlus2, Laptop, LinkIcon, Moon, Plus, Sun } from "lucide-react";
+import { ArrowRight, Laptop, Moon, Sun } from "lucide-react";
+import { QUICK_ACTIONS } from "@/config/quickActions";
 import { useSearch } from '@/context/search-context'
 import {
     CommandDialog,
@@ -14,11 +15,6 @@ import {
 import { sidebarData } from './layout/data/sidebar-data'
 import { useTheme } from "@/context/theme-context.tsx";
 
-const QUICK_ACTIONS = [
-    { label: 'Neuer Blogbeitrag', icon: FilePlus2, to: '/dashboard/blog/create' },
-    { label: 'Links verwalten', icon: LinkIcon, to: '/dashboard/linktree' },
-    { label: 'Projekt anlegen', icon: Plus, to: '/dashboard/projects' },
-] as const
 
 /** ⌘K-Befehlspalette: Navigation, Schnellaktionen, Farbschema. */
 export function CommandMenu() {

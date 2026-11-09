@@ -1,3 +1,4 @@
+import { useCreateIntent } from "@/hooks/useCreateIntent";
 import { Plus } from "lucide-react";
 import { useLinktreeList } from "@/api/linktree/hooks.ts";
 import LinktreeTable from "@/feature/linktree/components/LinktreeTable.tsx";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button.tsx";
 function LinktreeContent() {
     const [linkList, setFilterData] = useLinktreeList();
     const { setOpen } = useLinksContext();
+    useCreateIntent(() => setOpen('add'));
     const links = linkList.data?.links ?? [];
 
     return (
