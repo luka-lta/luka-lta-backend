@@ -58,7 +58,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Failed to load cropped image for compression"));
+    image.onerror = () => reject(new Error("Zugeschnittenes Bild konnte nicht geladen werden"));
     image.src = src;
   });
 }
@@ -120,7 +120,7 @@ async function compressToTarget(dataUrl: string): Promise<Blob> {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) {
-    throw new Error("Could not get canvas context for image compression");
+    throw new Error("Bild konnte nicht komprimiert werden");
   }
 
   let smallestBlob = pngBlob;
@@ -148,7 +148,7 @@ async function compressToTarget(dataUrl: string): Promise<Blob> {
   }
 
   throw new Error(
-    `Image is too large to compress under ${MAX_OUTPUT_BYTES} bytes (smallest result: ${smallestBlob.size} bytes)`,
+    `Bild ist zu groß: auch komprimiert noch ${Math.round(smallestBlob.size / 1024)} KB (max. ${Math.round(MAX_OUTPUT_BYTES / 1024)} KB)`,
   );
 }
 
@@ -189,7 +189,7 @@ export function ProjectImageInput({ type, currentUrl, onSelect, onClear, disable
     }
 
     if (!ACCEPTED_MIME_TYPES.includes(file.type as (typeof ACCEPTED_MIME_TYPES)[number])) {
-      setRejectionMessage(`Unsupported file type: ${file.type || "unknown"}`);
+      setRejectionMessage(`Dateityp wird nicht unterstützt: ${file.type || "unbekannt"}`);
       return;
     }
 
@@ -248,10 +248,10 @@ export function ProjectImageInput({ type, currentUrl, onSelect, onClear, disable
         >
           <ImageCropContent />
           <div className="flex items-center gap-2">
-            <ImageCropApply type="button" size="sm" disabled={disabled}>Apply</ImageCropApply>
-            <ImageCropReset type="button" size="sm" disabled={disabled}>Reset</ImageCropReset>
+            <ImageCropApply type="button" size="sm" disabled={disabled}>Übernehmen</ImageCropApply>
+            <ImageCropReset type="button" size="sm" disabled={disabled}>Zurücksetzen</ImageCropReset>
             <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={handleCancelCrop}>
-              Cancel
+              Abbrechen
             </Button>
           </div>
         </ImageCrop>
@@ -272,10 +272,10 @@ export function ProjectImageInput({ type, currentUrl, onSelect, onClear, disable
           <div className="flex w-full flex-col items-center gap-2">
             <img
               src={previewUrl}
-              alt={`${type} preview`}
+              alt={type === "logo" ? "Logo-Vorschau" : "Cover-Vorschau"}
               className={cn("max-h-40 w-auto rounded-md object-contain", type === "logo" && "aspect-square")}
             />
-            <p className="text-wrap text-muted-foreground text-xs">Drag and drop or click to replace</p>
+            <p className="text-wrap text-muted-foreground text-xs">Bild hierher ziehen oder klicken, um es zu ersetzen</p>
           </div>
         ) : (
           <DropzoneEmptyState />
@@ -287,7 +287,7 @@ export function ProjectImageInput({ type, currentUrl, onSelect, onClear, disable
       {previewUrl && (
         <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={handleClear}>
           <XIcon className="size-4" />
-          Remove {type}
+          {type === "logo" ? "Logo entfernen" : "Cover entfernen"}
         </Button>
       )}
     </div>

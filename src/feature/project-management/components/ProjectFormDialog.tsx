@@ -1,25 +1,15 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { z } from "zod";
 import { Controller, type SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
-import { Button } from "@/components/ui/button.tsx";
 import { TextInput } from "@/components/form/TextInput.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog.tsx";
-import { Separator } from "@/components/ui/separator.tsx";
-import { Spinner } from "@/components/ui/kibo-ui/spinner/index.tsx";
+import { FormDialog } from "@/components/dialogs/form-dialog.tsx";
 import {
   useCreateProject,
   useDeleteProjectAsset,
@@ -30,25 +20,26 @@ import type { Project, ProjectInput, ProjectStatus } from "@/api/projects/schema
 import { ProjectTagsField } from "@/feature/project-management/components/ProjectTagsField.tsx";
 import { ProjectImageInput } from "@/feature/project-management/components/ProjectImageInput.tsx";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
+import { PROJECT_STATUS } from "@/feature/project-management/projectStatus.ts";
 
 /** Slugs, die bereits von statischen Routen belegt sind (serverseitig ebenfalls geprueft). */
 const RESERVED_SLUGS = ["manage", "order", "tags"];
 
 const PROJECT_STATUS_OPTIONS: { value: ProjectStatus; label: string }[] = [
-  { value: "development", label: "Development" },
-  { value: "beta", label: "Beta" },
-  { value: "active", label: "Active" },
-  { value: "paused", label: "Paused" },
-  { value: "archived", label: "Archived" },
+  { value: "development", label: PROJECT_STATUS.development.label },
+  { value: "beta", label: PROJECT_STATUS.beta.label },
+  { value: "active", label: PROJECT_STATUS.active.label },
+  { value: "paused", label: PROJECT_STATUS.paused.label },
+  { value: "archived", label: PROJECT_STATUS.archived.label },
 ];
 
 const projectFormSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
+  name: z.string().min(1, "Name ist erforderlich").max(100, "Höchstens 100 Zeichen"),
   slug: z
     .string()
     .max(100)
-    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Only lowercase letters, digits and single hyphens")
-    .refine((value) => !RESERVED_SLUGS.includes(value), "This slug is reserved")
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Nur Kleinbuchstaben, Ziffern und einzelne Bindestriche")
+    .refine((value) => !RESERVED_SLUGS.includes(value), "Dieser Slug ist reserviert")
     .or(z.literal("")),
   shortDescription: z.string().max(255).or(z.literal("")),
   description: z.string().or(z.literal("")),
@@ -57,17 +48,17 @@ const projectFormSchema = z.object({
   category: z.string().max(50).or(z.literal("")),
   tagIds: z.array(z.number()),
   techStack: z.string(),
-  websiteUrl: z.string().url("Must be a valid http(s) URL").or(z.literal("")),
+  websiteUrl: z.string().url("Muss eine gültige http(s)-URL sein").or(z.literal("")),
   liveLabel: z.string().max(100).or(z.literal("")),
-  repositoryUrl: z.string().url("Must be a valid http(s) URL").or(z.literal("")),
+  repositoryUrl: z.string().url("Muss eine gültige http(s)-URL sein").or(z.literal("")),
   repositoryOwner: z.string().max(100).or(z.literal("")),
   repositoryName: z.string().max(100).or(z.literal("")),
-  demoUrl: z.string().url("Must be a valid http(s) URL").or(z.literal("")),
-  documentationUrl: z.string().url("Must be a valid http(s) URL").or(z.literal("")),
+  demoUrl: z.string().url("Muss eine gültige http(s)-URL sein").or(z.literal("")),
+  documentationUrl: z.string().url("Muss eine gültige http(s)-URL sein").or(z.literal("")),
   role: z.string().max(100).or(z.literal("")),
   projectYear: z
     .string()
-    .regex(/^\d{4}$/, "Year must be a 4-digit number")
+    .regex(/^\d{4}$/, "Jahr bitte vierstellig angeben")
     .or(z.literal("")),
   isClientProject: z.boolean(),
 });
@@ -256,7 +247,7 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
         setIsUploadingAssets(false);
       } catch (assetError) {
         setIsUploadingAssets(false);
-        const message = `Project saved, but the image upload failed: ${getApiErrorMessage(assetError)}`;
+        const message = `Projekt gespeichert, aber der Bild-Upload ist fehlgeschlagen: ${getApiErrorMessage(assetError)}`;
         setAssetErrorMessage(message);
         toast.error(message);
         return;
@@ -264,7 +255,7 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
 
       resetLocalState();
       handleOpenChange(false);
-      toast.success(mode === "edit" ? "Project updated successfully!" : "Project created successfully!");
+      toast.success(mode === "edit" ? "Projekt gespeichert" : "Projekt angelegt");
     } catch (saveErrorValue) {
       const message = getApiErrorMessage(saveErrorValue);
 
@@ -276,259 +267,235 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
     }
   };
 
+  const submitLabel =
+    mode === "edit" ? "Speichern" : createdProjectId ? "Bild-Upload wiederholen" : "Projekt anlegen";
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="flex max-h-[85vh] flex-col gap-0 p-0 sm:max-w-2xl">
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          noValidate
-          className="flex min-h-0 flex-1 flex-col"
-        >
-          <DialogHeader className="px-6 pb-4 pt-6">
-            <DialogTitle className="text-xl">{mode === "edit" ? "Edit Project" : "Create Project"}</DialogTitle>
-            <DialogDescription>
-              {mode === "edit"
-                ? "Update this project's information."
-                : "Add a new project to the public portfolio."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <Separator />
-
-          <div className="max-h-[80vh] space-y-6 overflow-y-auto px-6 py-6">
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Basics</h3>
-
-              <TextInput name="name" id="project-name" label="Name" form={form} type="text" />
-              <TextInput
-                name="slug"
-                id="project-slug"
-                label="Slug"
-                form={form}
-                type="text"
-                placeholder="Leave empty to derive from name"
-              />
-              <TextInput
-                name="shortDescription"
-                id="project-short-description"
-                label="Short Description"
-                form={form}
-                type="text"
-              />
-
-              <div className="flex flex-col items-start gap-2">
-                <Label htmlFor="project-description">Description</Label>
-                <Controller
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <Textarea id="project-description" className="w-full" {...field} />
-                  )}
-                />
-              </div>
-
-              <div className="flex flex-col items-start gap-2">
-                <Label htmlFor="project-status">Status</Label>
-                <Controller
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger id="project-status" className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PROJECT_STATUS_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-
-              <div className="flex flex-col items-start gap-2">
-                <Label htmlFor="project-is-visible">Visible</Label>
-                <Controller
-                  control={form.control}
-                  name="isVisible"
-                  render={({ field }) => (
-                    <Switch
-                      id="project-is-visible"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  )}
-                />
-              </div>
-
-              <TextInput name="category" id="project-category" label="Category" form={form} type="text" />
-
-              <Controller
-                control={form.control}
-                name="tagIds"
-                render={({ field }) => <ProjectTagsField value={field.value} onChange={field.onChange} />}
-              />
-
-              <TextInput
-                name="techStack"
-                id="project-tech-stack"
-                label="Tech Stack"
-                form={form}
-                type="text"
-                placeholder="PHP, MySQL"
-              />
-            </div>
-
-            <Separator />
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Links</h3>
-
-              <TextInput name="websiteUrl" id="project-website-url" label="Website URL" form={form} type="url" />
-              <TextInput name="liveLabel" id="project-live-label" label="Live Label" form={form} type="text" />
-              <TextInput
-                name="repositoryUrl"
-                id="project-repository-url"
-                label="Repository URL"
-                form={form}
-                type="url"
-              />
-              <TextInput
-                name="repositoryOwner"
-                id="project-repository-owner"
-                label="Repository Owner"
-                form={form}
-                type="text"
-              />
-              <TextInput
-                name="repositoryName"
-                id="project-repository-name"
-                label="Repository Name"
-                form={form}
-                type="text"
-              />
-              <TextInput name="demoUrl" id="project-demo-url" label="Demo URL" form={form} type="url" />
-              <TextInput
-                name="documentationUrl"
-                id="project-documentation-url"
-                label="Documentation URL"
-                form={form}
-                type="url"
-              />
-            </div>
-
-            <Separator />
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Details</h3>
-
-              <TextInput name="role" id="project-role" label="Role" form={form} type="text" />
-              <TextInput name="projectYear" id="project-year" label="Year" form={form} type="number" />
-
-              <div className="flex flex-col items-start gap-2">
-                <Label htmlFor="project-is-client-project">Client Project</Label>
-                <Controller
-                  control={form.control}
-                  name="isClientProject"
-                  render={({ field }) => (
-                    <Switch
-                      id="project-is-client-project"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  )}
-                />
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Images</h3>
-
-              <div className="space-y-1.5">
-                <Label>Logo</Label>
-                <ProjectImageInput
-                  type="logo"
-                  currentUrl={logoRemoved ? null : project?.logo?.url ?? null}
-                  disabled={isSaving}
-                  onSelect={(blob, fileName) => {
-                    setLogoRemoved(false);
-                    setLogoAsset({ blob, fileName });
-                  }}
-                  onClear={() => {
-                    setLogoAsset(null);
-                    setLogoRemoved(true);
-                  }}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Cover</Label>
-                <ProjectImageInput
-                  type="cover"
-                  currentUrl={coverRemoved ? null : project?.cover?.url ?? null}
-                  disabled={isSaving}
-                  onSelect={(blob, fileName) => {
-                    setCoverRemoved(false);
-                    setCoverAsset({ blob, fileName });
-                  }}
-                  onClear={() => {
-                    setCoverAsset(null);
-                    setCoverRemoved(true);
-                  }}
-                />
-              </div>
-            </div>
-
-            {(saveError || assetErrorMessage) && (
-              <Alert variant="destructive" className="animate-in fade-in-50">
-                <AlertTitle>
-                  {assetErrorMessage
-                    ? "Image upload failed"
-                    : mode === "edit"
-                      ? "Error updating project"
-                      : "Error creating project"}
-                </AlertTitle>
-                <AlertDescription className="mt-2">
-                  {assetErrorMessage ?? getApiErrorMessage(saveError)}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-
-          <Separator />
-
-          <DialogFooter className="flex-col gap-2 px-6 py-4 sm:flex-row">
-            <Button
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-              type="button"
-              className="w-full sm:w-auto"
-              disabled={isSaving}
-            >
-              Cancel
-            </Button>
-            <Button className="w-full sm:w-auto" type="submit" disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Spinner size={16} className="mr-2" />
-                  Saving...
-                </>
-              ) : mode === "edit" ? (
-                "Save Changes"
-              ) : createdProjectId ? (
-                "Retry image upload"
-              ) : (
-                "Create Project"
+    <FormDialog
+      open={open}
+      onOpenChange={handleOpenChange}
+      size="lg"
+      title={mode === "edit" ? "Projekt bearbeiten" : "Projekt anlegen"}
+      description={
+        mode === "edit"
+          ? "Änderungen erscheinen direkt im öffentlichen Portfolio."
+          : "Neues Projekt für das öffentliche Portfolio."
+      }
+      onSubmit={form.handleSubmit(onSubmit)}
+      submitLabel={submitLabel}
+      isSubmitting={isSaving}
+    >
+      <FormSection title="Grunddaten">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <TextInput name="name" id="project-name" label="Name" form={form} type="text" />
+          <TextInput
+            name="slug"
+            id="project-slug"
+            label="Slug"
+            form={form}
+            type="text"
+            optional
+            placeholder="wird aus dem Namen erzeugt"
+          />
+        </div>
+        <TextInput
+          name="shortDescription"
+          id="project-short-description"
+          label="Kurzbeschreibung"
+          form={form}
+          type="text"
+          optional
+          description="Ein Satz für Karten und Übersichten."
+        />
+        <div className="space-y-2">
+          <Label htmlFor="project-description">
+            Beschreibung <span className="font-normal text-muted-foreground">(optional)</span>
+          </Label>
+          <Controller
+            control={form.control}
+            name="description"
+            render={({ field }) => <Textarea id="project-description" rows={4} {...field} />}
+          />
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="project-status">Status</Label>
+            <Controller
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="project-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PROJECT_STATUS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            />
+          </div>
+          <TextInput name="category" id="project-category" label="Kategorie" form={form} type="text" optional />
+        </div>
+        <SwitchField
+          id="project-is-visible"
+          label="Im Portfolio anzeigen"
+          description="Ausgeblendete Projekte bleiben hier erhalten, sind öffentlich aber nicht sichtbar."
+          control={
+            <Controller
+              control={form.control}
+              name="isVisible"
+              render={({ field }) => (
+                <Switch id="project-is-visible" checked={field.value} onCheckedChange={field.onChange} />
+              )}
+            />
+          }
+        />
+        <Controller
+          control={form.control}
+          name="tagIds"
+          render={({ field }) => <ProjectTagsField value={field.value} onChange={field.onChange} />}
+        />
+        <TextInput
+          name="techStack"
+          id="project-tech-stack"
+          label="Tech-Stack"
+          form={form}
+          type="text"
+          optional
+          placeholder="PHP, MySQL, React"
+          description="Mehrere Einträge mit Komma trennen."
+        />
+      </FormSection>
+
+      <FormSection title="Links">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <TextInput name="websiteUrl" id="project-website-url" label="Website" form={form} type="url" optional placeholder="https://" />
+          <TextInput name="liveLabel" id="project-live-label" label="Link-Beschriftung" form={form} type="text" optional />
+        </div>
+        <TextInput
+          name="repositoryUrl"
+          id="project-repository-url"
+          label="Repository"
+          form={form}
+          type="url"
+          optional
+          placeholder="https://github.com/…"
+        />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <TextInput name="repositoryOwner" id="project-repository-owner" label="Repository-Owner" form={form} type="text" optional />
+          <TextInput name="repositoryName" id="project-repository-name" label="Repository-Name" form={form} type="text" optional />
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <TextInput name="demoUrl" id="project-demo-url" label="Demo" form={form} type="url" optional placeholder="https://" />
+          <TextInput name="documentationUrl" id="project-documentation-url" label="Dokumentation" form={form} type="url" optional placeholder="https://" />
+        </div>
+      </FormSection>
+
+      <FormSection title="Details">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <TextInput name="role" id="project-role" label="Rolle" form={form} type="text" optional placeholder="z. B. Full-Stack" />
+          <TextInput name="projectYear" id="project-year" label="Jahr" form={form} type="number" optional />
+        </div>
+        <SwitchField
+          id="project-is-client-project"
+          label="Kundenprojekt"
+          control={
+            <Controller
+              control={form.control}
+              name="isClientProject"
+              render={({ field }) => (
+                <Switch id="project-is-client-project" checked={field.value} onCheckedChange={field.onChange} />
+              )}
+            />
+          }
+        />
+      </FormSection>
+
+      <FormSection title="Bilder">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Logo <span className="font-normal text-muted-foreground">(quadratisch)</span></Label>
+            <ProjectImageInput
+              type="logo"
+              currentUrl={logoRemoved ? null : project?.logo?.url ?? null}
+              disabled={isSaving}
+              onSelect={(blob, fileName) => {
+                setLogoRemoved(false);
+                setLogoAsset({ blob, fileName });
+              }}
+              onClear={() => {
+                setLogoAsset(null);
+                setLogoRemoved(true);
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Cover</Label>
+            <ProjectImageInput
+              type="cover"
+              currentUrl={coverRemoved ? null : project?.cover?.url ?? null}
+              disabled={isSaving}
+              onSelect={(blob, fileName) => {
+                setCoverRemoved(false);
+                setCoverAsset({ blob, fileName });
+              }}
+              onClear={() => {
+                setCoverAsset(null);
+                setCoverRemoved(true);
+              }}
+            />
+          </div>
+        </div>
+      </FormSection>
+
+      {(saveError || assetErrorMessage) && (
+        <Alert variant="destructive">
+          <AlertTitle>
+            {assetErrorMessage
+              ? "Bild-Upload fehlgeschlagen"
+              : mode === "edit"
+                ? "Projekt konnte nicht gespeichert werden"
+                : "Projekt konnte nicht angelegt werden"}
+          </AlertTitle>
+          <AlertDescription>{assetErrorMessage ?? getApiErrorMessage(saveError)}</AlertDescription>
+        </Alert>
+      )}
+    </FormDialog>
+  );
+}
+
+function FormSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <fieldset className="space-y-5 border-t pt-5 first:border-t-0 first:pt-0">
+      <legend className="float-left mb-1 w-full text-sm font-semibold">{title}</legend>
+      {children}
+    </fieldset>
+  );
+}
+
+function SwitchField({
+  id,
+  label,
+  description,
+  control,
+}: {
+  id: string;
+  label: string;
+  description?: string;
+  control: ReactNode;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-lg border px-4 py-3">
+      <div className="space-y-0.5">
+        <Label htmlFor={id} className="cursor-pointer">{label}</Label>
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      </div>
+      {control}
+    </div>
   );
 }

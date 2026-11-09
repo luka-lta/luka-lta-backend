@@ -60,7 +60,7 @@ export function ProjectTagsField({ value, onChange }: Props) {
         }
 
         setSearch("");
-        toast.success(`Tag "${tag.name}" ready to use.`);
+        toast.success(`Tag „${tag.name}“ hinzugefügt`);
       },
       onError: (error) => {
         toast.error(getApiErrorMessage(error));
@@ -69,10 +69,10 @@ export function ProjectTagsField({ value, onChange }: Props) {
   }
 
   return (
-    <div className="space-y-1.5">
-      <Label>Tags</Label>
+    <div className="space-y-2">
+      <Label>Tags <span className="font-normal text-muted-foreground">(optional)</span></Label>
       <Tags>
-        <TagsTrigger>
+        <TagsTrigger className="bg-card font-normal shadow-xs">
           {selected.map((tagId) => (
             <TagsValue key={tagId} onRemove={() => handleRemove(tagId)}>
               {available.find((tag) => String(tag.tagId) === tagId)?.name ?? tagId}
@@ -80,11 +80,11 @@ export function ProjectTagsField({ value, onChange }: Props) {
           ))}
         </TagsTrigger>
         <TagsContent>
-          <TagsInput placeholder="Search or create a tag..." value={search} onValueChange={setSearch} />
+          <TagsInput placeholder="Tag suchen oder neu anlegen…" value={search} onValueChange={setSearch} />
           <TagsList>
             <TagsEmpty>
               {search.trim() === "" ? (
-                "No tags yet."
+                "Noch keine Tags."
               ) : (
                 <Button
                   type="button"
@@ -94,7 +94,7 @@ export function ProjectTagsField({ value, onChange }: Props) {
                   onClick={handleCreate}
                 >
                   {createTag.isPending ? <Spinner size={14} className="mr-2" /> : <Plus className="mr-2 size-3.5" />}
-                  Create "{search.trim()}"
+                  „{search.trim()}“ anlegen
                 </Button>
               )}
             </TagsEmpty>
