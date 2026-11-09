@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckIcon, Plus } from "lucide-react";
+import { CheckIcon, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
   Tags,
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/kibo-ui/tags";
 import { Button } from "@/components/ui/button.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { Spinner } from "@/components/ui/kibo-ui/spinner/index.tsx";
 import { useCreateProjectTag, useProjectTags } from "@/api/project-tags/hooks.ts";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
 
@@ -93,7 +92,7 @@ export function ProjectTagsField({ value, onChange }: Props) {
                   disabled={createTag.isPending}
                   onClick={handleCreate}
                 >
-                  {createTag.isPending ? <Spinner size={14} className="mr-2" /> : <Plus className="mr-2 size-3.5" />}
+                  {createTag.isPending ? <Loader2 className="mr-2 size-3.5 animate-spin" aria-hidden="true" /> : <Plus className="mr-2 size-3.5" />}
                   „{search.trim()}“ anlegen
                 </Button>
               )}

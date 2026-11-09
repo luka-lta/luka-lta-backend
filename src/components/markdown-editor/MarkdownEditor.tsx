@@ -130,8 +130,7 @@ function applyAction(textarea: HTMLTextAreaElement, action: ToolbarAction, curre
 }
 
 function MarkdownEditor({value, onChange, height = 520, className}: MarkdownEditorProps) {
-    // @ts-ignore
-    const [content, setContent] = useState<JSONContent>(value);
+    const [content, setContent] = useState<JSONContent | string>(value);
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     const handleToolbar = (action: ToolbarAction) => {
@@ -144,7 +143,6 @@ function MarkdownEditor({value, onChange, height = 520, className}: MarkdownEdit
     const handleUpdate = ({editor}: { editor: Editor }) => {
         const json = editor.getJSON();
         setContent(json);
-        console.log(JSON.stringify(json));
     };
 
     return (
