@@ -33,6 +33,8 @@ interface TopologyFiltersProps {
     hosts: HostOption[];
     selectedHostIds: Set<string>;
     onSelectedHostIdsChange: (hostIds: Set<string>) => void;
+    showPeerLinks: boolean;
+    onToggleShowPeerLinks: (value: boolean) => void;
 }
 
 function hostFilterLabel(hosts: HostOption[], selectedHostIds: Set<string>): string {
@@ -52,6 +54,8 @@ function TopologyFilters({
     hosts,
     selectedHostIds,
     onSelectedHostIdsChange,
+    showPeerLinks,
+    onToggleShowPeerLinks,
 }: TopologyFiltersProps) {
     function toggleHost(hostId: string, checked: boolean) {
         const next = new Set(selectedHostIds);
@@ -107,6 +111,12 @@ function TopologyFilters({
                         {CATEGORY_LABEL[category]}
                     </Toggle>
                 ))}
+            </div>
+            <div className="flex items-center gap-2 border-l pl-3">
+                <Switch id="peer-links" checked={showPeerLinks} onCheckedChange={onToggleShowPeerLinks} />
+                <Label htmlFor="peer-links" className="text-sm font-normal">
+                    Peer links
+                </Label>
             </div>
             <div className="flex items-center gap-2 border-l pl-3">
                 <Switch id="problems-only" checked={problemsOnly} onCheckedChange={onToggleProblemsOnly} />

@@ -27,6 +27,7 @@ function InfrastructureMap() {
     const [activeCategories, setActiveCategories] = useState<Set<NodeCategory>>(new Set(NODE_CATEGORIES));
     const [problemsOnly, setProblemsOnly] = useState(false);
     const [selectedHostIds, setSelectedHostIds] = useState<Set<string>>(new Set());
+    const [showPeerLinks, setShowPeerLinks] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [selectedContainerId, setSelectedContainerId] = useState<string | null>(null);
@@ -111,6 +112,8 @@ function InfrastructureMap() {
                     hosts={hostOptions}
                     selectedHostIds={selectedHostIds}
                     onSelectedHostIdsChange={setSelectedHostIds}
+                    showPeerLinks={showPeerLinks}
+                    onToggleShowPeerLinks={setShowPeerLinks}
                 />
                 <div className="flex items-center gap-2">
                     <TopologySearch value={searchQuery} onChange={setSearchQuery} />
@@ -126,11 +129,11 @@ function InfrastructureMap() {
             </div>
 
             {topology.isPending ? (
-                <div className="flex h-[600px] items-center justify-center rounded-lg border text-sm text-muted-foreground">
+                <div className="flex h-[520px] items-center justify-center rounded-lg border text-sm text-muted-foreground">
                     Loading infrastructure map…
                 </div>
             ) : graph.nodes.length === 0 ? (
-                <div className="flex h-[600px] flex-col items-center justify-center gap-2 rounded-lg border px-6 text-center text-sm text-muted-foreground">
+                <div className="flex h-[520px] flex-col items-center justify-center gap-2 rounded-lg border px-6 text-center text-sm text-muted-foreground">
                     <Waypoints className="h-8 w-8" />
                     <p>The map is curated and still empty.</p>
                     <p>Add nodes by hand, or let Claude inspect the homelab via MCP and review its draft here.</p>
@@ -141,6 +144,7 @@ function InfrastructureMap() {
                     activeCategories={activeCategories}
                     problemsOnly={problemsOnly}
                     selectedHostIds={selectedHostIds}
+                    showPeerLinks={showPeerLinks}
                     searchQuery={searchQuery}
                     onNodeClick={(node) => setSelectedNodeId(node.id)}
                 />
