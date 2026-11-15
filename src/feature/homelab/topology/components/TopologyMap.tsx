@@ -10,6 +10,7 @@ import {
     ReactFlowProvider,
     useNodesState,
     useReactFlow,
+    useStore,
     type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -108,7 +109,8 @@ function TopologyMapInner({
     searchQuery,
     onNodeClick,
 }: TopologyMapProps) {
-    const { fitView, fitBounds } = useReactFlow();
+    const { fitView, fitBounds, viewportInitialized } = useReactFlow();
+    const paneMeasured = useStore((state) => state.width > 0 && state.height > 0);
     const { theme } = useTheme();
     const [bounds, setBounds] = useState<LayoutBounds | null>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState<TopologyFlowNode>([]);
@@ -185,10 +187,11 @@ function TopologyMapInner({
 
     // Fit to the bounds the layout computed: React Flow's own fitView relies on measured node sizes,
     // which lag behind for host frames that change size between layouts.
+    // Needs an initialised pan/zoom and a measured pane, otherwise fitBounds silently does nothing.
     const fitToLayout = useCallback(() => {
-        if (bounds === null || bounds.width === 0) return;
+        if (!viewportInitialized || !paneMeasured || bounds === null || bounds.width === 0) return;
         void fitBounds(bounds, { padding: FIT_PADDING });
-    }, [bounds, fitBounds]);
+    }, [viewportInitialized, paneMeasured, bounds, fitBounds]);
 
     useEffect(() => {
         fitToLayout();
