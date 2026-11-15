@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
     Background,
+    ControlButton,
     Controls,
     MarkerType,
     MiniMap,
     Panel,
     ReactFlow,
     ReactFlowProvider,
-    useNodesInitialized,
     useNodesState,
     useReactFlow,
     type Edge,
@@ -15,10 +15,10 @@ import {
 import "@xyflow/react/dist/style.css";
 import { Button } from "@/components/ui/button.tsx";
 import { useTheme } from "@/context/theme-context.tsx";
-import { LocateFixed } from "lucide-react";
+import { Maximize, LocateFixed } from "lucide-react";
 import InfraNode from "./InfraNode.tsx";
 import HostGroupNode from "./HostGroupNode.tsx";
-import { layoutTopology, type TopologyFlowNode } from "@/feature/homelab/topology/layout.ts";
+import { layoutTopology, type LayoutBounds, type TopologyFlowNode } from "@/feature/homelab/topology/layout.ts";
 import { EDGE_RELATION_LABEL, getNodeTypeConfig } from "@/feature/homelab/topology/constants.ts";
 import type {
     EdgeRelation,
@@ -29,6 +29,9 @@ import type {
 import type { NodeCategory } from "@/feature/homelab/topology/constants.ts";
 
 const NODE_TYPES = { infra: InfraNode, hostGroup: HostGroupNode };
+
+/** Space around the map when fitting it into view, as a share of the viewport. */
+const FIT_PADDING = 0.08;
 
 /** Opacity of edges that are not connected to the focused node. */
 const UNFOCUSED_EDGE_OPACITY = 0.12;
@@ -105,10 +108,9 @@ function TopologyMapInner({
     searchQuery,
     onNodeClick,
 }: TopologyMapProps) {
-    const { fitView } = useReactFlow();
+    const { fitView, fitBounds } = useReactFlow();
     const { theme } = useTheme();
-    const nodesInitialized = useNodesInitialized();
-    const [fitPending, setFitPending] = useState(false);
+    const [bounds, setBounds] = useState<LayoutBounds | null>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState<TopologyFlowNode>([]);
     const [hiddenEdgeIds, setHiddenEdgeIds] = useState<Set<string>>(new Set());
     const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -171,7 +173,7 @@ function TopologyMapInner({
             if (cancelled) return;
             setNodes(result.nodes);
             setHiddenEdgeIds(result.hiddenEdgeIds);
-            setFitPending(true);
+            setBounds(result.bounds);
         });
 
         return () => {
@@ -181,12 +183,16 @@ function TopologyMapInner({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [structureKey, layoutRun]);
 
-    // fitView only considers measured nodes — wait until React Flow has measured the new layout.
+    // Fit to the bounds the layout computed: React Flow's own fitView relies on measured node sizes,
+    // which lag behind for host frames that change size between layouts.
+    const fitToLayout = useCallback(() => {
+        if (bounds === null || bounds.width === 0) return;
+        void fitBounds(bounds, { padding: FIT_PADDING });
+    }, [bounds, fitBounds]);
+
     useEffect(() => {
-        if (!fitPending || !nodesInitialized) return;
-        fitView({ padding: 0.1, maxZoom: 1.2 });
-        setFitPending(false);
-    }, [fitPending, nodesInitialized, fitView]);
+        fitToLayout();
+    }, [fitToLayout]);
 
     // Structure-independent updates (status changed): patch node data in place without
     // touching position, so pan/zoom isn't disturbed.
@@ -290,7 +296,11 @@ function TopologyMapInner({
                 proOptions={{ hideAttribution: true }}
             >
                 <Background gap={20} size={1} className="opacity-40" />
-                <Controls showInteractive={false} />
+                <Controls showInteractive={false} showFitView={false}>
+                    <ControlButton onClick={fitToLayout} title="Ganze Karte zeigen" aria-label="Ganze Karte zeigen">
+                        <Maximize />
+                    </ControlButton>
+                </Controls>
                 <MiniMap pannable zoomable className="!bg-card" />
                 <Panel position="top-left">
                     <div className="flex flex-wrap gap-3 rounded-md border bg-card/90 px-3 py-1.5 text-xs text-muted-foreground shadow-xs">
