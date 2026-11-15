@@ -18,7 +18,7 @@ import { LocateFixed } from "lucide-react";
 import InfraNode from "./InfraNode.tsx";
 import { layoutGraph } from "@/feature/homelab/topology/layout.ts";
 import { getNodeTypeConfig } from "@/feature/homelab/topology/constants.ts";
-import type { InfraNodeData, TopologyGraph } from "@/feature/homelab/topology/types.ts";
+import type { InfraEdgeData, InfraNodeData, TopologyGraph } from "@/feature/homelab/topology/types.ts";
 import type { NodeCategory } from "@/feature/homelab/topology/constants.ts";
 
 const NODE_TYPES = { infra: InfraNode };
@@ -27,6 +27,7 @@ interface TopologyMapProps {
     graph: TopologyGraph;
     activeCategories: Set<NodeCategory>;
     problemsOnly: boolean;
+    selectedHostIds: Set<string>;
     searchQuery: string;
     onNodeClick: (node: InfraNodeData) => void;
 }
@@ -38,14 +39,60 @@ function matchesFilters(node: InfraNodeData, activeCategories: Set<NodeCategory>
     return true;
 }
 
-function TopologyMapInner({ graph, activeCategories, problemsOnly, searchQuery, onNodeClick }: TopologyMapProps) {
+/**
+ * Host filter: linked nodes are shown when their host is selected. Unlinked nodes (Internet,
+ * domains, Cloudflare …) stay visible as long as a chain of unlinked nodes connects them to a
+ * shown linked node — so the path "Internet → domain → proxy" survives filtering by host.
+ */
+function nodesOnHosts(nodes: InfraNodeData[], edges: InfraEdgeData[], hostIds: Set<string>): Set<string> | null {
+    if (hostIds.size === 0) return null;
+
+    const byId = new Map(nodes.map((node) => [node.id, node]));
+    const neighbors = new Map<string, string[]>();
+    for (const edge of edges) {
+        neighbors.set(edge.sourceId, [...(neighbors.get(edge.sourceId) ?? []), edge.targetId]);
+        neighbors.set(edge.targetId, [...(neighbors.get(edge.targetId) ?? []), edge.sourceId]);
+    }
+
+    const shown = new Set(nodes.filter((node) => node.ref && hostIds.has(node.ref.hostId)).map((node) => node.id));
+    const queue = [...shown];
+    for (let i = 0; i < queue.length; i++) {
+        for (const neighborId of neighbors.get(queue[i]) ?? []) {
+            const neighbor = byId.get(neighborId);
+            if (!neighbor || neighbor.ref || shown.has(neighborId)) continue;
+            shown.add(neighborId);
+            queue.push(neighborId);
+        }
+    }
+
+    return shown;
+}
+
+function TopologyMapInner({
+    graph,
+    activeCategories,
+    problemsOnly,
+    selectedHostIds,
+    searchQuery,
+    onNodeClick,
+}: TopologyMapProps) {
     const { fitView } = useReactFlow();
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
+    const hostNodeIds = useMemo(
+        () => nodesOnHosts(graph.nodes, graph.edges, selectedHostIds),
+        [graph.nodes, graph.edges, selectedHostIds],
+    );
+
     const visibleNodeData = useMemo(
-        () => graph.nodes.filter((node) => matchesFilters(node, activeCategories, problemsOnly)),
-        [graph.nodes, activeCategories, problemsOnly],
+        () =>
+            graph.nodes.filter(
+                (node) =>
+                    (hostNodeIds === null || hostNodeIds.has(node.id)) &&
+                    matchesFilters(node, activeCategories, problemsOnly),
+            ),
+        [graph.nodes, hostNodeIds, activeCategories, problemsOnly],
     );
     const visibleIds = useMemo(() => new Set(visibleNodeData.map((n) => n.id)), [visibleNodeData]);
 
@@ -93,7 +140,7 @@ function TopologyMapInner({ graph, activeCategories, problemsOnly, searchQuery, 
             data: { relation: edge.relation },
             animated: false,
             style: edgeStyle(edge.relation),
-            label: edge.relation === "routes_to" ? (edge.metadata.rule as string | undefined) : undefined,
+            label: edge.relation === "routes_to" && typeof edge.metadata.rule === "string" ? edge.metadata.rule : undefined,
             labelStyle: { fontSize: 10 },
         }));
 

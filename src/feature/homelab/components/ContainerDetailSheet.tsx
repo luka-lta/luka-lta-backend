@@ -3,14 +3,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.t
 import { Progress } from "@/components/ui/progress.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { CopyButton } from "@/components/CopyButton.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart.tsx";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { TimeCell } from "@/components/TimeCell.tsx";
 import { ContainerStatusBadge, HealthBadge } from "@/feature/homelab/components/ContainerStatusBadge.tsx";
 import type { Container, Host } from "@/feature/homelab/types.ts";
 import { formatUptime } from "@/feature/homelab/data.ts";
-import { useUpdateContainerNodeRole } from "@/api/homelab/topologyHooks.ts";
 import { RotateCcw } from "lucide-react";
 
 interface ContainerDetailSheetProps {
@@ -53,8 +51,6 @@ function MetricChart({ data, unit }: { data: { timestamp: string; value: number 
 }
 
 export function ContainerDetailSheet({ open, container, host, isLoading, onOpenChange }: ContainerDetailSheetProps) {
-    const updateNodeRole = useUpdateContainerNodeRole();
-
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
@@ -200,32 +196,13 @@ export function ContainerDetailSheet({ open, container, host, isLoading, onOpenC
 
                             <TabsContent value="config" className="space-y-4 pt-4 text-sm">
                                 <div>
-                                    <p className="font-medium mb-1.5">Topology role</p>
-                                    <Select
-                                        value={container.nodeRole ?? "unset"}
-                                        onValueChange={(value) =>
-                                            updateNodeRole.mutate({
-                                                containerId: container.id,
-                                                nodeRole: value === "unset" ? null : value,
-                                            })
-                                        }
-                                    >
-                                        <SelectTrigger className="w-48">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="unset">Default (container)</SelectItem>
-                                            <SelectItem value="reverse-proxy">Reverse proxy</SelectItem>
-                                            <SelectItem value="database">Database</SelectItem>
-                                            <SelectItem value="application">Application</SelectItem>
-                                            <SelectItem value="storage">Storage</SelectItem>
-                                            <SelectItem value="monitoring">Monitoring</SelectItem>
-                                            <SelectItem value="dns">DNS</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <p className="font-medium mb-1.5">Service key</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{container.serviceKey}</code>
+                                        <CopyButton value={container.serviceKey} />
+                                    </div>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        Marking a container as "Reverse proxy" draws a route on the Topology map to
-                                        every container exposing Traefik labels.
+                                        Stable across redeploys. Topology nodes reference the container by this key.
                                     </p>
                                 </div>
                                 {container.networks.length > 0 && (

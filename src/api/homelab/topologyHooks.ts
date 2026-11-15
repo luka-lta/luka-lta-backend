@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+    applyTopologyProposal,
     createTopologyEdge,
     CreateTopologyEdgeInput,
     createTopologyNode,
@@ -7,29 +8,52 @@ import {
     deleteTopologyEdge,
     deleteTopologyNode,
     fetchTopologyGraph,
-    updateContainerNodeRole,
-    updateHostNodeType,
+    fetchTopologyProposals,
+    rejectTopologyProposal,
+    updateTopologyNode,
+    UpdateTopologyNodeInput,
 } from "@/api/homelab/topologyEndpoints.ts";
 
 const REFRESH_INTERVAL_MS = 30_000;
 
+const TOPOLOGY_KEY = ["homelab", "topology"];
+const PROPOSALS_KEY = ["homelab", "topology", "proposals"];
+
 export function useTopologyGraph() {
     return useQuery({
-        queryKey: ["homelab", "topology"],
+        queryKey: TOPOLOGY_KEY,
         queryFn: fetchTopologyGraph,
         refetchInterval: REFRESH_INTERVAL_MS,
     });
 }
 
+export function useTopologyProposals() {
+    return useQuery({
+        queryKey: PROPOSALS_KEY,
+        queryFn: fetchTopologyProposals,
+        refetchInterval: REFRESH_INTERVAL_MS,
+    });
+}
+
+/** Invalidiert Graph und Proposals (gemeinsamer Präfix). */
 function useInvalidateTopology() {
     const qc = useQueryClient();
-    return () => qc.invalidateQueries({ queryKey: ["homelab", "topology"] });
+    return () => qc.invalidateQueries({ queryKey: TOPOLOGY_KEY });
 }
 
 export function useCreateTopologyNode() {
     const invalidate = useInvalidateTopology();
     return useMutation({
         mutationFn: (data: CreateTopologyNodeInput) => createTopologyNode(data),
+        onSuccess: invalidate,
+    });
+}
+
+export function useUpdateTopologyNode() {
+    const invalidate = useInvalidateTopology();
+    return useMutation({
+        mutationFn: ({ nodeId, data }: { nodeId: string; data: UpdateTopologyNodeInput }) =>
+            updateTopologyNode(nodeId, data),
         onSuccess: invalidate,
     });
 }
@@ -58,20 +82,19 @@ export function useDeleteTopologyEdge() {
     });
 }
 
-export function useUpdateHostNodeType() {
+export function useApplyTopologyProposal() {
     const invalidate = useInvalidateTopology();
     return useMutation({
-        mutationFn: ({ hostId, nodeType }: { hostId: string; nodeType: string }) =>
-            updateHostNodeType(hostId, nodeType),
+        mutationFn: ({ proposalId, acceptedItemIds }: { proposalId: string; acceptedItemIds: string[] }) =>
+            applyTopologyProposal(proposalId, acceptedItemIds),
         onSuccess: invalidate,
     });
 }
 
-export function useUpdateContainerNodeRole() {
+export function useRejectTopologyProposal() {
     const invalidate = useInvalidateTopology();
     return useMutation({
-        mutationFn: ({ containerId, nodeRole }: { containerId: string; nodeRole: string | null }) =>
-            updateContainerNodeRole(containerId, nodeRole),
+        mutationFn: (proposalId: string) => rejectTopologyProposal(proposalId),
         onSuccess: invalidate,
     });
 }

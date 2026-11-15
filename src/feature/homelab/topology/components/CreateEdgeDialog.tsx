@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { EDGE_RELATION_LABEL } from "@/feature/homelab/topology/constants.ts";
 import { useCreateTopologyEdge } from "@/api/homelab/topologyHooks.ts";
+import { getApiErrorMessage } from "@/lib/apiError.ts";
 import type { EdgeRelation, InfraNodeData } from "@/feature/homelab/topology/types.ts";
 
 interface CreateEdgeDialogProps {
@@ -23,10 +24,6 @@ interface CreateEdgeDialogProps {
 
 const RELATIONS: EdgeRelation[] = ["connects_to", "routes_to", "depends_on", "exposes", "hosted_on"];
 
-function entityTypeOf(node: InfraNodeData): "host" | "container" | "node" {
-    return node.source ?? "node";
-}
-
 function CreateEdgeDialog({ open, onOpenChange, nodes }: CreateEdgeDialogProps) {
     const [sourceId, setSourceId] = useState<string>("");
     const [targetId, setTargetId] = useState<string>("");
@@ -34,24 +31,16 @@ function CreateEdgeDialog({ open, onOpenChange, nodes }: CreateEdgeDialogProps) 
     const createEdge = useCreateTopologyEdge();
 
     function handleSubmit() {
-        const source = nodes.find((n) => n.id === sourceId);
-        const target = nodes.find((n) => n.id === targetId);
-        if (!source || !target) return;
+        if (!sourceId || !targetId) return;
 
         createEdge.mutate(
-            {
-                sourceType: entityTypeOf(source),
-                sourceId: source.id,
-                targetType: entityTypeOf(target),
-                targetId: target.id,
-                relation,
-            },
+            { sourceId, targetId, relation },
             {
                 onSuccess: () => {
                     toast.success("Connection created.");
                     onOpenChange(false);
                 },
-                onError: (error) => toast.error(error.message),
+                onError: (error) => toast.error(getApiErrorMessage(error)),
             },
         );
     }
