@@ -7,12 +7,14 @@ import {
     Panel,
     ReactFlow,
     ReactFlowProvider,
+    useNodesInitialized,
     useNodesState,
     useReactFlow,
     type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Button } from "@/components/ui/button.tsx";
+import { useTheme } from "@/context/theme-context.tsx";
 import { LocateFixed } from "lucide-react";
 import InfraNode from "./InfraNode.tsx";
 import HostGroupNode from "./HostGroupNode.tsx";
@@ -104,6 +106,9 @@ function TopologyMapInner({
     onNodeClick,
 }: TopologyMapProps) {
     const { fitView } = useReactFlow();
+    const { theme } = useTheme();
+    const nodesInitialized = useNodesInitialized();
+    const [fitPending, setFitPending] = useState(false);
     const [nodes, setNodes, onNodesChange] = useNodesState<TopologyFlowNode>([]);
     const [hiddenEdgeIds, setHiddenEdgeIds] = useState<Set<string>>(new Set());
     const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -166,7 +171,7 @@ function TopologyMapInner({
             if (cancelled) return;
             setNodes(result.nodes);
             setHiddenEdgeIds(result.hiddenEdgeIds);
-            window.requestAnimationFrame(() => fitView({ padding: 0.1, maxZoom: 1.2 }));
+            setFitPending(true);
         });
 
         return () => {
@@ -175,6 +180,13 @@ function TopologyMapInner({
         // Only the structural signature (or an explicit reset) should trigger a reposition — see comment above.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [structureKey, layoutRun]);
+
+    // fitView only considers measured nodes — wait until React Flow has measured the new layout.
+    useEffect(() => {
+        if (!fitPending || !nodesInitialized) return;
+        fitView({ padding: 0.1, maxZoom: 1.2 });
+        setFitPending(false);
+    }, [fitPending, nodesInitialized, fitView]);
 
     // Structure-independent updates (status changed): patch node data in place without
     // touching position, so pan/zoom isn't disturbed.
@@ -272,6 +284,7 @@ function TopologyMapInner({
                 onNodeMouseEnter={(_, node) => setFocusedId(node.id)}
                 onNodeMouseLeave={() => setFocusedId(null)}
                 nodesConnectable={false}
+                colorMode={theme}
                 minZoom={0.15}
                 maxZoom={1.5}
                 proOptions={{ hideAttribution: true }}
