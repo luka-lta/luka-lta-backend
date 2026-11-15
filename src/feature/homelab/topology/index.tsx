@@ -1,37 +1,63 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
 import { ErrorState } from "@/components/feedback/error-state.tsx";
 import { EmptyState } from "@/components/feedback/empty-state.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { PageToolbar } from "@/components/layout/page.tsx";
-import { Plus, Waypoints } from "lucide-react";
-import { useTopologyGraph } from "@/api/homelab/topologyHooks.ts";
+import { GitPullRequestArrow, Plus, Waypoints } from "lucide-react";
+import { useTopologyGraph, useTopologyProposals } from "@/api/homelab/topologyHooks.ts";
 import { useContainer, useHosts } from "@/api/homelab/hooks.ts";
 import TopologyMap from "./components/TopologyMap.tsx";
-import TopologyFilters from "./components/TopologyFilters.tsx";
+import TopologyFilters, { type HostOption } from "./components/TopologyFilters.tsx";
 import TopologySearch from "./components/TopologySearch.tsx";
 import NodeDetailSheet from "./components/NodeDetailSheet.tsx";
 import CreateNodeDialog from "./components/CreateNodeDialog.tsx";
 import CreateEdgeDialog from "./components/CreateEdgeDialog.tsx";
+import ProposalReviewSheet from "./components/ProposalReviewSheet.tsx";
 import { ContainerDetailSheet } from "@/feature/homelab/components/ContainerDetailSheet.tsx";
 import { NODE_CATEGORIES, type NodeCategory } from "./constants.ts";
-import type { InfraNodeData } from "./types.ts";
+import type { TopologyGraph } from "./types.ts";
+
+const EMPTY_GRAPH: TopologyGraph = { nodes: [], edges: [] };
 
 function InfrastructureMap() {
     const topology = useTopologyGraph();
+    const proposals = useTopologyProposals();
     const hosts = useHosts();
 
     const [activeCategories, setActiveCategories] = useState<Set<NodeCategory>>(new Set(NODE_CATEGORIES));
     const [problemsOnly, setProblemsOnly] = useState(false);
+    const [selectedHostIds, setSelectedHostIds] = useState<Set<string>>(new Set());
+    const [showPeerLinks, setShowPeerLinks] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedNode, setSelectedNode] = useState<InfraNodeData | null>(null);
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [selectedContainerId, setSelectedContainerId] = useState<string | null>(null);
+    const [reviewOpen, setReviewOpen] = useState(false);
     const [createNodeOpen, setCreateNodeOpen] = useState(false);
     const [createEdgeOpen, setCreateEdgeOpen] = useState(false);
 
+    const graph = topology.data ?? EMPTY_GRAPH;
+    const openDraft = proposals.data?.find((proposal) => proposal.status === "draft") ?? null;
+
+    // Resolve by id so the open sheet follows live status updates from polling.
+    const selectedNode = useMemo(
+        () => graph.nodes.find((node) => node.id === selectedNodeId) ?? null,
+        [graph.nodes, selectedNodeId],
+    );
+
+    const hostOptions = useMemo<HostOption[]>(() => {
+        const options = new Map<string, string>();
+        for (const host of hosts.data ?? []) options.set(host.id, host.name);
+        for (const node of graph.nodes) {
+            if (node.ref && !options.has(node.ref.hostId)) options.set(node.ref.hostId, node.ref.hostName ?? node.ref.hostId);
+        }
+        return [...options.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+    }, [hosts.data, graph.nodes]);
+
     const containerDetailQuery = useContainer(selectedContainerId);
     const selectedHostForNode = useMemo(
-        () => hosts.data?.find((h) => h.id === selectedNode?.id),
+        () => (selectedNode?.ref?.type === "host" ? hosts.data?.find((h) => h.id === selectedNode.ref?.hostId) : undefined),
         [hosts.data, selectedNode],
     );
     const selectedHostForContainer = useMemo(
@@ -51,14 +77,6 @@ function InfrastructureMap() {
         });
     }
 
-    function handleNodeClick(node: InfraNodeData) {
-        if (node.source === "container") {
-            setSelectedContainerId(node.id);
-        } else {
-            setSelectedNode(node);
-        }
-    }
-
     if (topology.isError) {
         return (
             <ErrorState
@@ -69,10 +87,24 @@ function InfrastructureMap() {
         );
     }
 
-    const graph = topology.data ?? { nodes: [], edges: [] };
-
     return (
         <div className="flex min-h-0 flex-1 flex-col gap-3">
+            {openDraft && (
+                <Alert>
+                    <GitPullRequestArrow />
+                    <AlertTitle>Entwurf wartet auf Prüfung: {openDraft.title}</AlertTitle>
+                    <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
+                        <span>
+                            {openDraft.items.length} vorgeschlagene Änderungen von {openDraft.createdBy}. Auf der Karte
+                            ändert sich erst etwas, wenn du sie übernimmst.
+                        </span>
+                        <Button size="sm" onClick={() => setReviewOpen(true)}>
+                            Prüfen
+                        </Button>
+                    </AlertDescription>
+                </Alert>
+            )}
+
             <PageToolbar
                 actions={
                     <>
@@ -93,6 +125,11 @@ function InfrastructureMap() {
                     onToggleCategory={toggleCategory}
                     problemsOnly={problemsOnly}
                     onToggleProblemsOnly={setProblemsOnly}
+                    hosts={hostOptions}
+                    selectedHostIds={selectedHostIds}
+                    onSelectedHostIdsChange={setSelectedHostIds}
+                    showPeerLinks={showPeerLinks}
+                    onToggleShowPeerLinks={setShowPeerLinks}
                 />
             </PageToolbar>
 
@@ -101,24 +138,36 @@ function InfrastructureMap() {
             ) : graph.nodes.length === 0 ? (
                 <EmptyState
                     icon={Waypoints}
-                    title="Noch keine Infrastruktur erkannt"
-                    description="Sobald Hosts und Container gemeldet werden, erscheinen sie hier. Externe Knoten kannst du manuell anlegen."
-                    action={<Button variant="outline" size="sm" onClick={() => setCreateNodeOpen(true)}>Knoten hinzufügen</Button>}
+                    title="Die Karte ist noch leer"
+                    description="Die Topologie wird kuratiert: Lege Knoten von Hand an oder lass Claude das Homelab per MCP prüfen und den Entwurf hier übernehmen."
+                    action={
+                        <Button variant="outline" size="sm" onClick={() => setCreateNodeOpen(true)}>
+                            Knoten hinzufügen
+                        </Button>
+                    }
                 />
             ) : (
                 <TopologyMap
                     graph={graph}
                     activeCategories={activeCategories}
                     problemsOnly={problemsOnly}
+                    selectedHostIds={selectedHostIds}
+                    showPeerLinks={showPeerLinks}
                     searchQuery={searchQuery}
-                    onNodeClick={handleNodeClick}
+                    onNodeClick={(node) => setSelectedNodeId(node.id)}
                 />
             )}
+
             <NodeDetailSheet
                 node={selectedNode}
                 host={selectedHostForNode}
+                graph={graph}
                 onOpenChange={(open) => {
-                    if (!open) setSelectedNode(null);
+                    if (!open) setSelectedNodeId(null);
+                }}
+                onOpenContainer={(containerId) => {
+                    setSelectedNodeId(null);
+                    setSelectedContainerId(containerId);
                 }}
             />
 
@@ -132,7 +181,14 @@ function InfrastructureMap() {
                 }}
             />
 
-            <CreateNodeDialog open={createNodeOpen} onOpenChange={setCreateNodeOpen} />
+            <ProposalReviewSheet
+                key={reviewOpen ? openDraft?.id : "closed"}
+                proposal={reviewOpen ? openDraft : null}
+                graph={graph}
+                onOpenChange={setReviewOpen}
+            />
+
+            <CreateNodeDialog open={createNodeOpen} onOpenChange={setCreateNodeOpen} nodes={graph.nodes} />
             <CreateEdgeDialog open={createEdgeOpen} onOpenChange={setCreateEdgeOpen} nodes={graph.nodes} />
         </div>
     );

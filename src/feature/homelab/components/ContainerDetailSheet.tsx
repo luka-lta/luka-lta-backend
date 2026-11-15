@@ -3,19 +3,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.t
 import { Progress } from "@/components/ui/progress.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { CopyButton } from "@/components/CopyButton.tsx";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart.tsx";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { TimeCell } from "@/components/TimeCell.tsx";
 import { ContainerStatusBadge, HealthBadge } from "@/feature/homelab/components/ContainerStatusBadge.tsx";
 import type { Container, Host } from "@/feature/homelab/types.ts";
 import { formatUptime } from "@/feature/homelab/data.ts";
-import { useUpdateContainerNodeRole } from "@/api/homelab/topologyHooks.ts";
 import { RotateCcw } from "lucide-react";
-import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { DetailList } from "@/components/data/detail-list.tsx";
-import { getApiErrorMessage } from "@/lib/apiError.ts";
 import { cn } from "@/lib/utils.ts";
 
 interface ContainerDetailSheetProps {
@@ -58,8 +54,6 @@ function MetricChart({ data, unit }: { data: { timestamp: string; value: number 
 }
 
 export function ContainerDetailSheet({ open, container, host, isLoading, onOpenChange }: ContainerDetailSheetProps) {
-    const updateNodeRole = useUpdateContainerNodeRole();
-
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent side="right" className="w-full sm:max-w-xl">
@@ -198,39 +192,13 @@ export function ContainerDetailSheet({ open, container, host, isLoading, onOpenC
 
                             <TabsContent value="config" className="space-y-4 pt-4 text-sm">
                                 <div>
-                                    <p className="mb-1.5 font-semibold">Rolle in der Topologie</p>
-                                    <Select
-                                        value={container.nodeRole ?? "unset"}
-                                        onValueChange={(value) =>
-                                            updateNodeRole.mutate(
-                                                {
-                                                    containerId: container.id,
-                                                    nodeRole: value === "unset" ? null : value,
-                                                },
-                                                {
-                                                    onSuccess: () => toast.success("Rolle gespeichert"),
-                                                    onError: (error) => toast.error(getApiErrorMessage(error)),
-                                                },
-                                            )
-                                        }
-                                        disabled={updateNodeRole.isPending}
-                                    >
-                                        <SelectTrigger className="w-56" aria-label="Rolle in der Topologie">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="unset">Standard (Container)</SelectItem>
-                                            <SelectItem value="reverse-proxy">Reverse proxy</SelectItem>
-                                            <SelectItem value="database">Datenbank</SelectItem>
-                                            <SelectItem value="application">Anwendung</SelectItem>
-                                            <SelectItem value="storage">Speicher</SelectItem>
-                                            <SelectItem value="monitoring">Monitoring</SelectItem>
-                                            <SelectItem value="dns">DNS</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <p className="mb-1.5 font-semibold">Service-Schlüssel</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">{container.serviceKey}</code>
+                                        <CopyButton value={container.serviceKey} />
+                                    </div>
                                     <p className="mt-1.5 text-xs text-muted-foreground">
-                                        Als „Reverse proxy“ markiert, zeichnet die Topologie eine Route zu jedem
-                                        Container mit Traefik-Labels.
+                                        Bleibt über Redeploys gleich. Topologie-Knoten verweisen über diesen Schlüssel auf den Container.
                                     </p>
                                 </div>
                                 {container.networks.length > 0 && (

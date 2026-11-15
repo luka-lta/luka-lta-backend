@@ -8,7 +8,6 @@ export const MetricPointSchema = z.object({
 export const HostSchema = z.object({
     id: z.string(),
     name: z.string(),
-    nodeType: z.string(),
     cpuUsagePercent: z.number(),
     memoryUsagePercent: z.number(),
     memoryUsedGb: z.number(),
@@ -41,6 +40,7 @@ export const LogLineSchema = z.object({
 export const ContainerSchema = z.object({
     id: z.string(),
     name: z.string(),
+    serviceKey: z.string(),
     image: z.string(),
     status: z.enum(["running", "stopped", "warning", "unhealthy"]),
     healthStatus: z.enum(["healthy", "warning", "unhealthy", "none"]),
@@ -58,7 +58,6 @@ export const ContainerSchema = z.object({
     environment: z.record(z.string(), z.string()),
     networks: z.array(z.string()),
     labels: z.record(z.string(), z.string()),
-    nodeRole: z.string().nullable(),
     cpuHistory: z.array(MetricPointSchema),
     memoryHistory: z.array(MetricPointSchema),
     restartHistory: z.array(RestartEventSchema),
