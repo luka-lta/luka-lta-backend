@@ -18,7 +18,6 @@ export interface HostMetrics {
 export interface Host {
     id: string;
     name: string;
-    nodeType: string;
     cpuUsagePercent: number;
     memoryUsagePercent: number;
     memoryUsedGb: number;
@@ -52,6 +51,7 @@ export interface LogLine {
 export interface Container {
     id: string;
     name: string;
+    serviceKey: string;
     image: string;
     status: ContainerStatus;
     healthStatus: HealthStatus;
@@ -69,7 +69,6 @@ export interface Container {
     environment: Record<string, string>;
     networks: string[];
     labels: Record<string, string>;
-    nodeRole: string | null;
     cpuHistory: MetricPoint[];
     memoryHistory: MetricPoint[];
     restartHistory: RestartEvent[];

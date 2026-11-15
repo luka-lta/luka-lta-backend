@@ -58,6 +58,12 @@ function buildHostOfContainer(edges: Edge[]): Map<string, string> {
     return hostOf;
 }
 
+/** Services linked to the same host stay together even without explicit "hosted_on" edges. */
+function serviceHostGroup(node: Node): string | null {
+    const ref = (node.data as { ref?: { type: string; hostId: string } | null } | undefined)?.ref;
+    return ref?.type === "service" ? `host:${ref.hostId}` : null;
+}
+
 /**
  * Custom layered layout: ranks nodes by hierarchy depth (hosted_on/routes_to/depends_on),
  * then packs each rank left-to-right, grouping a host's containers together and wrapping
@@ -101,7 +107,7 @@ export function layoutGraph(nodes: Node[], edges: Edge[]): Node[] {
         // other node (hosts themselves, manual/infra nodes) is its own singleton group.
         const groups = new Map<string, Node[]>();
         for (const node of rankNodes) {
-            const groupKey = hostOfContainer.get(node.id) ?? node.id;
+            const groupKey = hostOfContainer.get(node.id) ?? serviceHostGroup(node) ?? node.id;
             if (!groups.has(groupKey)) groups.set(groupKey, []);
             groups.get(groupKey)!.push(node);
         }
