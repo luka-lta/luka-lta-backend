@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
-import { ErrorState } from "@/components/error-state.tsx";
+import { ErrorState } from "@/components/feedback/error-state.tsx";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { PageToolbar } from "@/components/layout/page.tsx";
 import { GitPullRequestArrow, Plus, Waypoints } from "lucide-react";
 import { useTopologyGraph, useTopologyProposals } from "@/api/homelab/topologyHooks.ts";
 import { useContainer, useHosts } from "@/api/homelab/hooks.ts";
-import { getApiErrorMessage } from "@/lib/apiError.ts";
 import TopologyMap from "./components/TopologyMap.tsx";
 import TopologyFilters, { type HostOption } from "./components/TopologyFilters.tsx";
 import TopologySearch from "./components/TopologySearch.tsx";
@@ -78,32 +80,46 @@ function InfrastructureMap() {
     if (topology.isError) {
         return (
             <ErrorState
-                title="Failed to load infrastructure map"
-                message={getApiErrorMessage(topology.error)}
-                refetch={topology.refetch}
+                title="Topologie konnte nicht geladen werden"
+                error={topology.error}
+                onRetry={() => topology.refetch()}
             />
         );
     }
 
     return (
-        <div className="space-y-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
             {openDraft && (
                 <Alert>
-                    <GitPullRequestArrow className="h-4 w-4" />
-                    <AlertTitle>Draft waiting for review: {openDraft.title}</AlertTitle>
+                    <GitPullRequestArrow />
+                    <AlertTitle>Entwurf wartet auf Prüfung: {openDraft.title}</AlertTitle>
                     <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
                         <span>
-                            {openDraft.items.length} proposed changes by {openDraft.createdBy}. Nothing changes on the
-                            map until you apply them.
+                            {openDraft.items.length} vorgeschlagene Änderungen von {openDraft.createdBy}. Auf der Karte
+                            ändert sich erst etwas, wenn du sie übernimmst.
                         </span>
                         <Button size="sm" onClick={() => setReviewOpen(true)}>
-                            Review
+                            Prüfen
                         </Button>
                     </AlertDescription>
                 </Alert>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <PageToolbar
+                actions={
+                    <>
+                        <Button variant="outline" onClick={() => setCreateEdgeOpen(true)} disabled={graph.nodes.length < 2}>
+                            <Waypoints />
+                            Verbinden
+                        </Button>
+                        <Button variant="outline" onClick={() => setCreateNodeOpen(true)}>
+                            <Plus />
+                            Knoten
+                        </Button>
+                    </>
+                }
+            >
+                <TopologySearch value={searchQuery} onChange={setSearchQuery} />
                 <TopologyFilters
                     activeCategories={activeCategories}
                     onToggleCategory={toggleCategory}
@@ -115,29 +131,21 @@ function InfrastructureMap() {
                     showPeerLinks={showPeerLinks}
                     onToggleShowPeerLinks={setShowPeerLinks}
                 />
-                <div className="flex items-center gap-2">
-                    <TopologySearch value={searchQuery} onChange={setSearchQuery} />
-                    <Button variant="outline" size="sm" onClick={() => setCreateEdgeOpen(true)}>
-                        <Waypoints className="h-3.5 w-3.5" />
-                        Connect
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setCreateNodeOpen(true)}>
-                        <Plus className="h-3.5 w-3.5" />
-                        Add node
-                    </Button>
-                </div>
-            </div>
+            </PageToolbar>
 
             {topology.isPending ? (
-                <div className="flex h-[520px] items-center justify-center rounded-lg border text-sm text-muted-foreground">
-                    Loading infrastructure map…
-                </div>
+                <Skeleton className="h-[calc(100svh-19rem)] min-h-[28rem] w-full rounded-xl" aria-label="Wird geladen" />
             ) : graph.nodes.length === 0 ? (
-                <div className="flex h-[520px] flex-col items-center justify-center gap-2 rounded-lg border px-6 text-center text-sm text-muted-foreground">
-                    <Waypoints className="h-8 w-8" />
-                    <p>The map is curated and still empty.</p>
-                    <p>Add nodes by hand, or let Claude inspect the homelab via MCP and review its draft here.</p>
-                </div>
+                <EmptyState
+                    icon={Waypoints}
+                    title="Die Karte ist noch leer"
+                    description="Die Topologie wird kuratiert: Lege Knoten von Hand an oder lass Claude das Homelab per MCP prüfen und den Entwurf hier übernehmen."
+                    action={
+                        <Button variant="outline" size="sm" onClick={() => setCreateNodeOpen(true)}>
+                            Knoten hinzufügen
+                        </Button>
+                    }
+                />
             ) : (
                 <TopologyMap
                     graph={graph}

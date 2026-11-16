@@ -23,7 +23,7 @@ export function MonthGrid({ events, onSelectEvent, onSelectDay }: MonthGridProps
         status: {
             id: String(event.calendarId),
             name: event.calendar,
-            color: event.color ?? "#64748b",
+            color: event.color ?? "hsl(var(--muted-foreground))",
         },
     }));
 

@@ -1,139 +1,95 @@
-import {Button} from "@/components/ui/button.tsx";
-import {
-    LinkItemTypeSchema
-} from "@/feature/linktree/schema/LinktreeSchema.ts";
-import {Controller, SubmitHandler, useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {TextInput} from "@/components/form/TextInput.tsx";
-import {IconPicker} from "@/components/IconPicker.tsx";
-import {Switch} from "@/components/ui/switch.tsx";
-import {Label} from "@/components/ui/label.tsx";
-import {Textarea} from "@/components/ui/textarea.tsx";
-import {
-    LinkDetailEditSchema,
-    LinkDetailEditTypeSchema
-} from "@/feature/linktree/childPages/detail/schema/LinkDetailSchema.ts";
-import {toast} from "sonner";
-import {useUpdateLink} from "@/api/linktree/hooks.ts";
-import {cn} from "@/lib/utils.ts";
-import {Save} from "lucide-react";
-import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
-import {Separator} from "@/components/ui/separator.tsx";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button.tsx";
+import { LinkItemTypeSchema } from "@/feature/linktree/schema/LinktreeSchema.ts";
+import { TextInput } from "@/components/form/TextInput.tsx";
+import { IconPicker } from "@/components/IconPicker.tsx";
+import { Switch } from "@/components/ui/switch.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { LinkDetailEditSchema, LinkDetailEditTypeSchema } from "@/feature/linktree/childPages/detail/schema/LinkDetailSchema.ts";
+import { useUpdateLink } from "@/api/linktree/hooks.ts";
+import { getApiErrorMessage } from "@/lib/apiError.ts";
 
-interface EditFormProps {
-    initialData?: LinkItemTypeSchema
-}
-
-function EditForm({initialData}: EditFormProps) {
+function EditForm({ initialData }: { initialData: LinkItemTypeSchema }) {
     const form = useForm<LinkDetailEditTypeSchema>({
         resolver: zodResolver(LinkDetailEditSchema),
         defaultValues: {
-            displayname: initialData?.displayname || "",
-            description: initialData?.description ?? null,
-            url: initialData?.url || "",
-            isActive: initialData?.isActive ?? true,
-            iconName: initialData?.iconName ?? null,
+            displayname: initialData.displayname,
+            description: initialData.description ?? null,
+            url: initialData.url,
+            isActive: initialData.isActive,
+            iconName: initialData.iconName ?? null,
         },
     });
 
-    const editLink = useUpdateLink(initialData?.id ?? 0);
+    const editLink = useUpdateLink(initialData.id);
+    const isDirty = form.formState.isDirty;
 
     const onSubmit: SubmitHandler<LinkDetailEditTypeSchema> = (data) => {
         editLink.mutate(data, {
             onSuccess: () => {
                 form.reset(data);
-                toast.success("Link updated successfully");
+                toast.success("Änderungen gespeichert");
             },
-            onError: (error) => toast.error(error.message),
+            onError: (error) => toast.error(getApiErrorMessage(error)),
         });
     };
-    const isDirty = form.formState.isDirty
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>Edit</CardTitle>
-            </CardHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-                <CardContent className="space-y-4">
-                    <TextInput
-                        name="displayname"
-                        id="link-detail-edit-displayname"
-                        label="Display Name"
-                        form={form}
-                        type="text"
-                        placeholder="Enter a name for your link"
-                    />
-
-                    <div className="flex flex-col items-start gap-2">
-                        <Label htmlFor="link-detail-edit-description">Description</Label>
-                        <Textarea
-                            id="link-detail-edit-description"
-                            placeholder="Link description"
-                            {...form.register('description')}
-                        />
+            <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+                <CardHeader>
+                    <CardTitle>Einstellungen</CardTitle>
+                    <CardDescription>Name, Ziel und Darstellung auf der Link-Seite.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                    <div className="grid gap-5 md:grid-cols-2">
+                        <TextInput name="displayname" id="link-edit-displayname" label="Name" form={form} />
+                        <TextInput name="url" id="link-edit-url" label="Ziel-URL" form={form} type="url" />
                     </div>
 
-                    <TextInput
-                        name="url"
-                        id="link-detail-edit-url"
-                        label="URL"
-                        form={form}
-                        type="url"
-                        placeholder="https://example.com"
-                    />
-
-                    <div className="flex flex-col items-start gap-2">
-                        <Label htmlFor="link-detail-edit-iconName">Icon</Label>
-                        <Controller
-                            control={form.control}
-                            name="iconName"
-                            render={({field}) => (
-                                <IconPicker value={field.value} onChange={field.onChange} />
-                            )}
-                        />
-                    </div>
-
-                    <Separator />
-
-                    <div className="flex items-center justify-between">
-                        <Label htmlFor="active" className="text-sm font-medium cursor-pointer">
-                            Active Status
+                    <div className="space-y-2">
+                        <Label htmlFor="link-edit-description">
+                            Beschreibung <span className="font-normal text-muted-foreground">(optional)</span>
                         </Label>
-                        <Controller
-                            control={form.control}
-                            name="isActive"
-                            render={({field}) => (
-                                <Switch
-                                    id="active"
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    className={cn(field.value ? "bg-green-500" : "bg-gray-300")}
-                                />
-                            )}
-                        />
+                        <Textarea id="link-edit-description" rows={2} {...form.register('description')} />
                     </div>
 
-                    <Button
-                        type="submit"
-                        disabled={editLink.isPending || !isDirty}
-                        className="w-full"
-                        variant={isDirty ? "default" : "outline"}
-                    >
-                        {editLink.isPending ? (
-                            <>
-                                <Spinner size={16} className="mr-2" />
-                                Updating...
-                            </>
-                        ) : (
-                            <>
-                                <Save className="mr-2 h-4 w-4" />
-                                {isDirty ? "Save Changes" : "No Changes"}
-                            </>
-                        )}
-                    </Button>
+                    <div className="grid gap-5 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label>Icon <span className="font-normal text-muted-foreground">(optional)</span></Label>
+                            <Controller
+                                control={form.control}
+                                name="iconName"
+                                render={({ field }) => <IconPicker value={field.value} onChange={field.onChange} />}
+                            />
+                        </div>
+                        <div className="flex items-start justify-between gap-4 rounded-lg border p-3">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="link-edit-active">Sichtbar</Label>
+                                <p className="text-xs text-muted-foreground">Auf der Link-Seite anzeigen.</p>
+                            </div>
+                            <Controller
+                                control={form.control}
+                                name="isActive"
+                                render={({ field }) => <Switch id="link-edit-active" checked={field.value} onCheckedChange={field.onChange} />}
+                            />
+                        </div>
+                    </div>
                 </CardContent>
+                <CardFooter className="justify-end gap-2 border-t pt-4">
+                    <Button type="button" variant="ghost" disabled={!isDirty || editLink.isPending} onClick={() => form.reset()}>
+                        Verwerfen
+                    </Button>
+                    <Button type="submit" disabled={!isDirty || editLink.isPending}>
+                        {editLink.isPending && <Loader2 className="animate-spin" />}
+                        Speichern
+                    </Button>
+                </CardFooter>
             </form>
         </Card>
     );

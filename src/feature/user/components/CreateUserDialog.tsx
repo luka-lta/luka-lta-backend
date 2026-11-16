@@ -1,41 +1,26 @@
-import {z} from "zod";
-import {SubmitHandler, useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {toast} from "sonner";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog.tsx";
-import {TextInput} from "@/components/form/TextInput.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert.tsx";
-import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
-import {UserTypeSchema} from "@/feature/user/schema/UserSchema.ts";
-import {useCreateUser} from "@/api/user/hooks.ts";
+import { z } from "zod";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { TextInput } from "@/components/form/TextInput.tsx";
+import { FormDialog } from "@/components/dialogs/form-dialog.tsx";
+import { useCreateUser } from "@/api/user/hooks.ts";
+import { getApiErrorMessage } from "@/lib/apiError.ts";
 
 interface Props {
-    currentRow?: UserTypeSchema
     open: boolean
     onOpenChange: (open: boolean) => void
 }
 
 const userCreateSchema = z.object({
-    username: z.string().min(3, "Username must be at least 3 characters long"),
-    email: z
-        .string()
-        .email({message: "Invalid email address"})
-        .min(1, "Email is required"),
-    password: z.string().min(8, "Password must be at least 8 characters long"),
+    username: z.string().min(3, "Mindestens 3 Zeichen"),
+    email: z.string().min(1, "E-Mail ist erforderlich").email({ message: "Keine gültige E-Mail-Adresse" }),
+    password: z.string().min(8, "Mindestens 8 Zeichen"),
     repeatPassword: z.string().transform((pwd) => pwd.trim()),
+}).refine((data) => data.password === data.repeatPassword, {
+    path: ["repeatPassword"],
+    message: "Passwörter stimmen nicht überein",
 })
-    .refine(data => data.password === data.repeatPassword, {
-        path: ["repeatPassword"],
-        message: "Passwords do not match",
-    })
 
 export type userData = {
     username: string,
@@ -45,100 +30,43 @@ export type userData = {
 }
 
 function CreateUserDialog({ open, onOpenChange }: Props) {
-    const form = useForm<userData>({
-        resolver: zodResolver(userCreateSchema),
-    });
-
+    const form = useForm<userData>({ resolver: zodResolver(userCreateSchema) });
     const createUser = useCreateUser();
 
     const onSubmit: SubmitHandler<userData> = (data) => {
         createUser.mutate(data, {
             onSuccess: () => {
                 onOpenChange(false);
-                form.reset()
-                toast.success('User created successfully!');
+                form.reset();
+                toast.success('Benutzer angelegt');
             },
             onError: (error) => {
-                const errorMessage = error.message;
-                if (errorMessage.includes('email')) {
-                    form.setError('email', {
-                        type: 'manual',
-                        message: errorMessage,
-                    });
-                }
-
-                if (errorMessage.includes('username')) {
-                    form.setError('username', {
-                        type: 'manual',
-                        message: errorMessage,
-                    });
-                }
-
-                toast.error(error.message);
+                const message = getApiErrorMessage(error);
+                if (message.includes('email')) form.setError('email', { type: 'manual', message });
+                else if (message.includes('username')) form.setError('username', { type: 'manual', message });
+                else toast.error(message);
             },
         });
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <DialogHeader>
-                        <DialogTitle>Create User</DialogTitle>
-                        <DialogDescription>Create a new user for backend</DialogDescription>
-                    </DialogHeader>
-                    <div className='grid gap-6 py-6'>
-                        <TextInput
-                            name={'email'}
-                            id={'user-email-create-form'}
-                            label={'Email'}
-                            form={form}
-                            placeholder='peter@mail.com'
-                            type={'text'}
-                        />
-
-                        <TextInput
-                            name={'username'}
-                            id={'user-username-create-form'}
-                            label={'Username'}
-                            form={form}
-                            placeholder='e.xample'
-                            type={'text'}
-                        />
-
-                        <TextInput
-                            name={'password'}
-                            id={'user-password-create-form'}
-                            label={'Password'}
-                            form={form}
-                            type={'password'}
-                        />
-
-                        <TextInput
-                            name={'repeatPassword'}
-                            id={'user-passwordRepeat-create-form'}
-                            label={'Repeat Password'}
-                            form={form}
-                            type={'password'}
-                        />
-
-                        {createUser.error && !form.formState.errors.email && !form.formState.errors.username && (
-                            <Alert variant='destructive'>
-                                <AlertTitle>Error, failed to create user!</AlertTitle>
-                                <AlertDescription>{createUser.error.message}</AlertDescription>
-                            </Alert>
-                        )}
-                    </div>
-                    <DialogFooter>
-                        {createUser.isPending ? (
-                            <Button className="w-[100%]" disabled><Spinner size={16}/>Creating user...</Button>
-                        ) : (
-                            <Button className="w-[100%]" type='submit'>Create User</Button>
-                        )}
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <FormDialog
+            open={open}
+            onOpenChange={(next) => { if (!next) form.reset(); onOpenChange(next); }}
+            title="Benutzer anlegen"
+            description="Neuer Zugang zum Admin-Bereich."
+            size="sm"
+            onSubmit={form.handleSubmit(onSubmit)}
+            submitLabel="Benutzer anlegen"
+            isSubmitting={createUser.isPending}
+        >
+            <TextInput name="email" id="user-email-create" label="E-Mail" form={form} type="email" autoComplete="off" placeholder="name@beispiel.de" />
+            <TextInput name="username" id="user-username-create" label="Benutzername" form={form} autoComplete="off" />
+            <div className="grid gap-5 sm:grid-cols-2">
+                <TextInput name="password" id="user-password-create" label="Passwort" form={form} type="password" autoComplete="new-password" description="Mindestens 8 Zeichen." />
+                <TextInput name="repeatPassword" id="user-password-repeat-create" label="Passwort wiederholen" form={form} type="password" autoComplete="new-password" />
+            </div>
+        </FormDialog>
     );
 }
 

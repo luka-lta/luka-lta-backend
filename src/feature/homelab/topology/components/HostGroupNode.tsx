@@ -17,10 +17,10 @@ function HostGroupNode({ data }: NodeProps<HostGroupFlowNode>) {
             )}
         >
             <Handle type="target" position={Position.Left} className="!bg-border" />
-            <div className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground">
-                <Server className="h-3.5 w-3.5" />
+            <div className="flex h-6 items-center gap-1.5 px-2.5 text-[11px] font-medium leading-none text-muted-foreground">
+                <Server className="size-3" aria-hidden />
                 <span className="truncate">{data.label}</span>
-                <span className={cn("h-2 w-2 shrink-0 rounded-full", statusConfig.dotClass)} />
+                <span className={cn("size-1.5 shrink-0 rounded-full", statusConfig.dotClass)} aria-label={statusConfig.label} />
             </div>
             <Handle type="source" position={Position.Right} className="!bg-border" />
         </div>

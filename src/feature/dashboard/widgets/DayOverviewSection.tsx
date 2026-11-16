@@ -6,6 +6,7 @@ import { CalendarCard } from "@/feature/dashboard/widgets/CalendarCard.tsx";
 import { buildEventWeatherHint, getCurrentEvent, getUpcomingEvents } from "@/feature/dashboard/widgets/calendarData.ts";
 import { useCalendarSummary } from "@/api/calendar/hooks.ts";
 import { useWeatherDetail } from "@/api/weather/hooks.ts";
+import { cn } from "@/lib/utils.ts";
 
 export function DayOverviewSection() {
     const navigate = useNavigate();
@@ -21,14 +22,19 @@ export function DayOverviewSection() {
 
     return (
         <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
                 <CalendarCard onOpenDetail={() => navigate("/dashboard/calendar")} />
                 <WeatherCard onOpenDetail={() => navigate("/dashboard/weather")} />
             </div>
 
             {hint && (
-                <div className={`flex items-center gap-2 rounded-md border px-3 py-2 text-sm ${hintIsWarning ? "border-amber-500/30 bg-amber-500/5 text-amber-600" : "border-border bg-muted/30 text-muted-foreground"}`}>
-                    {hintIsWarning ? <CloudRain className="h-4 w-4 shrink-0" /> : <Info className="h-4 w-4 shrink-0" />}
+                <div
+                    className={cn(
+                        "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm",
+                        hintIsWarning ? "border-warning/30 bg-warning/5 text-foreground" : "bg-muted/40 text-muted-foreground",
+                    )}
+                >
+                    {hintIsWarning ? <CloudRain className="size-4 shrink-0 text-warning" aria-hidden /> : <Info className="size-4 shrink-0" aria-hidden />}
                     {hint}
                 </div>
             )}

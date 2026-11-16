@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { LineChart as LineChartIcon, Settings2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard, StatGrid } from "@/components/data/stat-card";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { ErrorState } from "@/components/feedback/error-state";
 import {
     type ChartConfig,
     ChartContainer,
@@ -13,20 +16,32 @@ import {
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { useAppAnalytics } from "@/api/apps/hooks";
 import type { AppEntity } from "@/api/apps/schema";
-import { NoAnalyticsState } from "@/feature/apps/detail/NoAnalyticsState";
 import { ANALYTICS_SOURCE_TYPE_LABELS } from "@/feature/apps/labels";
-import { cn } from "@/lib/utils";
 
 interface AnalyticsTabProps {
     app: AppEntity;
     onConfigureSource: () => void;
 }
 
-const ANALYTICS_CHART_COLOR = "#2980B9";
-
 const chartConfig: ChartConfig = {
-    value: { label: "Wert", color: ANALYTICS_CHART_COLOR },
+    value: { label: "Wert", color: "hsl(var(--chart-1))" },
 };
+
+function NoAnalyticsState({ onConfigure }: { onConfigure: () => void }) {
+    return (
+        <EmptyState
+            icon={LineChartIcon}
+            title="Keine Analytics-Quelle verbunden"
+            description="Verbinde App Store Connect, Firebase oder eine eigene Quelle, um hier Analytics zu sehen."
+            action={
+                <Button variant="outline" size="sm" onClick={onConfigure}>
+                    <Settings2 />
+                    Quelle konfigurieren
+                </Button>
+            }
+        />
+    );
+}
 
 function formatKpiValue(value: number, unit?: string): string {
     const formatted = value.toLocaleString("de-DE");
@@ -43,36 +58,36 @@ export function AnalyticsTab({ app, onConfigureSource }: AnalyticsTabProps) {
         return <NoAnalyticsState onConfigure={onConfigureSource} />;
     }
 
-    const pillBar = (
-        <div className="flex flex-wrap gap-2">
-            {enabledSources.map((source) => (
-                <button
-                    key={source.id}
-                    type="button"
-                    onClick={() => setSelectedSourceId(source.id)}
-                    className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    aria-pressed={source.id === activeSourceId}
-                >
-                    <Badge
-                        variant={source.id === activeSourceId ? "default" : "outline"}
-                        className={cn("cursor-pointer", source.id === activeSourceId && "ring-2 ring-primary/30")}
+    const pillBar = enabledSources.length > 1 ? (
+        <div role="group" aria-label="Analytics-Quelle" className="inline-flex flex-wrap gap-1 rounded-lg border bg-card p-1 shadow-xs">
+            {enabledSources.map((source) => {
+                const active = source.id === activeSourceId;
+                return (
+                    <Button
+                        key={source.id}
+                        type="button"
+                        size="sm"
+                        variant={active ? "secondary" : "ghost"}
+                        className="h-7"
+                        aria-pressed={active}
+                        onClick={() => setSelectedSourceId(source.id)}
                     >
                         {ANALYTICS_SOURCE_TYPE_LABELS[source.type]}
-                    </Badge>
-                </button>
-            ))}
+                    </Button>
+                );
+            })}
         </div>
-    );
+    ) : null;
 
     if (analytics.isLoading) {
         return (
-            <div className="space-y-4">
+            <div className="space-y-4" aria-busy="true" aria-label="Wird geladen">
                 {pillBar}
-                <Skeleton className="h-72 w-full rounded-xl" />
-                <div className="grid grid-cols-3 gap-4">
-                    <Skeleton className="h-20 w-full rounded-xl" />
-                    <Skeleton className="h-20 w-full rounded-xl" />
-                    <Skeleton className="h-20 w-full rounded-xl" />
+                <Skeleton className="h-80 w-full rounded-xl" />
+                <div className="grid gap-4 sm:grid-cols-3">
+                    <Skeleton className="h-24 rounded-xl" />
+                    <Skeleton className="h-24 rounded-xl" />
+                    <Skeleton className="h-24 rounded-xl" />
                 </div>
             </div>
         );
@@ -82,15 +97,7 @@ export function AnalyticsTab({ app, onConfigureSource }: AnalyticsTabProps) {
         return (
             <div className="space-y-4">
                 {pillBar}
-                <Alert variant="destructive">
-                    <AlertTitle>Analytics konnten nicht geladen werden</AlertTitle>
-                    <AlertDescription className="flex items-center justify-between gap-4">
-                        <span>{analytics.error.message}</span>
-                        <Button variant="outline" size="sm" onClick={() => analytics.refetch()}>
-                            Erneut versuchen
-                        </Button>
-                    </AlertDescription>
-                </Alert>
+                <ErrorState title="Analytics konnten nicht geladen werden" error={analytics.error} onRetry={() => analytics.refetch()} />
             </div>
         );
     }
@@ -105,62 +112,54 @@ export function AnalyticsTab({ app, onConfigureSource }: AnalyticsTabProps) {
     }
 
     const { primaryMetric, kpis, breakdown } = analytics.data;
+    const sourceLabel = ANALYTICS_SOURCE_TYPE_LABELS[enabledSources.find((s) => s.id === activeSourceId)?.type ?? enabledSources[0].type];
 
     return (
         <div className="space-y-4">
             {pillBar}
             <Card>
-                <CardHeader>
-                    <CardTitle>{primaryMetric.label}</CardTitle>
-                    <CardDescription>Letzte 30 Tage (Demo-Daten)</CardDescription>
+                <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+                    <div className="space-y-1">
+                        <CardTitle>{primaryMetric.label}</CardTitle>
+                        <CardDescription>Letzte 30 Tage · {sourceLabel}</CardDescription>
+                    </div>
+                    <Badge variant="warning">Demo</Badge>
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="h-[280px] w-full">
-                        <LineChart accessibilityLayer data={primaryMetric.series}>
+                        <LineChart accessibilityLayer data={primaryMetric.series} margin={{ left: 4, right: 8 }}>
                             <CartesianGrid vertical={false} />
                             <XAxis
                                 dataKey="date"
                                 tickLine={false}
                                 tickMargin={10}
                                 axisLine={false}
-                                tickFormatter={(value: string) => value.slice(5)}
+                                minTickGap={24}
+                                tickFormatter={(value: string) => `${value.slice(8, 10)}.${value.slice(5, 7)}.`}
                             />
-                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                            <YAxis width={44} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toLocaleString("de-DE")} />
                             <ChartTooltip content={<ChartTooltipContent />} />
-                            <Line
-                                dataKey="value"
-                                type="monotone"
-                                stroke={ANALYTICS_CHART_COLOR}
-                                strokeWidth={2}
-                                dot={false}
-                            />
+                            <Line dataKey="value" type="monotone" stroke="var(--color-value)" strokeWidth={2} dot={false} />
                         </LineChart>
                     </ChartContainer>
                 </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <StatGrid className="lg:grid-cols-3">
                 {kpis.map((kpi) => (
-                    <Card key={kpi.label}>
-                        <CardContent className="p-5">
-                            <p className="text-sm text-muted-foreground">{kpi.label}</p>
-                            <p className="text-2xl font-bold tabular-nums mt-1">
-                                {formatKpiValue(kpi.value, kpi.unit)}
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <StatCard key={kpi.label} label={kpi.label} value={formatKpiValue(kpi.value, kpi.unit)} demo />
                 ))}
-            </div>
+            </StatGrid>
 
             {breakdown && breakdown.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Aufschlüsselung</CardTitle>
+                        <CardTitle>Aufschlüsselung</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="space-y-2">
+                        <ul className="divide-y text-sm">
                             {breakdown.map((entry) => (
-                                <li key={entry.label} className="flex items-center justify-between text-sm">
+                                <li key={entry.label} className="flex items-center justify-between py-2 first:pt-0 last:pb-0">
                                     <span className="text-muted-foreground">{entry.label}</span>
                                     <span className="font-medium tabular-nums">{entry.value.toLocaleString("de-DE")}</span>
                                 </li>

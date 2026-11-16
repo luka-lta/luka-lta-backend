@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
     Background,
+    ControlButton,
     Controls,
     MarkerType,
     MiniMap,
@@ -9,14 +10,16 @@ import {
     ReactFlowProvider,
     useNodesState,
     useReactFlow,
+    useStore,
     type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Button } from "@/components/ui/button.tsx";
-import { LocateFixed } from "lucide-react";
+import { useTheme } from "@/context/theme-context.tsx";
+import { Maximize, LocateFixed } from "lucide-react";
 import InfraNode from "./InfraNode.tsx";
 import HostGroupNode from "./HostGroupNode.tsx";
-import { layoutTopology, type TopologyFlowNode } from "@/feature/homelab/topology/layout.ts";
+import { layoutTopology, type LayoutBounds, type TopologyFlowNode } from "@/feature/homelab/topology/layout.ts";
 import { EDGE_RELATION_LABEL, getNodeTypeConfig } from "@/feature/homelab/topology/constants.ts";
 import type {
     EdgeRelation,
@@ -27,6 +30,9 @@ import type {
 import type { NodeCategory } from "@/feature/homelab/topology/constants.ts";
 
 const NODE_TYPES = { infra: InfraNode, hostGroup: HostGroupNode };
+
+/** Space around the map when fitting it into view, as a share of the viewport. */
+const FIT_PADDING = 0.08;
 
 /** Opacity of edges that are not connected to the focused node. */
 const UNFOCUSED_EDGE_OPACITY = 0.12;
@@ -103,7 +109,10 @@ function TopologyMapInner({
     searchQuery,
     onNodeClick,
 }: TopologyMapProps) {
-    const { fitView } = useReactFlow();
+    const { fitView, fitBounds, viewportInitialized } = useReactFlow();
+    const paneMeasured = useStore((state) => state.width > 0 && state.height > 0);
+    const { theme } = useTheme();
+    const [bounds, setBounds] = useState<LayoutBounds | null>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState<TopologyFlowNode>([]);
     const [hiddenEdgeIds, setHiddenEdgeIds] = useState<Set<string>>(new Set());
     const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -166,7 +175,7 @@ function TopologyMapInner({
             if (cancelled) return;
             setNodes(result.nodes);
             setHiddenEdgeIds(result.hiddenEdgeIds);
-            window.requestAnimationFrame(() => fitView({ padding: 0.1, maxZoom: 1.2 }));
+            setBounds(result.bounds);
         });
 
         return () => {
@@ -175,6 +184,18 @@ function TopologyMapInner({
         // Only the structural signature (or an explicit reset) should trigger a reposition — see comment above.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [structureKey, layoutRun]);
+
+    // Fit to the bounds the layout computed: React Flow's own fitView relies on measured node sizes,
+    // which lag behind for host frames that change size between layouts.
+    // Needs an initialised pan/zoom and a measured pane, otherwise fitBounds silently does nothing.
+    const fitToLayout = useCallback(() => {
+        if (!viewportInitialized || !paneMeasured || bounds === null || bounds.width === 0) return;
+        void fitBounds(bounds, { padding: FIT_PADDING });
+    }, [viewportInitialized, paneMeasured, bounds, fitBounds]);
+
+    useEffect(() => {
+        fitToLayout();
+    }, [fitToLayout]);
 
     // Structure-independent updates (status changed): patch node data in place without
     // touching position, so pan/zoom isn't disturbed.
@@ -259,7 +280,7 @@ function TopologyMapInner({
     }, [query]);
 
     return (
-        <div className="h-[calc(100vh-16rem)] min-h-[520px] w-full rounded-lg border bg-background">
+        <div className="h-[calc(100svh-19rem)] min-h-[28rem] w-full overflow-hidden rounded-xl border bg-card shadow-xs">
             <ReactFlow
                 nodes={displayNodes}
                 edges={displayEdges}
@@ -272,15 +293,20 @@ function TopologyMapInner({
                 onNodeMouseEnter={(_, node) => setFocusedId(node.id)}
                 onNodeMouseLeave={() => setFocusedId(null)}
                 nodesConnectable={false}
+                colorMode={theme}
                 minZoom={0.15}
                 maxZoom={1.5}
                 proOptions={{ hideAttribution: true }}
             >
                 <Background gap={20} size={1} className="opacity-40" />
-                <Controls showInteractive={false} />
+                <Controls showInteractive={false} showFitView={false}>
+                    <ControlButton onClick={fitToLayout} title="Ganze Karte zeigen" aria-label="Ganze Karte zeigen">
+                        <Maximize />
+                    </ControlButton>
+                </Controls>
                 <MiniMap pannable zoomable className="!bg-card" />
                 <Panel position="top-left">
-                    <div className="flex flex-wrap gap-3 rounded-md border bg-card/90 px-3 py-1.5 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap gap-3 rounded-md border bg-card/90 px-3 py-1.5 text-xs text-muted-foreground shadow-xs">
                         {LEGEND_RELATIONS.filter((relation) => showPeerLinks || relation !== "connects_to").map(
                             (relation) => (
                                 <span key={relation} className="flex items-center gap-1.5">
@@ -295,8 +321,8 @@ function TopologyMapInner({
                 </Panel>
                 <Panel position="top-right">
                     <Button variant="outline" size="sm" onClick={() => setLayoutRun((run) => run + 1)}>
-                        <LocateFixed className="h-3.5 w-3.5" />
-                        Reset Layout
+                        <LocateFixed />
+                        Layout neu anordnen
                     </Button>
                 </Panel>
             </ReactFlow>

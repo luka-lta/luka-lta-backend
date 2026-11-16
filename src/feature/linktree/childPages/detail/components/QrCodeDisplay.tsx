@@ -1,27 +1,24 @@
-import {QRCodeCanvas} from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import logo from "@/assets/logo.png";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 
-interface QrCodeDisplayProps {
-    link: string;
-}
-
-function QrCodeDisplay({link}: QrCodeDisplayProps) {
+function QrCodeDisplay({ link }: { link: string }) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Scan QR Code</CardTitle>
+                <CardTitle>QR-Code</CardTitle>
+                <CardDescription>Führt direkt zur Ziel-URL.</CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center justify-center">
-                <QRCodeCanvas
-                    value={link}
-                    size={200}
-                    imageSettings={{
-                        src: logo,
-                        excavate: true,
-                        height: 40,
-                        width: 40,
-                    }}/>
+            <CardContent className="flex justify-center">
+                {/* Weißer Rand, damit der Code auch im Dark Mode scannbar bleibt */}
+                <div className="rounded-lg bg-white p-3">
+                    <QRCodeCanvas
+                        value={link}
+                        size={176}
+                        title={`QR-Code für ${link}`}
+                        imageSettings={{ src: logo, excavate: true, height: 36, width: 36 }}
+                    />
+                </div>
             </CardContent>
         </Card>
     );

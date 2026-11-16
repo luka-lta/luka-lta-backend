@@ -28,15 +28,16 @@ export function CopyButton({ value, className, size = 12 }: CopyButtonProps) {
         <button
           onClick={handleCopy}
           className={cn(
-            "inline-flex items-center justify-center rounded transition-colors text-muted-foreground/50 hover:text-foreground focus-visible:outline-none",
+            "inline-flex items-center justify-center rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             className,
           )}
-          aria-label="Copy to clipboard"
+          type="button"
+          aria-label={copied ? "Kopiert" : "In Zwischenablage kopieren"}
         >
-          <Icon style={{ width: size, height: size }} className={cn(copied && "text-emerald-500")} />
+          <Icon style={{ width: size, height: size }} className={cn(copied && "text-success")} />
         </button>
       </TooltipTrigger>
-      <TooltipContent side="top">{copied ? "Copied!" : "Copy"}</TooltipContent>
+      <TooltipContent side="top">{copied ? "Kopiert" : "Kopieren"}</TooltipContent>
     </Tooltip>
   );
 }

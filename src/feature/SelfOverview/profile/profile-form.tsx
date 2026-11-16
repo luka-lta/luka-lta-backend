@@ -8,11 +8,11 @@ import {toast} from "sonner";
 import {useRef} from "react";
 import {AvatarInput} from "@/components/form/AvatarInput.tsx";
 import {useUpdateSelfUser} from "@/api/self/hooks.ts";
-import {Spinner} from "@/components/ui/kibo-ui/spinner/index.tsx";
+import {Loader2} from "lucide-react";
 
 const userUpdateSchema = z.object({
-    username: z.string().min(3, {message: "Username must be at least 3 characters long"}),
-    email: z.string().email({message: "Please enter a valid email address"}),
+    username: z.string().min(3, {message: "Mindestens 3 Zeichen"}),
+    email: z.string().email({message: "Bitte eine gültige E-Mail-Adresse eingeben"}),
     avatarUrl: z.instanceof(FileList).optional(),
 });
 
@@ -40,9 +40,7 @@ function ProfileForm({user}: ProfileOverviewProps) {
 
         updateSelf.mutate(formData, {
             onSuccess: () => {
-                toast.success('Profile updated successfully!', {
-                    description: 'Your changes have been saved',
-                });
+                toast.success('Profil gespeichert');
             },
             onError: (error) => {
                 const errorMessage = error.message;
@@ -66,11 +64,12 @@ function ProfileForm({user}: ProfileOverviewProps) {
     };
 
     return (
-        <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <TextInput
                 name="username"
                 id="username-self-overview-update"
-                label="Username"
+                label="Benutzername"
+                autoComplete="username"
                 form={form}
                 type="text"
             />
@@ -78,20 +77,21 @@ function ProfileForm({user}: ProfileOverviewProps) {
             <TextInput
                 name="email"
                 id="email-self-overview-update"
-                label="Email Address"
+                label="E-Mail"
+                autoComplete="email"
                 form={form}
                 type="email"
             />
 
-            <AvatarInput name={'avatarUrl'} id={'avatar-self-overview-update'} label={'Avatar'} form={form} avatarUrl={user?.avatarUrl} />
+            <AvatarInput name={'avatarUrl'} id={'avatar-self-overview-update'} label={'Avatar'} form={form} avatarUrl={user?.avatarUrl} fallbackName={user?.username} />
 
-            <div className="flex justify-end gap-4 pt-4">
-                <Button
-                    type="submit"
-                    disabled={!form.formState.isDirty || updateSelf.isPending}
-                >
-                    {form.formState.isSubmitting && <Spinner size={16} className="mr-2" />}
-                    {form.formState.isSubmitting ? "Updating profile..." : "Update profile"}
+            <div className="flex justify-end gap-2 border-t pt-4">
+                <Button type="button" variant="outline" onClick={() => form.reset()} disabled={!form.formState.isDirty || updateSelf.isPending}>
+                    Verwerfen
+                </Button>
+                <Button type="submit" disabled={!form.formState.isDirty || updateSelf.isPending}>
+                    {updateSelf.isPending && <Loader2 className="animate-spin" />}
+                    Speichern
                 </Button>
             </div>
         </form>

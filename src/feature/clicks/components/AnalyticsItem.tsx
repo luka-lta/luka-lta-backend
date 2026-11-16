@@ -1,4 +1,6 @@
-import EmptyState from "@/components/empty-state.tsx"
+import { BarChart3 } from "lucide-react"
+import { EmptyState } from "@/components/feedback/empty-state.tsx"
+import { Skeleton } from "@/components/ui/skeleton.tsx"
 import {
     ChartContainer,
     ChartLegend,
@@ -20,8 +22,11 @@ interface ClickData {
 interface ClicksListProps {
     clicks: ClickData[]
     loading: boolean
-    setFilterData: (filterData: Record<string, string>) => void
 }
+
+const CHART_COLORS = 5
+const color = (index: number) => `hsl(var(--chart-${(index % CHART_COLORS) + 1}))`
+const formatDay = (value: string) => new Date(value).toLocaleDateString("de-DE", { day: "numeric", month: "short" })
 
 function AnalyticsItem({ clicks, loading }: ClicksListProps) {
     const [timeRange, setTimeRange] = useState("30d")
@@ -105,32 +110,42 @@ function AnalyticsItem({ clicks, loading }: ClicksListProps) {
         displayNames.forEach((name, index) => {
             config[name] = {
                 label: name,
-                color: `hsl(var(--chart-${(index % 12) + 1}))`,
+                color: color(index),
             }
         })
 
         return config
     }, [displayNames])
 
-    if (loading) {
-        return (
-            <Card>
-                <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-                    <div className="flex items-center justify-center h-[300px]">
-                        <p>Loading analytics data...</p>
-                    </div>
-                </CardContent>
-            </Card>
-        )
-    }
+    const header = (
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
+            <div className="space-y-1">
+                <CardTitle>Klicks pro Link</CardTitle>
+                <CardDescription>Tägliche Klicks, gestapelt nach Link.</CardDescription>
+            </div>
+            <Select value={timeRange} onValueChange={setTimeRange}>
+                <SelectTrigger className="w-40" aria-label="Zeitraum">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="90d">Letzte 3 Monate</SelectItem>
+                    <SelectItem value="30d">Letzte 30 Tage</SelectItem>
+                    <SelectItem value="7d">Letzte 7 Tage</SelectItem>
+                </SelectContent>
+            </Select>
+        </CardHeader>
+    )
 
-    if (!clicks.length) {
+    if (loading || !clicks.length) {
         return (
             <Card>
-                <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-                    <div className="flex items-center justify-center h-[300px]">
-                        <EmptyState title="No click data available" description="No click events recorded yet." />
-                    </div>
+                {header}
+                <CardContent>
+                    {loading ? (
+                        <Skeleton className="h-[280px] w-full" />
+                    ) : (
+                        <EmptyState variant="plain" icon={BarChart3} title="Noch keine Klicks" description="Sobald Links aufgerufen werden, erscheint hier der Verlauf." />
+                    )}
                 </CardContent>
             </Card>
         )
@@ -138,58 +153,33 @@ function AnalyticsItem({ clicks, loading }: ClicksListProps) {
 
     return (
         <Card>
-            <CardContent className="space-y-2 pt-4 sm:px-6 sm:pt-6">
-                <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-                    <div className="grid flex-1 gap-1 text-center sm:text-left">
-                        <CardTitle>Click Events</CardTitle>
-                        <CardDescription>Showing the total Referral Click Events</CardDescription>
-                    </div>
-                    <Select value={timeRange} onValueChange={setTimeRange}>
-                        <SelectTrigger className="w-[160px] rounded-lg sm:ml-auto" aria-label="Select a value">
-                            <SelectValue placeholder="Last 3 months" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                            <SelectItem value="90d">Last 3 months</SelectItem>
-                            <SelectItem value="30d">Last 30 days</SelectItem>
-                            <SelectItem value="7d">Last 7 days</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </CardHeader>
-                <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
+            {header}
+            <CardContent>
+                <ChartContainer config={chartConfig} className="aspect-auto h-[280px] w-full">
                     <AreaChart data={chartData}>
                         <defs>
                             {displayNames.map((name, index) => (
-                                <linearGradient key={name} id={`fill-${name}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={`hsl(var(--chart-${(index % 12) + 1}))`} stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor={`hsl(var(--chart-${(index % 12) + 1}))`} stopOpacity={0.1} />
+                                <linearGradient key={name} id={`fill-click-${index}`} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={color(index)} stopOpacity={0.35} />
+                                    <stop offset="95%" stopColor={color(index)} stopOpacity={0.02} />
                                 </linearGradient>
                             ))}
                         </defs>
                         <CartesianGrid vertical={false} />
                         <XAxis
                             dataKey="date"
-                            tickLine={true}
+                            tickLine={false}
                             axisLine={false}
                             tickMargin={8}
                             minTickGap={32}
-                            tickFormatter={(value) =>
-                                new Date(value).toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                })
-                            }
+                            tickFormatter={formatDay}
                         />
-                        <YAxis axisLine={false} tickLine={false} tickMargin={8} domain={[0, "auto"]} />
+                        <YAxis axisLine={false} tickLine={false} tickMargin={8} width={32} allowDecimals={false} domain={[0, "auto"]} />
                         <ChartTooltip
                             cursor={false}
                             content={
                                 <ChartTooltipContent
-                                    labelFormatter={(value) =>
-                                        new Date(value).toLocaleDateString("en-US", {
-                                            month: "short",
-                                            day: "numeric",
-                                        })
-                                    }
+                                    labelFormatter={(value) => formatDay(String(value))}
                                     indicator="dashed"
                                 />
                             }
@@ -198,9 +188,9 @@ function AnalyticsItem({ clicks, loading }: ClicksListProps) {
                             <Area
                                 key={name}
                                 dataKey={name}
-                                type="step"
-                                fill={`url(#fill-${name})`}
-                                stroke={`hsl(var(--chart-${(index % 12) + 1}))`}
+                                type="monotone"
+                                fill={`url(#fill-click-${index})`}
+                                stroke={color(index)}
                                 strokeWidth={2}
                                 stackId="a"
                                 connectNulls={true}

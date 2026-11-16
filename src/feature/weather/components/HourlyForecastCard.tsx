@@ -7,7 +7,7 @@ import { getWeatherIcon } from "@/feature/dashboard/widgets/weatherIcons.ts";
 import { parseForecastTime } from "@/feature/weather/weatherData.ts";
 
 const COLUMN_WIDTH = 52;
-const ACCENT = "#f59e0b";
+const ACCENT = "hsl(var(--warning))";
 
 interface HourlyForecastCardProps {
     hourly: WeatherHourPoint[];
@@ -23,7 +23,7 @@ export function HourlyForecastCard({ hourly }: HourlyForecastCardProps) {
     return (
         <Card>
             <CardHeader className="pb-3">
-                <CardTitle className="text-base">Heute · Stündlich</CardTitle>
+                <CardTitle>Heute · Stündlich</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="overflow-x-auto">
@@ -42,7 +42,7 @@ export function HourlyForecastCard({ hourly }: HourlyForecastCardProps) {
                                         <span className={cn("text-xs", isNow ? "font-semibold text-foreground" : "text-muted-foreground")}>
                                             {isNow ? "Jetzt" : time.toFormat("HH:mm")}
                                         </span>
-                                        <Icon className="h-5 w-5 text-amber-500" />
+                                        <Icon className="h-5 w-5 text-warning" />
                                         <span className="text-sm font-medium tabular-nums">
                                             {Math.round(hour.temperatureCelsius)}°
                                         </span>
@@ -69,18 +69,18 @@ export function HourlyForecastCard({ hourly }: HourlyForecastCardProps) {
                         <div className="flex">
                             {hourly.map((hour) => (
                                 <div key={hour.time} className="shrink-0 flex flex-col items-center gap-0.5" style={{ width: COLUMN_WIDTH }}>
-                                    <div className="h-4 w-1.5 rounded-full bg-sky-500/15 overflow-hidden flex items-end">
+                                    <div className="h-4 w-1.5 rounded-full bg-info/15 overflow-hidden flex items-end">
                                         <div
-                                            className="w-full rounded-full bg-sky-500"
+                                            className="w-full rounded-full bg-info"
                                             style={{ height: `${Math.max(hour.precipitationProbabilityPercent, 4)}%` }}
                                         />
                                     </div>
-                                    <span className="text-[11px] text-sky-500 tabular-nums">
+                                    <span className="text-[11px] text-info tabular-nums">
                                         {hour.precipitationProbabilityPercent}%
                                     </span>
                                     {hour.precipitationMm >= 0.1 && (
                                         <span className="text-[10px] text-muted-foreground tabular-nums">
-                                            {hour.precipitationMm.toFixed(1)}mm
+                                            {hour.precipitationMm.toLocaleString("de-DE", { maximumFractionDigits: 1 })} mm
                                         </span>
                                     )}
                                 </div>

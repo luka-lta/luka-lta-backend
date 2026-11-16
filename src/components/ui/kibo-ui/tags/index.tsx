@@ -109,11 +109,14 @@ export const Tags = ({
   );
 };
 
-export type TagsTriggerProps = ComponentProps<typeof Button>;
+export type TagsTriggerProps = ComponentProps<typeof Button> & {
+  placeholder?: string;
+};
 
 export const TagsTrigger = ({
   className,
   children,
+  placeholder = "Tag auswählen…",
   ...props
 }: TagsTriggerProps) => (
   <PopoverTrigger asChild>
@@ -127,7 +130,7 @@ export const TagsTrigger = ({
       <div className="flex flex-wrap items-center gap-1">
         {children}
         <span className="px-2 py-px text-muted-foreground">
-          Select a tag...
+          {placeholder}
         </span>
       </div>
     </Button>
@@ -205,7 +208,7 @@ export const TagsEmpty = ({
   ...props
 }: TagsEmptyProps) => (
   <CommandEmpty className={cn(className)} {...props}>
-    {children ?? "No tags found."}
+    {children ?? "Keine Tags gefunden."}
   </CommandEmpty>
 );
 

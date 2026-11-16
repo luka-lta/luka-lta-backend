@@ -1,51 +1,50 @@
+import { useMemo, useState } from 'react'
 import { z } from 'zod'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { toast } from 'sonner'
+import { Plus, Search, Tag, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Trash } from 'lucide-react'
 import { TextInput } from '@/components/form/TextInput'
 import { TimeCell } from '@/components/TimeCell.tsx'
+import { PageToolbar } from '@/components/layout/page'
+import { SearchInput } from '@/components/data/search-input'
+import { DataTable } from '@/components/data/data-table'
+import { RowActions } from '@/components/data/row-actions'
+import { TablePagination } from '@/components/data/table-pagination'
+import { EmptyState } from '@/components/feedback/empty-state'
+import { ErrorState } from '@/components/feedback/error-state'
+import { FormDialog } from '@/components/dialogs/form-dialog'
 import { useBlogTags, useCreateBlogTag, useDeleteBlogTag } from '@/api/blog/hooks.ts'
 import { TagType } from '@/feature/blog/schema/BlogSchema'
-import { useState } from 'react'
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Spinner } from '@/components/ui/kibo-ui/spinner/index.tsx'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useUndoToast } from '@/hooks/useUndoToast.ts'
+import { getApiErrorMessage } from '@/lib/apiError'
 
 const createTagSchema = z.object({
-    name: z.string().min(1, 'Name is required').max(50),
+    name: z.string().trim().min(1, 'Name ist erforderlich').max(50, 'Höchstens 50 Zeichen'),
 })
 
 type CreateTagData = z.infer<typeof createTagSchema>
 
+const col = createColumnHelper<TagType>()
+
 function BlogTagsTable() {
-    const { data: tagsData, isLoading } = useBlogTags()
+    const tagsQuery = useBlogTags()
     const [createOpen, setCreateOpen] = useState(false)
     const [search, setSearch] = useState('')
     const { trigger: triggerUndoToast } = useUndoToast()
 
-    const form = useForm<CreateTagData>({
-        resolver: zodResolver(createTagSchema),
-    })
-
+    const form = useForm<CreateTagData>({ resolver: zodResolver(createTagSchema), defaultValues: { name: '' } })
     const createTag = useCreateBlogTag()
     const deleteTag = useDeleteBlogTag()
 
     const handleDelete = (tag: TagType) => {
         triggerUndoToast({
-            message: `Deleting tag "${tag.name}"...`,
+            message: `Tag „${tag.name}“ wird gelöscht…`,
+            undoLabel: 'Rückgängig',
             onConfirm: () => deleteTag.mutateAsync(tag),
-            onError: (label) => toast.error(`Failed to delete: ${label}`),
+            onError: () => toast.error(`Tag „${tag.name}“ konnte nicht gelöscht werden`),
         })
     }
 
@@ -53,112 +52,107 @@ function BlogTagsTable() {
         onSuccess: () => {
             form.reset()
             setCreateOpen(false)
-            toast.success('Tag created!')
+            toast.success('Tag angelegt')
         },
-        onError: (error) => {
-            toast.error(error.message)
-        },
+        onError: (error) => toast.error(getApiErrorMessage(error)),
     })
 
-    const filteredTags = (tagsData?.tags ?? []).filter((tag) =>
-        tag.name.toLowerCase().includes(search.toLowerCase()) ||
-        tag.slug.toLowerCase().includes(search.toLowerCase())
-    )
+    const tags = useMemo(() => {
+        const query = search.trim().toLowerCase()
+        const all = tagsQuery.data?.tags ?? []
+        if (!query) return all
+        return all.filter((tag) => tag.name.toLowerCase().includes(query) || tag.slug.toLowerCase().includes(query))
+    }, [tagsQuery.data, search])
+
+    const columns = [
+        col.accessor('name', {
+            header: 'Name',
+            cell: ({ getValue }) => <span className='font-medium'>{getValue()}</span>,
+        }),
+        col.accessor('slug', {
+            header: 'Slug',
+            meta: { className: 'hidden sm:table-cell' },
+            cell: ({ getValue }) => <code className='font-mono text-xs text-muted-foreground'>{getValue()}</code>,
+        }),
+        col.accessor('createdAt', {
+            header: 'Erstellt',
+            meta: { className: 'hidden md:table-cell' },
+            cell: ({ getValue }) => <TimeCell iso={getValue()} />,
+        }),
+        col.display({
+            id: 'actions',
+            header: () => <span className='sr-only'>Aktionen</span>,
+            meta: { className: 'w-12 text-right', skeletonClassName: 'w-6' },
+            cell: ({ row }) => (
+                <RowActions
+                    label={row.original.name}
+                    actions={[{ label: 'Löschen', icon: Trash2, destructive: true, onSelect: () => handleDelete(row.original) }]}
+                />
+            ),
+        }),
+    ]
+
+    const table = useReactTable({ data: tags, columns, getCoreRowModel: getCoreRowModel() })
+
+    if (tagsQuery.error) {
+        return <ErrorState title='Tags konnten nicht geladen werden' error={tagsQuery.error} onRetry={() => tagsQuery.refetch()} />
+    }
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
-                <Input
-                    placeholder="Search tags..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="max-w-xs"
-                />
-                <Button onClick={() => setCreateOpen(true)}>+ New Tag</Button>
-            </div>
+        <div className='space-y-4'>
+            <PageToolbar
+                actions={
+                    <Button variant='outline' onClick={() => setCreateOpen(true)}>
+                        <Plus />
+                        Tag anlegen
+                    </Button>
+                }
+            >
+                <SearchInput value={search} onChange={setSearch} placeholder='Tags durchsuchen…' />
+                {search && <Button variant='ghost' onClick={() => setSearch('')}>Filter zurücksetzen</Button>}
+            </PageToolbar>
 
-            <div className="border rounded-lg">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Slug</TableHead>
-                            <TableHead>Created At</TableHead>
-                            <TableHead></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading && (
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <Spinner size={16} />
-                                        Loading...
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        )}
-                        {!isLoading && filteredTags.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                                    {search ? 'No tags match your search.' : 'No tags yet.'}
-                                </TableCell>
-                            </TableRow>
-                        )}
-                        {filteredTags.map((tag) => (
-                            <TableRow key={tag.tagId}>
-                                <TableCell className="font-medium">{tag.name}</TableCell>
-                                <TableCell className="text-muted-foreground font-mono text-sm">
-                                    {tag.slug}
-                                </TableCell>
-                                <TableCell><TimeCell iso={tag.createdAt}/></TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleDelete(tag)}
-                                    >
-                                        <Trash className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-
-            <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) form.reset() }}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>New Tag</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <TextInput
-                            name="name"
-                            id="tag-name-create"
-                            label="Tag Name"
-                            form={form}
-                            placeholder="e.g. PHP"
-                            type="text"
+            <DataTable
+                table={table}
+                loading={tagsQuery.isPending}
+                skeletonRows={5}
+                empty={
+                    search ? (
+                        <EmptyState
+                            variant='plain'
+                            icon={Search}
+                            title='Keine Treffer'
+                            description='Kein Tag passt zu deiner Suche.'
+                            action={<Button variant='outline' size='sm' onClick={() => setSearch('')}>Filter zurücksetzen</Button>}
                         />
-                        {createTag.error && (
-                            <Alert variant="destructive">
-                                <AlertTitle>Error</AlertTitle>
-                                <AlertDescription>{createTag.error.message}</AlertDescription>
-                            </Alert>
-                        )}
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={createTag.isPending}>
-                                {createTag.isPending && <Spinner size={16} />}
-                                {createTag.isPending ? 'Creating...' : 'Create'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                    ) : (
+                        <EmptyState
+                            variant='plain'
+                            icon={Tag}
+                            title='Noch keine Tags'
+                            description='Tags gruppieren Beiträge nach Themen.'
+                            action={<Button variant='outline' size='sm' onClick={() => setCreateOpen(true)}>Tag anlegen</Button>}
+                        />
+                    )
+                }
+                footer={<TablePagination page={1} totalPages={1} rowCount={tags.length} onPageChange={() => undefined} />}
+            />
+
+            <FormDialog
+                open={createOpen}
+                onOpenChange={(open) => {
+                    setCreateOpen(open)
+                    if (!open) form.reset()
+                }}
+                size='sm'
+                title='Tag anlegen'
+                description='Der Slug wird automatisch aus dem Namen erzeugt.'
+                onSubmit={form.handleSubmit(onSubmit)}
+                submitLabel='Anlegen'
+                isSubmitting={createTag.isPending}
+            >
+                <TextInput name='name' id='tag-name-create' label='Name' form={form} placeholder='z. B. PHP' type='text' />
+            </FormDialog>
         </div>
     )
 }

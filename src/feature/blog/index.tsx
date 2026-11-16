@@ -1,61 +1,61 @@
+import { useNavigate } from 'react-router-dom'
+import { PenSquare } from 'lucide-react'
 import { useBlogList } from '@/api/blog/hooks.ts'
-import { useSetPageTitle } from '@/hooks/useSetPageTitle'
-import { Main } from '@/components/layout/main'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { PageContainer, PageHeader } from '@/components/layout/page'
+import { ErrorState } from '@/components/feedback/error-state'
 import BlogProvider from '@/feature/blog/context/blog-context'
 import BlogTable from '@/feature/blog/components/BlogTable'
 import BlogTagsTable from '@/feature/blog/components/BlogTagsTable'
 import BlogDialogs from '@/feature/blog/components/BlogDialogs'
-import {ErrorState} from '@/components/error-state'
 
 function Blog() {
+    const navigate = useNavigate()
     const [blogList, setFilterData] = useBlogList()
-    useSetPageTitle('Backend - Blog')
-
-    if (blogList.error) {
-        return (
-            <div className="p-6">
-                <h2 className="text-2xl font-bold tracking-tight mb-4">Blog</h2>
-                <ErrorState
-                    title="Failed to load blog posts"
-                    message={blogList.error.message}
-                    refetch={blogList.refetch}
-                />
-            </div>
-        )
-    }
 
     return (
-        <Main>
-            <BlogProvider>
-                <div className="mb-2 flex flex-wrap items-center justify-between space-y-2">
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Blog</h2>
-                        <p className="text-muted-foreground">Manage your blog posts and tags here.</p>
-                    </div>
-                </div>
+        <BlogProvider>
+            <PageContainer title='Blog'>
+                <PageHeader
+                    title='Blog'
+                    description='Beiträge schreiben, veröffentlichen und verschlagworten.'
+                    actions={
+                        <Button onClick={() => navigate('/dashboard/blog/create')}>
+                            <PenSquare />
+                            Beitrag schreiben
+                        </Button>
+                    }
+                />
 
-                <Tabs defaultValue="posts" className="space-y-4">
+                <Tabs defaultValue='posts' className='space-y-4'>
                     <TabsList>
-                        <TabsTrigger value="posts">Posts</TabsTrigger>
-                        <TabsTrigger value="tags">Tags</TabsTrigger>
+                        <TabsTrigger value='posts'>Beiträge</TabsTrigger>
+                        <TabsTrigger value='tags'>Tags</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="posts" className="space-y-4">
-                        <BlogTable
-                            posts={blogList.data?.posts ?? []}
-                            maxPages={blogList.data?.totalPages}
-                            loading={blogList.isPending}
-                            setFilterData={setFilterData}
-                        />
+                    <TabsContent value='posts' className='mt-0'>
+                        {blogList.error ? (
+                            <ErrorState
+                                title='Beiträge konnten nicht geladen werden'
+                                error={blogList.error}
+                                onRetry={() => blogList.refetch()}
+                            />
+                        ) : (
+                            <BlogTable
+                                posts={blogList.data?.posts ?? []}
+                                maxPages={blogList.data?.totalPages}
+                                loading={blogList.isPending}
+                                setFilterData={setFilterData}
+                            />
+                        )}
                     </TabsContent>
-                    <TabsContent value="tags" className="space-y-4">
+                    <TabsContent value='tags' className='mt-0'>
                         <BlogTagsTable />
                     </TabsContent>
                 </Tabs>
-
-                <BlogDialogs />
-            </BlogProvider>
-        </Main>
+            </PageContainer>
+            <BlogDialogs />
+        </BlogProvider>
     )
 }
 

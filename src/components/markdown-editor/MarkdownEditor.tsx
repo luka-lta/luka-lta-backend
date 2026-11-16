@@ -60,22 +60,22 @@ interface ToolbarItem {
 }
 
 const TOOLBAR: (ToolbarItem | 'separator')[] = [
-    {icon: <Bold/>, label: 'Bold', action: {type: 'wrap', before: '**', after: '**'}},
-    {icon: <Italic/>, label: 'Italic', action: {type: 'wrap', before: '*', after: '*'}},
-    {icon: <Strikethrough/>, label: 'Strikethrough', action: {type: 'wrap', before: '~~', after: '~~'}},
+    {icon: <Bold/>, label: 'Fett', action: {type: 'wrap', before: '**', after: '**'}},
+    {icon: <Italic/>, label: 'Kursiv', action: {type: 'wrap', before: '*', after: '*'}},
+    {icon: <Strikethrough/>, label: 'Durchgestrichen', action: {type: 'wrap', before: '~~', after: '~~'}},
     'separator',
-    {icon: <Heading1/>, label: 'Heading 1', action: {type: 'prefix', prefix: '# '}},
-    {icon: <Heading2/>, label: 'Heading 2', action: {type: 'prefix', prefix: '## '}},
-    {icon: <Heading3/>, label: 'Heading 3', action: {type: 'prefix', prefix: '### '}},
+    {icon: <Heading1/>, label: 'Überschrift 1', action: {type: 'prefix', prefix: '# '}},
+    {icon: <Heading2/>, label: 'Überschrift 2', action: {type: 'prefix', prefix: '## '}},
+    {icon: <Heading3/>, label: 'Überschrift 3', action: {type: 'prefix', prefix: '### '}},
     'separator',
-    {icon: <List/>, label: 'Bullet list', action: {type: 'prefix', prefix: '- '}},
-    {icon: <ListOrdered/>, label: 'Numbered list', action: {type: 'prefix', prefix: '1. '}},
-    {icon: <Quote/>, label: 'Blockquote', action: {type: 'prefix', prefix: '> '}},
+    {icon: <List/>, label: 'Aufzählung', action: {type: 'prefix', prefix: '- '}},
+    {icon: <ListOrdered/>, label: 'Nummerierte Liste', action: {type: 'prefix', prefix: '1. '}},
+    {icon: <Quote/>, label: 'Zitat', action: {type: 'prefix', prefix: '> '}},
     'separator',
-    {icon: <Code/>, label: 'Inline code', action: {type: 'wrap', before: '`', after: '`'}},
+    {icon: <Code/>, label: 'Code (inline)', action: {type: 'wrap', before: '`', after: '`'}},
     {
         icon: <CodeSquare/>,
-        label: 'Code block',
+        label: 'Codeblock',
         action: {type: 'block', before: '```\n', after: '\n```', placeholder: 'code here'},
     },
     'separator',
@@ -84,7 +84,7 @@ const TOOLBAR: (ToolbarItem | 'separator')[] = [
         label: 'Link',
         action: {type: 'block', before: '[', after: '](url)', placeholder: 'link text'},
     },
-    {icon: <Minus/>, label: 'Divider', action: {type: 'prefix', prefix: '---\n'}},
+    {icon: <Minus/>, label: 'Trennlinie', action: {type: 'prefix', prefix: '---\n'}},
 ]
 
 function applyAction(textarea: HTMLTextAreaElement, action: ToolbarAction, current: string): string {
@@ -130,8 +130,7 @@ function applyAction(textarea: HTMLTextAreaElement, action: ToolbarAction, curre
 }
 
 function MarkdownEditor({value, onChange, height = 520, className}: MarkdownEditorProps) {
-    // @ts-ignore
-    const [content, setContent] = useState<JSONContent>(value);
+    const [content, setContent] = useState<JSONContent | string>(value);
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     const handleToolbar = (action: ToolbarAction) => {
@@ -144,7 +143,6 @@ function MarkdownEditor({value, onChange, height = 520, className}: MarkdownEdit
     const handleUpdate = ({editor}: { editor: Editor }) => {
         const json = editor.getJSON();
         setContent(json);
-        console.log(JSON.stringify(json));
     };
 
     return (
@@ -192,7 +190,7 @@ function MarkdownEditor({value, onChange, height = 520, className}: MarkdownEdit
                             'outline-none border-r leading-relaxed',
                             'placeholder:text-muted-foreground',
                         )}
-                        placeholder="Write your post in Markdown..."
+                        placeholder="Schreib deinen Beitrag in Markdown…"
                         onUpdate={handleUpdate}
                     >
                         <EditorFloatingMenu>
@@ -275,7 +273,7 @@ function MarkdownEditor({value, onChange, height = 520, className}: MarkdownEdit
                             'outline-none border-r leading-relaxed',
                             'placeholder:text-muted-foreground'
                         )}
-                        placeholder="Write your post in Markdown..."
+                        placeholder="Schreib deinen Beitrag in Markdown…"
                         spellCheck={false}
                     />*/}
 

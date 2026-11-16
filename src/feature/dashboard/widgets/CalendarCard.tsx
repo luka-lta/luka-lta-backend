@@ -2,11 +2,11 @@ import { DateTime } from "luxon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { Empty, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty.tsx";
-import { CalendarDays, CalendarOff, ExternalLink } from "lucide-react";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
+import { StatusBadge } from "@/components/feedback/status-badge.tsx";
+import { CalendarDays, CalendarOff, ChevronRight, ExternalLink } from "lucide-react";
 import { useCalendarSummary } from "@/api/calendar/hooks.ts";
 import { formatCountdown, getCurrentEvent, getUpcomingEvents, parseEventTime } from "@/feature/dashboard/widgets/calendarData.ts";
-import { cn } from "@/lib/utils.ts";
 
 interface CalendarCardProps {
     onOpenDetail: () => void;
@@ -19,12 +19,13 @@ export function CalendarCard({ onOpenDetail }: CalendarCardProps) {
     return (
         <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                    Kalender
+                <CardTitle className="flex items-center gap-2">
+                    <CalendarDays className="size-4 text-muted-foreground" aria-hidden />
+                    Heute
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={onOpenDetail}>
-                    Ansicht
+                <Button variant="ghost" size="sm" className="-mr-2 text-muted-foreground" onClick={onOpenDetail}>
+                    Kalender
+                    <ChevronRight />
                 </Button>
             </CardHeader>
             <CardContent>
@@ -37,25 +38,24 @@ export function CalendarCard({ onOpenDetail }: CalendarCardProps) {
                 )}
 
                 {isError && !isPending && (
-                    <Empty className="border-0 py-6">
-                        <EmptyMedia variant="icon">
-                            <CalendarOff className="text-amber-500" />
-                        </EmptyMedia>
-                        <EmptyTitle>Kalender momentan nicht erreichbar</EmptyTitle>
-                        <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
-                            Erneut versuchen
-                        </Button>
-                    </Empty>
+                    <EmptyState
+                        variant="plain"
+                        className="py-6"
+                        icon={CalendarOff}
+                        title="Kalender gerade nicht erreichbar"
+                        action={<Button variant="outline" size="sm" onClick={() => refetch()}>Erneut versuchen</Button>}
+                    />
                 )}
 
                 {!isPending && !isError && data?.status === "not_configured" && (
-                    <Empty className="border-0 py-6">
-                        <EmptyMedia variant="icon">
-                            <CalendarOff />
-                        </EmptyMedia>
-                        <EmptyTitle>Kein Kalender konfiguriert</EmptyTitle>
-                        <EmptyDescription>Eine ICS-Kalender-Quelle kann in den Einstellungen hinzugefügt werden.</EmptyDescription>
-                    </Empty>
+                    <EmptyState
+                        variant="plain"
+                        className="py-6"
+                        icon={CalendarOff}
+                        title="Kein Kalender verbunden"
+                        description="Binde auf der Kalender-Seite einen ICS-Kalender ein."
+                        action={<Button variant="outline" size="sm" onClick={onOpenDetail}>Kalender hinzufügen</Button>}
+                    />
                 )}
 
                 {!isPending && !isError && data && data.status !== "not_configured" && (
@@ -72,24 +72,16 @@ function CalendarCardBody({ events, now }: { events: NonNullable<ReturnType<type
 
     if (events.length === 0) {
         return (
-            <Empty className="border-0 py-6">
-                <EmptyMedia variant="icon">
-                    <CalendarDays />
-                </EmptyMedia>
-                <EmptyTitle>Keine Termine heute</EmptyTitle>
-            </Empty>
+            <EmptyState variant="plain" className="py-6" icon={CalendarDays} title="Keine Termine heute" />
         );
     }
 
     return (
         <div className="space-y-3">
             {current && (
-                <div className="rounded-md border border-rose-500/30 bg-rose-500/5 p-3">
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-rose-500">
-                        <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                        Gerade aktiv
-                    </div>
-                    <p className="mt-1.5 font-medium">{current.title}</p>
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                    <StatusBadge tone="info" pulse>Läuft gerade</StatusBadge>
+                    <p className="mt-2 font-medium">{current.title}</p>
                     <p className="text-sm text-muted-foreground">
                         {parseEventTime(current.startsAt).toFormat("HH:mm")} – {parseEventTime(current.endsAt).toFormat("HH:mm")}
                         {" · Noch "}
@@ -105,7 +97,7 @@ function CalendarCardBody({ events, now }: { events: NonNullable<ReturnType<type
                             <span className="font-medium tabular-nums shrink-0">{parseEventTime(event.startsAt).toFormat("HH:mm")}</span>
                             <span className="truncate">{event.title}</span>
                         </div>
-                        <span className="text-muted-foreground shrink-0">{event.durationMinutes} min</span>
+                        <span className="shrink-0 tabular-nums text-muted-foreground">{event.durationMinutes} Min.</span>
                     </li>
                 ))}
             </ul>
@@ -115,7 +107,7 @@ function CalendarCardBody({ events, now }: { events: NonNullable<ReturnType<type
             )}
 
             {upcoming[0] && (
-                <p className={cn("text-sm font-medium pt-1 border-t")}>
+                <p className="border-t pt-3 text-sm font-medium">
                     Nächster Termin in {formatCountdown(parseEventTime(upcoming[0].startsAt), now)}
                 </p>
             )}

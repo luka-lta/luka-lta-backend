@@ -1,17 +1,19 @@
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Main } from '@/components/layout/main'
-import { useSetPageTitle } from '@/hooks/useSetPageTitle'
+import { Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { PageContainer, PageHeader } from '@/components/layout/page'
 import { useBlogTags, useCreateBlogPost, usePublishBlogPost } from '@/api/blog/hooks.ts'
-import BlogEditorForm, { BlogEditorData } from '@/feature/blog/components/editor/BlogEditorForm'
+import BlogEditorForm, { BLOG_EDITOR_FORM_ID, BlogEditorData } from '@/feature/blog/components/editor/BlogEditorForm'
+import { getApiErrorMessage } from '@/lib/apiError'
 
 function BlogCreatePage() {
-    useSetPageTitle('Backend - New Blog Post')
     const navigate = useNavigate()
     const { data: tagsData } = useBlogTags()
 
     const createPost = useCreateBlogPost()
     const togglePublish = usePublishBlogPost()
+    const isPending = createPost.isPending || togglePublish.isPending
 
     const handleSubmit = (data: BlogEditorData) => {
         createPost.mutate({
@@ -21,38 +23,48 @@ function BlogCreatePage() {
             tag_ids: data.tag_ids,
         }, {
             onSuccess: (post) => {
+                const target = post.blogId ? `/dashboard/blog/${post.blogId}` : '/dashboard/blog'
                 if (data.isPublished && post.blogId) {
-                    togglePublish.mutate({blogId: post.blogId, published: true}, {
+                    togglePublish.mutate({ blogId: post.blogId, published: true }, {
                         onSuccess: () => {
-                            toast.success('Blog post created!')
-                            navigate(`/dashboard/blog/${post.blogId}`)
+                            toast.success('Beitrag veröffentlicht')
+                            navigate(target)
                         },
-                        onError: (error) => toast.error(error.message),
+                        onError: (error) => {
+                            toast.error(`Beitrag als Entwurf gespeichert, Veröffentlichen fehlgeschlagen: ${getApiErrorMessage(error)}`)
+                            navigate(target)
+                        },
                     })
                     return
                 }
-                toast.success('Blog post created!')
-                navigate(post.blogId ? `/dashboard/blog/${post.blogId}` : '/dashboard/blog')
+                toast.success('Entwurf gespeichert')
+                navigate(target)
             },
-            onError: (error) => toast.error(error.message),
+            onError: (error) => toast.error(getApiErrorMessage(error)),
         })
     }
 
     return (
-        <Main>
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold tracking-tight">New Blog Post</h2>
-                <p className="text-muted-foreground">Write and publish a new post.</p>
-            </div>
-
-            <BlogEditorForm
-                tags={tagsData?.tags ?? []}
-                onSubmit={handleSubmit}
-                isPending={createPost.isPending || togglePublish.isPending}
-                submitLabel="Create Post"
-                onCancel={() => navigate('/dashboard/blog')}
+        <PageContainer title='Neuer Beitrag'>
+            <PageHeader
+                back={{ to: '/dashboard/blog', label: 'Blog' }}
+                title='Neuer Beitrag'
+                description='Schreib in Markdown. Speichern legt einen Entwurf an, solange „Veröffentlicht“ aus ist.'
+                actions={
+                    <>
+                        <Button variant='outline' onClick={() => navigate('/dashboard/blog')} disabled={isPending}>
+                            Abbrechen
+                        </Button>
+                        <Button type='submit' form={BLOG_EDITOR_FORM_ID} disabled={isPending}>
+                            {isPending && <Loader2 className='animate-spin' />}
+                            Beitrag anlegen
+                        </Button>
+                    </>
+                }
             />
-        </Main>
+
+            <BlogEditorForm tags={tagsData?.tags ?? []} onSubmit={handleSubmit} />
+        </PageContainer>
     )
 }
 

@@ -15,9 +15,9 @@ import { ChevronDown, Server } from "lucide-react";
 import { NODE_CATEGORIES, type NodeCategory } from "@/feature/homelab/topology/constants.ts";
 
 const CATEGORY_LABEL: Record<NodeCategory, string> = {
-    infrastructure: "Infrastructure",
-    network: "Network",
-    service: "Services",
+    infrastructure: "Infrastruktur",
+    network: "Netzwerk",
+    service: "Dienste",
 };
 
 export interface HostOption {
@@ -38,12 +38,12 @@ interface TopologyFiltersProps {
 }
 
 function hostFilterLabel(hosts: HostOption[], selectedHostIds: Set<string>): string {
-    if (selectedHostIds.size === 0) return "All hosts";
+    if (selectedHostIds.size === 0) return "Alle Hosts";
     if (selectedHostIds.size === 1) {
         const [hostId] = selectedHostIds;
         return hosts.find((host) => host.id === hostId)?.name ?? hostId;
     }
-    return `${selectedHostIds.size} hosts`;
+    return `${selectedHostIds.size} Hosts`;
 }
 
 function TopologyFilters({
@@ -71,14 +71,14 @@ function TopologyFilters({
         <div className="flex flex-wrap items-center gap-3">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" disabled={hosts.length === 0}>
-                        <Server className="h-3.5 w-3.5" />
+                    <Button variant="outline" size="sm" className="h-8 bg-card" disabled={hosts.length === 0}>
+                        <Server />
                         {hostFilterLabel(hosts, selectedHostIds)}
-                        <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+                        <ChevronDown className="opacity-60" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
-                    <DropdownMenuLabel>Filter by host</DropdownMenuLabel>
+                    <DropdownMenuLabel>Nach Host filtern</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {hosts.map((host) => (
                         <DropdownMenuCheckboxItem
@@ -95,16 +95,17 @@ function TopologyFilters({
                         disabled={selectedHostIds.size === 0}
                         onSelect={() => onSelectedHostIdsChange(new Set())}
                     >
-                        Show all hosts
+                        Alle Hosts anzeigen
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <div className="flex flex-wrap items-center gap-1.5 border-l pl-3">
+            <div className="flex flex-wrap items-center gap-1.5 border-l pl-3" role="group" aria-label="Kategorien">
                 {NODE_CATEGORIES.map((category) => (
                     <Toggle
                         key={category}
                         size="sm"
                         variant="outline"
+                        className="h-8 bg-card data-[state=on]:border-primary/40 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
                         pressed={activeCategories.has(category)}
                         onPressedChange={() => onToggleCategory(category)}
                     >
@@ -115,13 +116,13 @@ function TopologyFilters({
             <div className="flex items-center gap-2 border-l pl-3">
                 <Switch id="peer-links" checked={showPeerLinks} onCheckedChange={onToggleShowPeerLinks} />
                 <Label htmlFor="peer-links" className="text-sm font-normal">
-                    Peer links
+                    Peer-Verbindungen
                 </Label>
             </div>
             <div className="flex items-center gap-2 border-l pl-3">
                 <Switch id="problems-only" checked={problemsOnly} onCheckedChange={onToggleProblemsOnly} />
                 <Label htmlFor="problems-only" className="text-sm font-normal">
-                    Show only problems
+                    Nur Probleme
                 </Label>
             </div>
         </div>

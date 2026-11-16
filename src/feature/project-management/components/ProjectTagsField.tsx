@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckIcon, Plus } from "lucide-react";
+import { CheckIcon, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
   Tags,
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/kibo-ui/tags";
 import { Button } from "@/components/ui/button.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { Spinner } from "@/components/ui/kibo-ui/spinner/index.tsx";
 import { useCreateProjectTag, useProjectTags } from "@/api/project-tags/hooks.ts";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
 
@@ -60,7 +59,7 @@ export function ProjectTagsField({ value, onChange }: Props) {
         }
 
         setSearch("");
-        toast.success(`Tag "${tag.name}" ready to use.`);
+        toast.success(`Tag „${tag.name}“ hinzugefügt`);
       },
       onError: (error) => {
         toast.error(getApiErrorMessage(error));
@@ -69,10 +68,10 @@ export function ProjectTagsField({ value, onChange }: Props) {
   }
 
   return (
-    <div className="space-y-1.5">
-      <Label>Tags</Label>
+    <div className="space-y-2">
+      <Label>Tags <span className="font-normal text-muted-foreground">(optional)</span></Label>
       <Tags>
-        <TagsTrigger>
+        <TagsTrigger className="bg-card font-normal shadow-xs">
           {selected.map((tagId) => (
             <TagsValue key={tagId} onRemove={() => handleRemove(tagId)}>
               {available.find((tag) => String(tag.tagId) === tagId)?.name ?? tagId}
@@ -80,11 +79,11 @@ export function ProjectTagsField({ value, onChange }: Props) {
           ))}
         </TagsTrigger>
         <TagsContent>
-          <TagsInput placeholder="Search or create a tag..." value={search} onValueChange={setSearch} />
+          <TagsInput placeholder="Tag suchen oder neu anlegen…" value={search} onValueChange={setSearch} />
           <TagsList>
             <TagsEmpty>
               {search.trim() === "" ? (
-                "No tags yet."
+                "Noch keine Tags."
               ) : (
                 <Button
                   type="button"
@@ -93,8 +92,8 @@ export function ProjectTagsField({ value, onChange }: Props) {
                   disabled={createTag.isPending}
                   onClick={handleCreate}
                 >
-                  {createTag.isPending ? <Spinner size={14} className="mr-2" /> : <Plus className="mr-2 size-3.5" />}
-                  Create "{search.trim()}"
+                  {createTag.isPending ? <Loader2 className="mr-2 size-3.5 animate-spin" aria-hidden="true" /> : <Plus className="mr-2 size-3.5" />}
+                  „{search.trim()}“ anlegen
                 </Button>
               )}
             </TagsEmpty>

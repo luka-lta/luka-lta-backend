@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, type UseFormRegisterReturn, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormDialog } from "@/components/dialogs/form-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Spinner } from "@/components/ui/kibo-ui/spinner";
+import { cn } from "@/lib/utils";
+import { getApiErrorMessage } from "@/lib/apiError";
 import { AppAnalyticsSourceTypeSchema, AppCategorySchema, AppIconKeySchema, AppStatusSchema, type AppEntity, type AppInput } from "@/api/apps/schema";
 import { useCreateApp, useUpdateApp } from "@/api/apps/hooks";
 import { APP_ICON_OPTIONS } from "@/feature/apps/iconOptions";
@@ -175,268 +176,257 @@ export function AppFormDialog({ open, onOpenChange, mode, defaultValues }: AppFo
         mutation.mutate(input, {
             onSuccess: () => {
                 onOpenChange(false);
-                toast.success(mode === "create" ? "App angelegt" : "App aktualisiert");
+                toast.success(mode === "create" ? "App angelegt" : "App gespeichert");
             },
-            onError: (error) => toast.error(error.message),
+            onError: (error) => toast.error(getApiErrorMessage(error)),
         });
     }
 
+    const errors = form.formState.errors;
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>{mode === "create" ? "Neue App anlegen" : "App bearbeiten"}</DialogTitle>
-                </DialogHeader>
+        <FormDialog
+            open={open}
+            onOpenChange={onOpenChange}
+            size="lg"
+            title={mode === "create" ? "App anlegen" : "App bearbeiten"}
+            description="Apps, Webseiten und Produkte mit ihren Kennzahlen und Analytics-Quellen."
+            onSubmit={form.handleSubmit(onSubmit)}
+            submitLabel={mode === "create" ? "App anlegen" : "Speichern"}
+            isSubmitting={isPending}
+            submitDisabled={addingSourceType !== null}
+        >
+            <fieldset className="space-y-5">
+                <legend className="sr-only">Grunddaten</legend>
+                <div className="space-y-2">
+                    <Label htmlFor="app-name" className={errors.name ? "text-destructive" : undefined}>Name</Label>
+                    <Input id="app-name" placeholder="z. B. PixelDiary" aria-invalid={!!errors.name} {...form.register("name")} />
+                    <FieldError message={errors.name?.message} />
+                </div>
 
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="space-y-1.5">
-                        <Label htmlFor="app-name">Name *</Label>
-                        <Input id="app-name" placeholder="z. B. PixelDiary" {...form.register("name")} />
-                        {form.formState.errors.name && (
-                            <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
-                        )}
-                    </div>
+                <div className="space-y-2">
+                    <Label htmlFor="app-description">
+                        Beschreibung <span className="font-normal text-muted-foreground">(optional)</span>
+                    </Label>
+                    <Textarea id="app-description" rows={2} className="resize-none" aria-invalid={!!errors.description} {...form.register("description")} />
+                    <FieldError message={errors.description?.message} />
+                </div>
 
-                    <div className="space-y-1.5">
-                        <Label htmlFor="app-description">Beschreibung</Label>
-                        <Textarea id="app-description" rows={2} className="resize-none" {...form.register("description")} />
-                        {form.formState.errors.description && (
-                            <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label>Kategorie</Label>
-                            <Controller
-                                control={form.control}
-                                name="category"
-                                render={({ field }) => (
-                                    <Select value={field.value} onValueChange={field.onChange}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-                                                <SelectItem key={value} value={value}>{label}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                )}
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label>Status</Label>
-                            <Controller
-                                control={form.control}
-                                name="status"
-                                render={({ field }) => (
-                                    <Select value={field.value} onValueChange={field.onChange}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                                                <SelectItem key={value} value={value}>{label}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                )}
-                            />
-                        </div>
-                    </div>
-
-                    <fieldset className="space-y-3 rounded-md border p-3">
-                        <legend className="px-1 text-sm font-medium">Analytics-Quellen</legend>
-
-                        {sourcesFieldArray.fields.length > 0 && (
-                            <ul className="space-y-2">
-                                {sourcesFieldArray.fields.map((field, index) => (
-                                    <li key={field.id} className="flex items-center justify-between gap-3 rounded-md border p-2">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <span className="text-sm font-medium truncate">
-                                                {ANALYTICS_SOURCE_TYPE_LABELS[field.type]}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 shrink-0">
-                                            <Controller
-                                                control={form.control}
-                                                name={`analyticsSources.${index}.enabled`}
-                                                render={({ field: enabledField }) => (
-                                                    <Switch checked={enabledField.value} onCheckedChange={enabledField.onChange} />
-                                                )}
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => sourcesFieldArray.remove(index)}
-                                                aria-label="Quelle entfernen"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-
-                        {addingSourceType ? (
-                            <div className="space-y-3 rounded-md border border-dashed p-3">
-                                <div className="space-y-1.5">
-                                    <Label>Typ</Label>
-                                    <Select value={addingSourceType} onValueChange={(v) => { setAddingSourceType(v as typeof addingSourceType); setNewSourceCredentials({}); }}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {Object.entries(ANALYTICS_SOURCE_TYPE_LABELS).map(([value, label]) => (
-                                                <SelectItem key={value} value={value}>{label}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {ANALYTICS_CREDENTIAL_FIELDS[addingSourceType].map((field) => (
-                                    <div key={field.key} className="space-y-1.5">
-                                        <Label htmlFor={`new-source-${field.key}`} className="text-xs">{field.label}</Label>
-                                        {field.multiline ? (
-                                            <Textarea
-                                                id={`new-source-${field.key}`}
-                                                rows={2}
-                                                className="resize-none"
-                                                value={newSourceCredentials[field.key] ?? ""}
-                                                onChange={(e) => setNewSourceCredentials((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                                            />
-                                        ) : (
-                                            <Input
-                                                id={`new-source-${field.key}`}
-                                                type="password"
-                                                value={newSourceCredentials[field.key] ?? ""}
-                                                onChange={(e) => setNewSourceCredentials((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter") {
-                                                        e.preventDefault();
-                                                        handleAddSource();
-                                                    }
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                ))}
-
-                                <div className="flex justify-end gap-2">
-                                    <Button type="button" variant="outline" size="sm" onClick={() => { setAddingSourceType(null); setNewSourceCredentials({}); }}>
-                                        Abbrechen
-                                    </Button>
-                                    <Button type="button" size="sm" onClick={handleAddSource}>
-                                        Hinzufügen
-                                    </Button>
-                                </div>
-                            </div>
-                        ) : (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setAddingSourceType("app-store-connect")}
-                            >
-                                <Plus className="h-4 w-4" />
-                                Quelle hinzufügen
-                            </Button>
-                        )}
-                    </fieldset>
-
-                    <div className="space-y-1.5">
-                        <Label>Icon</Label>
+                <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="app-category">Kategorie</Label>
                         <Controller
                             control={form.control}
-                            name="icon"
+                            name="category"
                             render={({ field }) => (
-                                <div className="grid grid-cols-5 gap-2">
-                                    {Object.entries(APP_ICON_OPTIONS).map(([key, Icon]) => (
-                                        <button
-                                            key={key}
-                                            type="button"
-                                            onClick={() => field.onChange(key)}
-                                            className={`flex items-center justify-center rounded-md border p-2 hover:bg-muted ${field.value === key ? "border-primary bg-muted" : "border-border"}`}
-                                            aria-label={key}
-                                        >
-                                            <Icon className="h-4 w-4" />
-                                        </button>
-                                    ))}
-                                </div>
+                                <Select value={field.value} onValueChange={field.onChange}>
+                                    <SelectTrigger id="app-category"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+                                            <SelectItem key={value} value={value}>{label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             )}
                         />
                     </div>
-
-                    <div className="space-y-1.5">
-                        <Label htmlFor="app-url">URL</Label>
-                        <Input id="app-url" placeholder="https://..." {...form.register("url")} />
-                        {form.formState.errors.url && (
-                            <p className="text-sm text-destructive">{form.formState.errors.url.message}</p>
-                        )}
+                    <div className="space-y-2">
+                        <Label htmlFor="app-status">Status</Label>
+                        <Controller
+                            control={form.control}
+                            name="status"
+                            render={({ field }) => (
+                                <Select value={field.value} onValueChange={field.onChange}>
+                                    <SelectTrigger id="app-status"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                                            <SelectItem key={value} value={value}>{label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
                     </div>
+                </div>
 
-                    <fieldset className="space-y-3 rounded-md border p-3">
-                        <legend className="px-1 text-sm font-medium">Metriken (optional)</legend>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                                <Label htmlFor="app-revenue" className="text-xs">Umsatz (€)</Label>
-                                <Input id="app-revenue" inputMode="decimal" {...form.register("metricsRevenue")} />
-                                {form.formState.errors.metricsRevenue && (
-                                    <p className="text-sm text-destructive">{form.formState.errors.metricsRevenue.message}</p>
-                                )}
+                <div className="space-y-2">
+                    <Label htmlFor="app-url" className={errors.url ? "text-destructive" : undefined}>
+                        URL <span className="font-normal text-muted-foreground">(optional)</span>
+                    </Label>
+                    <Input id="app-url" type="url" placeholder="https://" aria-invalid={!!errors.url} {...form.register("url")} />
+                    <FieldError message={errors.url?.message} />
+                </div>
+
+                <div className="space-y-2">
+                    <Label id="app-icon-label">Icon</Label>
+                    <Controller
+                        control={form.control}
+                        name="icon"
+                        render={({ field }) => (
+                            <div role="radiogroup" aria-labelledby="app-icon-label" className="grid grid-cols-6 gap-2 sm:grid-cols-10">
+                                {Object.entries(APP_ICON_OPTIONS).map(([key, Icon]) => {
+                                    const selected = field.value === key;
+                                    return (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            role="radio"
+                                            aria-checked={selected}
+                                            aria-label={key}
+                                            onClick={() => field.onChange(key)}
+                                            className={cn(
+                                                "flex aspect-square items-center justify-center rounded-md border bg-card transition-colors duration-fast hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                                selected && "border-primary bg-primary/10 text-primary hover:bg-primary/10",
+                                            )}
+                                        >
+                                            <Icon className="size-4" />
+                                        </button>
+                                    );
+                                })}
                             </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="app-downloads" className="text-xs">Downloads</Label>
-                                <Input id="app-downloads" inputMode="numeric" {...form.register("metricsDownloads")} />
-                                {form.formState.errors.metricsDownloads && (
-                                    <p className="text-sm text-destructive">{form.formState.errors.metricsDownloads.message}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="app-rating" className="text-xs">Rating (0-5)</Label>
-                                <Input id="app-rating" inputMode="decimal" {...form.register("metricsRating")} />
-                                {form.formState.errors.metricsRating && (
-                                    <p className="text-sm text-destructive">{form.formState.errors.metricsRating.message}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="app-mrr" className="text-xs">MRR (€)</Label>
-                                <Input id="app-mrr" inputMode="decimal" {...form.register("metricsMrr")} />
-                                {form.formState.errors.metricsMrr && (
-                                    <p className="text-sm text-destructive">{form.formState.errors.metricsMrr.message}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="app-active-users" className="text-xs">Aktive User</Label>
-                                <Input id="app-active-users" inputMode="numeric" {...form.register("metricsActiveUsers")} />
-                                {form.formState.errors.metricsActiveUsers && (
-                                    <p className="text-sm text-destructive">{form.formState.errors.metricsActiveUsers.message}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="app-churn" className="text-xs">Churn (%)</Label>
-                                <Input id="app-churn" inputMode="decimal" {...form.register("metricsChurnPercent")} />
-                                {form.formState.errors.metricsChurnPercent && (
-                                    <p className="text-sm text-destructive">{form.formState.errors.metricsChurnPercent.message}</p>
-                                )}
-                            </div>
+                        )}
+                    />
+                </div>
+            </fieldset>
+
+            <fieldset className="space-y-3 border-t pt-5">
+                <legend className="float-left mb-1 w-full text-sm font-semibold">Analytics-Quellen</legend>
+                <p className="clear-both text-xs text-muted-foreground">Zugangsdaten werden nur in dieser Demo-Registry gehalten.</p>
+
+                {sourcesFieldArray.fields.length > 0 && (
+                    <ul className="space-y-2">
+                        {sourcesFieldArray.fields.map((field, index) => (
+                            <li key={field.id} className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2">
+                                <span className="truncate text-sm font-medium">{ANALYTICS_SOURCE_TYPE_LABELS[field.type]}</span>
+                                <div className="flex shrink-0 items-center gap-1">
+                                    <Controller
+                                        control={form.control}
+                                        name={`analyticsSources.${index}.enabled`}
+                                        render={({ field: enabledField }) => (
+                                            <Switch
+                                                checked={enabledField.value}
+                                                onCheckedChange={enabledField.onChange}
+                                                aria-label={`${ANALYTICS_SOURCE_TYPE_LABELS[field.type]} aktiv`}
+                                            />
+                                        )}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        className="text-muted-foreground hover:text-destructive"
+                                        onClick={() => sourcesFieldArray.remove(index)}
+                                        aria-label={`${ANALYTICS_SOURCE_TYPE_LABELS[field.type]} entfernen`}
+                                    >
+                                        <Trash2 />
+                                    </Button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+
+                {addingSourceType ? (
+                    <div className="space-y-3 rounded-lg border border-dashed p-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="new-source-type">Typ</Label>
+                            <Select value={addingSourceType} onValueChange={(v) => { setAddingSourceType(v as typeof addingSourceType); setNewSourceCredentials({}); }}>
+                                <SelectTrigger id="new-source-type"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {Object.entries(ANALYTICS_SOURCE_TYPE_LABELS).map(([value, label]) => (
+                                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
-                    </fieldset>
 
-                    {addingSourceType !== null && (
-                        <p className="text-sm text-muted-foreground">
-                            Quelle zuerst hinzufügen oder abbrechen, bevor du speicherst.
-                        </p>
-                    )}
+                        {ANALYTICS_CREDENTIAL_FIELDS[addingSourceType].map((field) => (
+                            <div key={field.key} className="space-y-2">
+                                <Label htmlFor={`new-source-${field.key}`}>{field.label}</Label>
+                                {field.multiline ? (
+                                    <Textarea
+                                        id={`new-source-${field.key}`}
+                                        rows={2}
+                                        className="resize-none font-mono text-xs"
+                                        value={newSourceCredentials[field.key] ?? ""}
+                                        onChange={(e) => setNewSourceCredentials((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                                    />
+                                ) : (
+                                    <Input
+                                        id={`new-source-${field.key}`}
+                                        type="password"
+                                        autoComplete="off"
+                                        value={newSourceCredentials[field.key] ?? ""}
+                                        onChange={(e) => setNewSourceCredentials((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                handleAddSource();
+                                            }
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        ))}
 
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-                            Abbrechen
-                        </Button>
-                        <Button type="submit" disabled={isPending || addingSourceType !== null}>
-                            {isPending && <Spinner size={14} />}
-                            {mode === "create" ? "Anlegen" : "Speichern"}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+                        <div className="flex justify-end gap-2">
+                            <Button type="button" variant="outline" size="sm" onClick={() => { setAddingSourceType(null); setNewSourceCredentials({}); }}>
+                                Abbrechen
+                            </Button>
+                            <Button type="button" size="sm" onClick={handleAddSource}>
+                                Quelle hinzufügen
+                            </Button>
+                        </div>
+                        <p className="text-xs text-warning">Erst hinzufügen oder abbrechen, dann speichern.</p>
+                    </div>
+                ) : (
+                    <Button type="button" variant="outline" size="sm" onClick={() => setAddingSourceType("app-store-connect")}>
+                        <Plus />
+                        Quelle hinzufügen
+                    </Button>
+                )}
+            </fieldset>
+
+            <fieldset className="space-y-3 border-t pt-5">
+                <legend className="float-left mb-1 w-full text-sm font-semibold">
+                    Kennzahlen <span className="font-normal text-muted-foreground">(optional)</span>
+                </legend>
+                <div className="clear-both grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    <MetricInput id="app-revenue" label="Umsatz (€)" inputMode="decimal" error={errors.metricsRevenue?.message} registration={form.register("metricsRevenue")} />
+                    <MetricInput id="app-downloads" label="Downloads" inputMode="numeric" error={errors.metricsDownloads?.message} registration={form.register("metricsDownloads")} />
+                    <MetricInput id="app-rating" label="Bewertung (0–5)" inputMode="decimal" error={errors.metricsRating?.message} registration={form.register("metricsRating")} />
+                    <MetricInput id="app-mrr" label="MRR (€)" inputMode="decimal" error={errors.metricsMrr?.message} registration={form.register("metricsMrr")} />
+                    <MetricInput id="app-active-users" label="Aktive Nutzer" inputMode="numeric" error={errors.metricsActiveUsers?.message} registration={form.register("metricsActiveUsers")} />
+                    <MetricInput id="app-churn" label="Churn (%)" inputMode="decimal" error={errors.metricsChurnPercent?.message} registration={form.register("metricsChurnPercent")} />
+                </div>
+            </fieldset>
+        </FormDialog>
+    );
+}
+
+function FieldError({ message }: { message?: string }) {
+    if (!message) return null;
+    return <p className="text-sm text-destructive">{message}</p>;
+}
+
+function MetricInput({
+    id,
+    label,
+    inputMode,
+    error,
+    registration,
+}: {
+    id: string;
+    label: string;
+    inputMode: "decimal" | "numeric";
+    error?: string;
+    registration: UseFormRegisterReturn;
+}) {
+    return (
+        <div className="space-y-2">
+            <Label htmlFor={id} className={error ? "text-destructive" : undefined}>{label}</Label>
+            <Input id={id} inputMode={inputMode} className="tabular-nums" aria-invalid={!!error} {...registration} />
+            <FieldError message={error} />
+        </div>
     );
 }

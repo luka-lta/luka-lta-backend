@@ -1,22 +1,23 @@
-import { KpiCard } from "@/components/KpiCard.tsx";
-import { CheckCircle2, Link as LinkIcon, PauseCircle, PowerOff } from "lucide-react";
+import { StatCard, StatGrid } from "@/components/data/stat-card.tsx";
+import { getLinkStatus } from "@/feature/linktree/linkStatus.ts";
 import type { LinkItemTypeSchema } from "@/feature/linktree/schema/LinktreeSchema.ts";
 
 interface LinktreeSummaryKpisProps {
     links: LinkItemTypeSchema[];
+    loading: boolean;
 }
 
-export function LinktreeSummaryKpis({ links }: LinktreeSummaryKpisProps) {
-    const deactivated = links.filter((l) => l.deactivated).length;
-    const active = links.filter((l) => !l.deactivated && l.isActive).length;
-    const inactive = links.filter((l) => !l.deactivated && !l.isActive).length;
+/** Zählt die Links der aktuell geladenen Seite nach Status. */
+export function LinktreeSummaryKpis({ links, loading }: LinktreeSummaryKpisProps) {
+    const count = (status: ReturnType<typeof getLinkStatus>) => links.filter((l) => getLinkStatus(l) === status).length;
+    const value = (n: number) => (loading ? undefined : n);
 
     return (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-4">
-            <KpiCard title="Total links" value={links.length} icon={LinkIcon} iconBg="bg-sky-500/10" iconColor="text-sky-500" />
-            <KpiCard title="Active" value={active} icon={CheckCircle2} iconBg="bg-emerald-500/10" iconColor="text-emerald-500" />
-            <KpiCard title="Inactive" value={inactive} icon={PauseCircle} iconBg="bg-amber-500/10" iconColor="text-amber-500" />
-            <KpiCard title="Deactivated" value={deactivated} icon={PowerOff} iconBg="bg-slate-500/10" iconColor="text-slate-500" />
-        </div>
+        <StatGrid>
+            <StatCard label="Links" value={value(links.length)} />
+            <StatCard label="Aktiv" value={value(count('active'))} />
+            <StatCard label="Versteckt" value={value(count('inactive'))} hint="Auf der Seite ausgeblendet" />
+            <StatCard label="Deaktiviert" value={value(count('deactivated'))} hint="Leiten nicht mehr weiter" />
+        </StatGrid>
     );
 }

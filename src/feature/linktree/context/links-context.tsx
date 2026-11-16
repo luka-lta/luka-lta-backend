@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import {LinkItemTypeSchema} from "@/feature/linktree/schema/LinktreeSchema.ts";
-type LinkDialogTypes =  'add' | 'delete' | 'deactivate' | 'activate'
+type LinkDialogTypes = 'add' | 'delete' | 'deactivate'
 
 interface UsersContextType {
     open: LinkDialogTypes | null

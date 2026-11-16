@@ -1,12 +1,11 @@
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Link, useNavigate } from "react-router-dom";
+import { ExternalLink, Eye, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ExternalLink, Pencil, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { StatusBadge } from "@/components/feedback/status-badge";
+import { RowActions } from "@/components/data/row-actions";
 import type { AppEntity } from "@/api/apps/schema";
 import { getAppIcon } from "@/feature/apps/iconOptions";
-import { CATEGORY_LABELS, METRIC_LABELS, STATUS_BADGE_CLASS, STATUS_LABELS } from "@/feature/apps/labels";
+import { CATEGORY_LABELS, formatMetricValue, getMetricEntries, METRIC_LABELS, STATUS_LABELS, STATUS_TONE } from "@/feature/apps/labels";
 
 interface AppCardProps {
     app: AppEntity;
@@ -14,72 +13,55 @@ interface AppCardProps {
     onDelete: (app: AppEntity) => void;
 }
 
-function formatMetricValue(key: keyof NonNullable<AppEntity["metrics"]>, value: number): string {
-    if (key === "revenue" || key === "mrr") return `${value.toLocaleString("de-DE")} €`;
-    if (key === "rating") return value.toFixed(1);
-    if (key === "churnPercent") return `${value}%`;
-    return value.toLocaleString("de-DE");
-}
-
 export function AppCard({ app, onEdit, onDelete }: AppCardProps) {
+    const navigate = useNavigate();
     const Icon = getAppIcon(app.icon);
-    const metricEntries = app.metrics
-        ? (Object.entries(app.metrics) as [keyof NonNullable<AppEntity["metrics"]>, number | undefined][])
-            .filter((entry): entry is [keyof NonNullable<AppEntity["metrics"]>, number] => entry[1] !== undefined)
-        : [];
+    const href = `/dashboard/apps/${app.id}`;
+    const metrics = getMetricEntries(app).slice(0, 4);
 
     return (
-        <Card className="flex flex-col">
-            <CardHeader className="flex flex-row items-start justify-between gap-3">
-                <Link to={`/dashboard/apps/${app.id}`} className="flex items-start gap-3 min-w-0 hover:opacity-80">
-                    <div className="rounded-lg bg-muted p-2 shrink-0">
-                        <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                        <p className="font-semibold truncate">{app.name}</p>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{app.description}</p>
-                    </div>
-                </Link>
-            </CardHeader>
-            <CardContent className="flex-1 space-y-3">
-                <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline">{CATEGORY_LABELS[app.category]}</Badge>
-                    <Badge className={cn(STATUS_BADGE_CLASS[app.status])}>{STATUS_LABELS[app.status]}</Badge>
+        <article className="relative flex flex-col rounded-xl border bg-card shadow-xs transition-colors duration-fast hover:border-primary/40 focus-within:ring-2 focus-within:ring-ring">
+            <div className="flex items-start gap-3 p-5 pb-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <Icon className="size-5" aria-hidden />
                 </div>
-                {metricEntries.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                        {metricEntries.map(([key, value]) => (
-                            <div key={key}>
-                                <p className="text-muted-foreground text-xs">{METRIC_LABELS[key]}</p>
-                                <p className="font-medium tabular-nums">{formatMetricValue(key, value)}</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </CardContent>
-            <CardFooter className="flex items-center justify-between">
-                {app.url ? (
-                    <a
-                        href={app.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-                    >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        Öffnen
-                    </a>
-                ) : (
-                    <span />
-                )}
-                <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(app)} aria-label={`${app.name} bearbeiten`}>
-                        <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(app)} aria-label={`${app.name} löschen`}>
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-base font-semibold">
+                        <Link to={href} className="outline-none after:absolute after:inset-0 after:rounded-xl">
+                            {app.name}
+                        </Link>
+                    </h3>
+                    <p className="line-clamp-2 text-sm text-muted-foreground">{app.description || "Keine Beschreibung"}</p>
                 </div>
-            </CardFooter>
-        </Card>
+                <RowActions
+                    className="relative z-10 -mr-2 -mt-1"
+                    label={app.name}
+                    actions={[
+                        { label: "Details", icon: Eye, onSelect: () => navigate(href) },
+                        { label: "Bearbeiten", icon: Pencil, onSelect: () => onEdit(app) },
+                        { label: "Öffnen", icon: ExternalLink, hidden: !app.url, onSelect: () => window.open(app.url, "_blank", "noopener") },
+                        { label: "Löschen", icon: Trash2, destructive: true, onSelect: () => onDelete(app) },
+                    ]}
+                />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 px-5">
+                <StatusBadge tone={STATUS_TONE[app.status]}>{STATUS_LABELS[app.status]}</StatusBadge>
+                <Badge variant="outline">{CATEGORY_LABELS[app.category]}</Badge>
+            </div>
+
+            {metrics.length > 0 ? (
+                <dl className="mt-4 grid flex-1 grid-cols-2 gap-x-4 gap-y-3 border-t px-5 py-4">
+                    {metrics.map(([key, value]) => (
+                        <div key={key} className="min-w-0">
+                            <dt className="text-xs text-muted-foreground">{METRIC_LABELS[key]}</dt>
+                            <dd className="truncate text-sm font-semibold tabular-nums">{formatMetricValue(key, value)}</dd>
+                        </div>
+                    ))}
+                </dl>
+            ) : (
+                <p className="mt-4 flex-1 border-t px-5 py-4 text-xs text-muted-foreground">Keine Kennzahlen hinterlegt</p>
+            )}
+        </article>
     );
 }

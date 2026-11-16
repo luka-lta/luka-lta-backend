@@ -11,7 +11,7 @@ interface EventChipProps {
 
 /** Small colored chip for a month-grid cell — dot+time+title for timed events, a filled bar for all-day ones. */
 export function EventChip({ event, onClick, className }: EventChipProps) {
-    const color = event.color ?? "#64748b";
+    const color = event.color ?? "hsl(var(--muted-foreground))";
 
     return (
         <button

@@ -9,10 +9,11 @@ interface TopologySearchProps {
 
 function TopologySearch({ value, onChange }: TopologySearchProps) {
     return (
-        <div className="relative w-64">
+        <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
-                placeholder="Search infrastructure..."
+                placeholder="Infrastruktur durchsuchen…"
+                aria-label="Infrastruktur durchsuchen"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 className="pl-8 pr-8"
@@ -20,11 +21,12 @@ function TopologySearch({ value, onChange }: TopologySearchProps) {
             {value && (
                 <Button
                     variant="ghost"
-                    size="icon"
+                    size="icon-sm"
                     className="absolute right-0.5 top-1/2 size-7 -translate-y-1/2"
                     onClick={() => onChange("")}
                 >
                     <X className="size-3.5" />
+                    <span className="sr-only">Suche leeren</span>
                 </Button>
             )}
         </div>

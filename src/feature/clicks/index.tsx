@@ -1,51 +1,30 @@
-import {Main} from "@/components/layout/main.tsx";
-import {useClicksOverview} from "@/api/clicks/hooks.ts";
+import { useClicksOverview } from "@/api/clicks/hooks.ts";
 import ClickOverviewTable from "@/feature/clicks/components/ClickOverviewTable.tsx";
-import {ClicksAnalyticsSummary} from "@/feature/clicks/components/ClicksAnalyticsSummary.tsx";
-import {useSetPageTitle} from "@/hooks/useSetPageTitle.ts";
+import { ClicksAnalyticsSummary } from "@/feature/clicks/components/ClicksAnalyticsSummary.tsx";
 import ClicksProvider from "@/feature/clicks/context/clicks-context.tsx";
 import ClicksDialogs from "@/feature/clicks/components/ClicksDialogs.tsx";
-import {ErrorState} from "@/components/error-state.tsx";
+import { PageContainer, PageHeader } from "@/components/layout/page.tsx";
+import { ErrorState } from "@/components/feedback/error-state.tsx";
 
 function Clicks() {
     const [clickOverview, setFilterData] = useClicksOverview();
-    useSetPageTitle('Backend - Clicks Overview');
-
-    if (clickOverview.error) {
-        return (
-            <div className='p-6'>
-                <h2 className='text-2xl font-bold tracking-tight mb-4'>Clicks Overview</h2>
-                <ErrorState
-                    title="Failed to load clicks"
-                    message={clickOverview.error.message}
-                    refetch={clickOverview.refetch}
-                />
-            </div>
-        )
-    }
 
     return (
         <ClicksProvider>
-            <Main>
-                <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
-                    <div>
-                        <h2 className='text-2xl font-bold tracking-tight'>Clicks Overview</h2>
-                        <p className='text-muted-foreground'>
-                            Inspect Link Clicks
-                        </p>
-                    </div>
-                </div>
-
+            <PageContainer title="Klicks">
+                <PageHeader title="Klicks" description="Wie oft deine Links aufgerufen werden — und von wo." />
                 <ClicksAnalyticsSummary />
-
-                <ClickOverviewTable
-                    clicks={clickOverview.data?.clicks ?? []}
-                    maxPages={clickOverview.data?.totalPages}
-                    loading={clickOverview.isPending}
-                    setFilterData={setFilterData}
-                />
-            </Main>
-
+                {clickOverview.error ? (
+                    <ErrorState title="Klicks konnten nicht geladen werden" error={clickOverview.error} onRetry={() => clickOverview.refetch()} />
+                ) : (
+                    <ClickOverviewTable
+                        clicks={clickOverview.data?.clicks ?? []}
+                        maxPages={clickOverview.data?.totalPages}
+                        loading={clickOverview.isPending}
+                        setFilterData={setFilterData}
+                    />
+                )}
+            </PageContainer>
             <ClicksDialogs />
         </ClicksProvider>
     );

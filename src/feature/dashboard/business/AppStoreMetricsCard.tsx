@@ -1,11 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card.tsx";
+import { Link } from "react-router-dom";
+import { Download, Smartphone, Star } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { Star, Download } from "lucide-react";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
+import { ErrorState } from "@/components/feedback/error-state.tsx";
 import { useAppList } from "@/api/apps/hooks.ts";
 
-function formatEuro(value: number): string {
-    return `${value.toLocaleString("de-DE")} €`;
-}
+const euro = (value: number) => `${value.toLocaleString("de-DE")} €`;
 
 export function AppStoreMetricsCard() {
     const appList = useAppList();
@@ -13,48 +15,49 @@ export function AppStoreMetricsCard() {
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>App Store Metrics</CardTitle>
-                <CardDescription>Downloads & Revenue pro App</CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+                <div className="space-y-1">
+                    <CardTitle>App Store</CardTitle>
+                    <CardDescription>Downloads und Umsatz pro App</CardDescription>
+                </div>
+                <Badge variant="warning">Demo</Badge>
             </CardHeader>
             <CardContent>
-                {appList.isLoading ? (
+                {appList.isPending ? (
                     <div className="space-y-3">
                         <Skeleton className="h-10 w-full" />
                         <Skeleton className="h-10 w-full" />
                     </div>
                 ) : appList.isError ? (
-                    <p className="text-sm text-destructive">
-                        App-Store-Metriken konnten nicht geladen werden.
-                    </p>
+                    <ErrorState variant="plain" className="py-4" title="App-Store-Daten konnten nicht geladen werden" error={appList.error} onRetry={() => appList.refetch()} />
                 ) : apps.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        Noch keine App-Store-Apps angelegt. Füge welche unter „Apps" hinzu.
-                    </p>
+                    <EmptyState variant="plain" className="py-6" icon={Smartphone} title="Keine App-Store-Apps" description="Lege unter „Apps“ eine App mit Kategorie „App Store“ an." />
                 ) : (
-                    <ul className="space-y-4">
+                    <ul className="divide-y">
                         {apps.map((app) => (
-                            <li key={app.id} className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-medium">{app.name}</p>
-                                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
+                            <li key={app.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                                <div className="min-w-0">
+                                    <Link to={`/dashboard/apps/${app.id}`} className="truncate text-sm font-medium hover:text-primary">
+                                        {app.name}
+                                    </Link>
+                                    <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
                                         {app.metrics?.downloads !== undefined && (
                                             <span className="flex items-center gap-1">
-                                                <Download className="h-3.5 w-3.5" />
+                                                <Download className="size-3" aria-hidden />
+                                                <span className="sr-only">Downloads:</span>
                                                 {app.metrics.downloads.toLocaleString("de-DE")}
                                             </span>
                                         )}
                                         {app.metrics?.rating !== undefined && (
                                             <span className="flex items-center gap-1">
-                                                <Star className="h-3.5 w-3.5 text-amber-500" />
-                                                {app.metrics.rating.toFixed(1)}
+                                                <Star className="size-3 fill-warning text-warning" aria-hidden />
+                                                <span className="sr-only">Bewertung:</span>
+                                                {app.metrics.rating.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
                                             </span>
                                         )}
                                     </div>
                                 </div>
-                                <span className="font-medium tabular-nums">
-                                    {formatEuro(app.metrics?.revenue ?? 0)}
-                                </span>
+                                <span className="text-sm font-semibold tabular-nums">{euro(app.metrics?.revenue ?? 0)}</span>
                             </li>
                         ))}
                     </ul>

@@ -1,16 +1,16 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { Empty, EmptyMedia, EmptyTitle } from "@/components/ui/empty.tsx";
-import { TimeCell } from "@/components/TimeCell.tsx";
-import { BookOpen, ListTree } from "lucide-react";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils.ts";
+import { BookOpen, History, Link2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { TimeCell } from "@/components/TimeCell.tsx";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
 import type { BlogPostType } from "@/feature/blog/schema/BlogSchema.ts";
 import type { LinkItemTypeSchema } from "@/feature/linktree/schema/LinktreeSchema.ts";
+import { parseSqlUtc } from "@/lib/dateTimeUtils.ts";
 
 interface ActivityItem {
     id: string;
     icon: typeof BookOpen;
-    className: string;
     title: string;
     description: string;
     timestamp: string;
@@ -20,62 +20,69 @@ interface ActivityItem {
 interface RecentActivityProps {
     posts: BlogPostType[];
     links: LinkItemTypeSchema[];
+    loading?: boolean;
 }
 
-export function RecentActivity({ posts, links }: RecentActivityProps) {
-    const postItems: ActivityItem[] = posts.map((post) => ({
-        id: `post-${post.blogId}`,
-        icon: BookOpen,
-        className: "text-emerald-500 bg-emerald-500/10",
-        title: post.title,
-        description: post.isPublished ? "Published" : "Saved as draft",
-        timestamp: post.updatedAt ?? post.createdAt,
-        href: `/dashboard/blog`,
-    }));
+const LIMIT = 6;
 
-    const linkItems: ActivityItem[] = links.map((link) => ({
-        id: `link-${link.id}`,
-        icon: ListTree,
-        className: "text-sky-500 bg-sky-500/10",
-        title: link.displayname,
-        description: link.isActive ? "Link added" : "Link deactivated",
-        timestamp: link.createdOn,
-        href: `/dashboard/linktree`,
-    }));
-
-    const items = [...postItems, ...linkItems]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        .slice(0, 5);
+export function RecentActivity({ posts, links, loading }: RecentActivityProps) {
+    const items: ActivityItem[] = [
+        ...posts.map((post) => ({
+            id: `post-${post.blogId}`,
+            icon: BookOpen,
+            title: post.title,
+            description: post.updatedAt ? "Beitrag bearbeitet" : post.isPublished ? "Beitrag veröffentlicht" : "Entwurf angelegt",
+            timestamp: post.updatedAt ?? post.createdAt,
+            href: `/dashboard/blog/${post.blogId}`,
+        })),
+        ...links.map((link) => ({
+            id: `link-${link.id}`,
+            icon: Link2,
+            title: link.displayname,
+            description: link.deactivated ? "Link deaktiviert" : "Link angelegt",
+            timestamp: link.createdOn,
+            href: `/dashboard/linktree/${link.id}`,
+        })),
+    ]
+        .sort((a, b) => parseSqlUtc(b.timestamp).toMillis() - parseSqlUtc(a.timestamp).toMillis())
+        .slice(0, LIMIT);
 
     return (
         <Card>
             <CardHeader className="pb-3">
-                <CardTitle className="text-base">Recent activity</CardTitle>
+                <CardTitle>Letzte Aktivität</CardTitle>
             </CardHeader>
             <CardContent>
-                {items.length === 0 ? (
-                    <Empty className="border-0 py-8">
-                        <EmptyMedia variant="icon">
-                            <BookOpen />
-                        </EmptyMedia>
-                        <EmptyTitle>No recent activity yet</EmptyTitle>
-                    </Empty>
+                {loading ? (
+                    <div className="space-y-3" aria-busy="true" aria-label="Wird geladen">
+                        {Array.from({ length: 4 }, (_, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                                <Skeleton className="size-8 rounded-lg" />
+                                <div className="flex-1 space-y-1.5">
+                                    <Skeleton className="h-4 w-1/2" />
+                                    <Skeleton className="h-3 w-1/4" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : items.length === 0 ? (
+                    <EmptyState variant="plain" className="py-8" icon={History} title="Noch keine Aktivität" description="Neue Beiträge und Links erscheinen hier." />
                 ) : (
-                    <ul className="space-y-1">
+                    <ul className="-mx-2 space-y-0.5">
                         {items.map((item) => {
                             const Icon = item.icon;
                             return (
                                 <li key={item.id}>
                                     <Link
                                         to={item.href}
-                                        className="flex items-start gap-3 rounded-md p-2 -mx-2 hover:bg-muted/50 transition-colors"
+                                        className="flex items-center gap-3 rounded-lg px-2 py-2 transition-colors duration-fast hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     >
-                                        <div className={cn("rounded-md p-1.5 shrink-0", item.className)}>
-                                            <Icon className="h-4 w-4" />
+                                        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                            <Icon className="size-4" aria-hidden />
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium truncate">{item.title}</p>
-                                            <p className="text-sm text-muted-foreground">{item.description}</p>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium">{item.title}</p>
+                                            <p className="text-xs text-muted-foreground">{item.description}</p>
                                         </div>
                                         <TimeCell iso={item.timestamp} />
                                     </Link>

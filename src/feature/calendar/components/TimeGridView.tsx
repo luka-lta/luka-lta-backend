@@ -91,10 +91,10 @@ export function TimeGridView({ days, events, onSelectEvent }: TimeGridViewProps)
 
                             {isToday && (
                                 <div
-                                    className="absolute z-10 h-px w-full bg-rose-500"
+                                    className="absolute z-10 h-px w-full bg-destructive"
                                     style={{ top: `${(now.diff(now.startOf("day"), "minutes").minutes / 1440) * 100}%` }}
                                 >
-                                    <span className="absolute -left-1 -top-[3px] h-[7px] w-[7px] rounded-full bg-rose-500" />
+                                    <span className="absolute -left-1 -top-[3px] h-[7px] w-[7px] rounded-full bg-destructive" />
                                 </div>
                             )}
 

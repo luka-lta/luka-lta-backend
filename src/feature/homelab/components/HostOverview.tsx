@@ -8,32 +8,28 @@ import { Cpu, HardDrive, MemoryStick, Thermometer } from "lucide-react";
 import type { Host } from "@/feature/homelab/types.ts";
 import { formatUptime } from "@/feature/homelab/data.ts";
 import { cn } from "@/lib/utils.ts";
+import { usageTone } from "@/feature/homelab/status.ts";
+import { PageSection } from "@/components/layout/page.tsx";
 
 interface HostOverviewProps {
     hosts: Host[];
 }
 
 const sparklineConfig: ChartConfig = {
-    value: { label: "Usage", color: "hsl(var(--primary))" },
+    value: { label: "Auslastung", color: "hsl(var(--chart-1))" },
 };
-
-function usageColor(percent: number): string {
-    if (percent >= 85) return "text-rose-500";
-    if (percent >= 70) return "text-amber-500";
-    return "text-emerald-500";
-}
 
 function GaugeRow({ icon: Icon, label, percent, detail }: { icon: typeof Cpu; label: string; percent: number; detail: string }) {
     return (
         <div className="space-y-1.5">
             <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <Icon className="h-3.5 w-3.5" />
+                    <Icon className="size-3.5" aria-hidden />
                     {label}
                 </span>
-                <span className={cn("font-medium tabular-nums", usageColor(percent))}>{percent}%</span>
+                <span className={cn("font-medium tabular-nums", usageTone(percent))}>{percent} %</span>
             </div>
-            <Progress value={percent} className="h-1.5" />
+            <Progress value={percent} className="h-1.5" aria-label={`${label}: ${percent} %`} />
             <p className="text-xs text-muted-foreground">{detail}</p>
         </div>
     );
@@ -64,37 +60,45 @@ export function HostOverview({ hosts }: HostOverviewProps) {
     const visibleHosts = selectedHostId === "all" ? hosts : hosts.filter((h) => h.id === selectedHostId);
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Host Overview</h2>
-                <Select value={selectedHostId} onValueChange={setSelectedHostId}>
-                    <SelectTrigger className="w-48">
-                        <SelectValue placeholder="All hosts" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All hosts</SelectItem>
-                        {hosts.map((host) => (
-                            <SelectItem key={host.id} value={host.id}>
-                                {host.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <PageSection
+            title="Hosts"
+            actions={
+                hosts.length > 1 ? (
+                    <Select value={selectedHostId} onValueChange={setSelectedHostId}>
+                        <SelectTrigger className="w-44" aria-label="Host auswählen">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Alle Hosts</SelectItem>
+                            {hosts.map((host) => (
+                                <SelectItem key={host.id} value={host.id}>
+                                    {host.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                ) : undefined
+            }
+        >
+            <div className="grid gap-4 lg:grid-cols-2">
                 {visibleHosts.map((host) => (
                     <Card key={host.id}>
                         <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-base">{host.name}</CardTitle>
-                                <span className="text-xs text-muted-foreground">
-                                    Uptime {formatUptime(host.uptimeSeconds)}
+                            <div className="flex items-center justify-between gap-2">
+                                <CardTitle>{host.name}</CardTitle>
+                                <span className="flex items-center gap-3 text-xs text-muted-foreground">
+                                    {host.temperatureCelsius !== null && (
+                                        <span className="flex items-center gap-1">
+                                            <Thermometer className="size-3.5" aria-hidden />
+                                            {host.temperatureCelsius} °C
+                                        </span>
+                                    )}
+                                    <span>Uptime {formatUptime(host.uptimeSeconds)}</span>
                                 </span>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div className="grid gap-4 sm:grid-cols-3">
                                 <GaugeRow
                                     icon={Cpu}
                                     label="CPU"
@@ -103,39 +107,32 @@ export function HostOverview({ hosts }: HostOverviewProps) {
                                 />
                                 <GaugeRow
                                     icon={MemoryStick}
-                                    label="Memory"
+                                    label="RAM"
                                     percent={host.memoryUsagePercent}
-                                    detail={`${host.memoryUsedGb.toFixed(1)} / ${host.memoryTotalGb} GB`}
+                                    detail={`${host.memoryUsedGb.toLocaleString("de-DE", { maximumFractionDigits: 1 })} / ${host.memoryTotalGb} GB`}
                                 />
                                 <GaugeRow
                                     icon={HardDrive}
                                     label="Disk"
                                     percent={host.diskUsagePercent}
-                                    detail={`${(host.diskUsedGb / 1000).toFixed(1)} / ${(host.diskTotalGb / 1000).toFixed(1)} TB`}
+                                    detail={`${(host.diskUsedGb / 1000).toLocaleString("de-DE", { maximumFractionDigits: 1 })} / ${(host.diskTotalGb / 1000).toLocaleString("de-DE", { maximumFractionDigits: 1 })} TB`}
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="grid gap-3 border-t pt-4 sm:grid-cols-2">
                                 <div>
-                                    <span className="text-xs text-muted-foreground">CPU (last 12h)</span>
+                                    <span className="text-xs text-muted-foreground">CPU · letzte 12 h</span>
                                     <Sparkline data={host.metrics.cpu} />
                                 </div>
                                 <div>
-                                    <span className="text-xs text-muted-foreground">Memory (last 12h)</span>
+                                    <span className="text-xs text-muted-foreground">RAM · letzte 12 h</span>
                                     <Sparkline data={host.metrics.memory} />
                                 </div>
                             </div>
-
-                            {host.temperatureCelsius !== null && (
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                    <Thermometer className="h-3.5 w-3.5" />
-                                    {host.temperatureCelsius}°C
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
                 ))}
             </div>
-        </div>
+        </PageSection>
     );
 }

@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Separator } from "@/components/ui/separator.tsx";
 import { TimeCell } from "@/components/TimeCell.tsx";
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog.tsx";
 import { useApplyTopologyProposal, useRejectTopologyProposal } from "@/api/homelab/topologyHooks.ts";
-import { EDGE_RELATION_LABEL, getNodeTypeConfig } from "@/feature/homelab/topology/constants.ts";
+import { EDGE_RELATION_LABEL, getNodeTypeConfig, STATUS_CONFIG } from "@/feature/homelab/topology/constants.ts";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
 import type { TopologyGraph, TopologyProposal, TopologyProposalItem } from "@/feature/homelab/topology/types.ts";
 
@@ -20,11 +21,11 @@ interface ProposalReviewSheetProps {
 const NEW_NODE_PREFIX = "new:";
 
 const OPERATION_LABEL: Record<TopologyProposalItem["operation"], string> = {
-    add_node: "Add node",
-    update_node: "Update node",
-    remove_node: "Remove node",
-    add_edge: "Add connection",
-    remove_edge: "Remove connection",
+    add_node: "Knoten neu",
+    update_node: "Knoten ändern",
+    remove_node: "Knoten entfernen",
+    add_edge: "Verbindung neu",
+    remove_edge: "Verbindung entfernen",
 };
 
 /** Keys of nodes added by this proposal that an item depends on (edges pointing at "new:<key>"). */
@@ -40,35 +41,35 @@ function describeItem(item: TopologyProposalItem, graph: TopologyGraph, proposal
         if (id.startsWith(NEW_NODE_PREFIX)) {
             const key = id.slice(NEW_NODE_PREFIX.length);
             const added = proposal.items.find((other) => other.operation === "add_node" && other.payload.key === key);
-            return added?.operation === "add_node" ? `${added.payload.name} (new)` : key;
+            return added?.operation === "add_node" ? `${added.payload.name} (neu)` : key;
         }
-        return graph.nodes.find((node) => node.id === id)?.name ?? "unknown node";
+        return graph.nodes.find((node) => node.id === id)?.name ?? "unbekannter Knoten";
     };
 
     switch (item.operation) {
         case "add_node": {
             const ref = item.payload.ref;
-            const link = ref === null ? "" : ref.type === "host" ? ` · host ${ref.hostId}` : ` · ${ref.serviceKey} on ${ref.hostId}`;
+            const link = ref === null ? "" : ref.type === "host" ? ` · Host ${ref.hostId}` : ` · ${ref.serviceKey} auf ${ref.hostId}`;
             return `${item.payload.name} (${getNodeTypeConfig(item.payload.type).label})${link}`;
         }
         case "update_node": {
             const changes = [
-                item.payload.name !== undefined ? `name → ${item.payload.name}` : null,
-                item.payload.type !== undefined ? `type → ${getNodeTypeConfig(item.payload.type).label}` : null,
-                item.payload.status !== undefined ? `status → ${item.payload.status}` : null,
-                item.payload.metadata !== undefined ? "metadata" : null,
+                item.payload.name !== undefined ? `Name → ${item.payload.name}` : null,
+                item.payload.type !== undefined ? `Typ → ${getNodeTypeConfig(item.payload.type).label}` : null,
+                item.payload.status !== undefined ? `Status → ${STATUS_CONFIG[item.payload.status].label}` : null,
+                item.payload.metadata !== undefined ? "Metadaten" : null,
             ].filter((change) => change !== null);
             return `${nodeName(item.payload.nodeId)}: ${changes.join(", ")}`;
         }
         case "remove_node":
-            return `${nodeName(item.payload.nodeId)} (and its connections)`;
+            return `${nodeName(item.payload.nodeId)} (samt Verbindungen)`;
         case "add_edge":
             return `${nodeName(item.payload.source)} ${EDGE_RELATION_LABEL[item.payload.relation]} ${nodeName(item.payload.target)}`;
         case "remove_edge": {
             const edge = graph.edges.find((candidate) => candidate.id === item.payload.edgeId);
             return edge
                 ? `${nodeName(edge.sourceId)} ${EDGE_RELATION_LABEL[edge.relation]} ${nodeName(edge.targetId)}`
-                : "connection no longer exists";
+                : "Verbindung existiert nicht mehr";
         }
     }
 }
@@ -78,6 +79,7 @@ function ProposalReviewSheet({ proposal, graph, onOpenChange }: ProposalReviewSh
     const [accepted, setAccepted] = useState<Set<string>>(() => new Set(proposal?.items.map((item) => item.id) ?? []));
     const applyProposal = useApplyTopologyProposal();
     const rejectProposal = useRejectTopologyProposal();
+    const [rejectOpen, setRejectOpen] = useState(false);
 
     const addNodeIdByKey = useMemo(() => {
         const map = new Map<string, string>();
@@ -118,9 +120,9 @@ function ProposalReviewSheet({ proposal, graph, onOpenChange }: ProposalReviewSh
             {
                 onSuccess: ({ failedCount }) => {
                     if (failedCount) {
-                        toast.warning(`Applied with ${failedCount} change(s) that no longer fit the current map.`);
+                        toast.warning(`Übernommen – ${failedCount} Änderung(en) passten nicht mehr zur aktuellen Karte`);
                     } else {
-                        toast.success("Proposal applied.");
+                        toast.success("Entwurf übernommen");
                     }
                     onOpenChange(false);
                 },
@@ -133,7 +135,8 @@ function ProposalReviewSheet({ proposal, graph, onOpenChange }: ProposalReviewSh
         if (!proposal) return;
         rejectProposal.mutate(proposal.id, {
             onSuccess: () => {
-                toast.success("Proposal rejected.");
+                setRejectOpen(false);
+                toast.success("Entwurf abgelehnt");
                 onOpenChange(false);
             },
             onError: (error) => toast.error(getApiErrorMessage(error)),
@@ -144,13 +147,13 @@ function ProposalReviewSheet({ proposal, graph, onOpenChange }: ProposalReviewSh
 
     return (
         <Sheet open={proposal !== null} onOpenChange={onOpenChange}>
-            <SheetContent side="right" className="flex w-full flex-col sm:max-w-xl">
+            <SheetContent side="right" className="sm:max-w-xl">
                 {proposal && (
                     <>
-                        <SheetHeader className="px-0">
+                        <SheetHeader>
                             <SheetTitle>{proposal.title}</SheetTitle>
                             <SheetDescription className="flex flex-wrap items-center gap-x-1.5">
-                                <span>{proposal.items.length} proposed changes · {proposal.createdBy} ·</span>
+                                <span>{proposal.items.length} Änderungen · {proposal.createdBy} ·</span>
                                 <TimeCell iso={proposal.createdAt} />
                             </SheetDescription>
                         </SheetHeader>
@@ -199,12 +202,28 @@ function ProposalReviewSheet({ proposal, graph, onOpenChange }: ProposalReviewSh
 
                         <div className="flex items-center gap-2 border-t pt-4">
                             <Button onClick={handleApply} disabled={isBusy || accepted.size === 0}>
-                                Apply {accepted.size} of {proposal.items.length}
+                                {accepted.size} von {proposal.items.length} übernehmen
                             </Button>
-                            <Button variant="outline" onClick={handleReject} disabled={isBusy}>
-                                Reject draft
+                            <Button
+                                variant="outline"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => setRejectOpen(true)}
+                                disabled={isBusy}
+                            >
+                                Entwurf ablehnen
                             </Button>
                         </div>
+
+                        <ConfirmDialog
+                            open={rejectOpen}
+                            onOpenChange={setRejectOpen}
+                            destructive
+                            title="Entwurf ablehnen?"
+                            description="Keine der vorgeschlagenen Änderungen wird übernommen. Der Entwurf bleibt im Verlauf sichtbar."
+                            confirmLabel="Ablehnen"
+                            isLoading={rejectProposal.isPending}
+                            onConfirm={handleReject}
+                        />
                     </>
                 )}
             </SheetContent>

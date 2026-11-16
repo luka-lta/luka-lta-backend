@@ -14,7 +14,7 @@ function InfraNode({ data, selected }: NodeProps<InfraFlowNode>) {
             <TooltipTrigger asChild>
                 <div
                     className={cn(
-                        "flex items-center gap-2 rounded-lg border bg-card px-3 py-2 shadow-sm transition-[opacity,box-shadow]",
+                        "flex items-center gap-2 rounded-lg border bg-card px-3 py-2 shadow-xs transition-[opacity,box-shadow]",
                         "h-[44px] w-[220px] ring-2",
                         statusConfig.ringClass,
                         selected && "border-primary shadow-md",
@@ -22,9 +22,9 @@ function InfraNode({ data, selected }: NodeProps<InfraFlowNode>) {
                     )}
                 >
                     <Handle type="target" position={Position.Left} className="!bg-border" />
-                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                     <span className="truncate text-sm font-medium">{data.name}</span>
-                    <span className={cn("ml-auto h-2 w-2 shrink-0 rounded-full", statusConfig.dotClass)} />
+                    <span className={cn("ml-auto size-2 shrink-0 rounded-full", statusConfig.dotClass)} aria-label={statusConfig.label} />
                     <Handle type="source" position={Position.Right} className="!bg-border" />
                 </div>
             </TooltipTrigger>

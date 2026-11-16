@@ -143,7 +143,7 @@ export const DropzoneContent = ({
           : new Intl.ListFormat("en").format(src.map((file) => file.name))}
       </p>
       <p className="w-full text-wrap text-muted-foreground text-xs">
-        Drag and drop or click to replace
+        Hierher ziehen oder klicken, um zu ersetzen
       </p>
     </div>
   );
@@ -171,16 +171,16 @@ export const DropzoneEmptyState = ({
   let caption = "";
 
   if (accept) {
-    caption += "Accepts ";
-    caption += new Intl.ListFormat("en").format(Object.keys(accept));
+    caption += "Erlaubt: ";
+    caption += new Intl.ListFormat("de").format(Object.keys(accept));
   }
 
   if (minSize && maxSize) {
-    caption += ` between ${renderBytes(minSize)} and ${renderBytes(maxSize)}`;
+    caption += `, ${renderBytes(minSize)} bis ${renderBytes(maxSize)}`;
   } else if (minSize) {
-    caption += ` at least ${renderBytes(minSize)}`;
+    caption += `, mindestens ${renderBytes(minSize)}`;
   } else if (maxSize) {
-    caption += ` less than ${renderBytes(maxSize)}`;
+    caption += `, höchstens ${renderBytes(maxSize)}`;
   }
 
   return (
@@ -189,10 +189,10 @@ export const DropzoneEmptyState = ({
         <UploadIcon size={16} />
       </div>
       <p className="my-2 w-full truncate text-wrap font-medium text-sm">
-        Upload {maxFiles === 1 ? "a file" : "files"}
+        {maxFiles === 1 ? "Datei hochladen" : "Dateien hochladen"}
       </p>
       <p className="w-full truncate text-wrap text-muted-foreground text-xs">
-        Drag and drop or click to upload
+        Hierher ziehen oder klicken
       </p>
       {caption && (
         <p className="text-wrap text-muted-foreground text-xs">{caption}.</p>

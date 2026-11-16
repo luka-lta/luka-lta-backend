@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { BlogPostType } from '@/feature/blog/schema/BlogSchema'
 
-type BlogDialogTypes = 'edit' | 'delete'
+type BlogDialogTypes = 'delete'
 
 interface BlogContextType {
     open: BlogDialogTypes | null

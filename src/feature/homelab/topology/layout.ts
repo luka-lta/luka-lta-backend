@@ -6,13 +6,10 @@ import type { InfraEdgeData, InfraNodeData } from "./types.ts";
 export const NODE_WIDTH = 220;
 export const NODE_HEIGHT = 44;
 
-/** Inner spacing of a host frame around its services. */
-const GROUP_PADDING = 20;
-
-/** Space for the host name above the services inside a frame. */
-const GROUP_HEADER_HEIGHT = 32;
-
-/** Vertical gap between nodes of the same rank. */
+/**
+ * Vertical gap between nodes of the same rank. Dagre also derives the inner margin of a host frame
+ * from it (~26px at 32), which leaves room for the frame's compact host label.
+ */
 const NODE_SEPARATION = 32;
 
 /** Horizontal gap between ranks (left → right flow). */
@@ -42,8 +39,17 @@ export type InfraFlowNode = Node<InfraNodeFlowData, "infra">;
 export type HostGroupFlowNode = Node<HostGroupFlowData, "hostGroup">;
 export type TopologyFlowNode = InfraFlowNode | HostGroupFlowNode;
 
+export interface LayoutBounds {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
 export interface TopologyLayout {
     nodes: TopologyFlowNode[];
+    /** Exact extent of the laid-out map — used for fitting instead of React Flow's measurements. */
+    bounds: LayoutBounds;
     /** "hosted_on" edges made redundant by drawing the service inside its host frame. */
     hiddenEdgeIds: Set<string>;
 }
@@ -140,21 +146,30 @@ export async function layoutTopology(nodes: InfraNodeData[], edges: InfraEdgeDat
 
     const flowNodes: TopologyFlowNode[] = [];
     const groupOrigin = new Map<string, { x: number; y: number }>();
+    const extent = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+    const include = (x: number, y: number, width: number, height: number) => {
+        extent.minX = Math.min(extent.minX, x);
+        extent.minY = Math.min(extent.minY, y);
+        extent.maxX = Math.max(extent.maxX, x + width);
+        extent.maxY = Math.max(extent.maxY, y + height);
+    };
 
     // Parents must precede their children in React Flow's node array.
     for (const group of groups.values()) {
         const box = graph.node(group.id);
-        const x = (box.x ?? 0) - box.width / 2 - GROUP_PADDING;
-        const y = (box.y ?? 0) - box.height / 2 - GROUP_PADDING - GROUP_HEADER_HEIGHT;
+        // Dagre's cluster box already has an inner margin and keeps clusters apart — use it as is,
+        // growing it would make neighbouring frames overlap.
+        const x = (box.x ?? 0) - box.width / 2;
+        const y = (box.y ?? 0) - box.height / 2;
+        const width = box.width;
+        const height = box.height;
         groupOrigin.set(group.id, { x, y });
+        include(x, y, width, height);
         flowNodes.push({
             id: group.id,
             type: "hostGroup",
             position: { x, y },
-            style: {
-                width: box.width + GROUP_PADDING * 2,
-                height: box.height + GROUP_PADDING * 2 + GROUP_HEADER_HEIGHT,
-            },
+            style: { width, height },
             data: { hostId: group.hostId, label: groupLabel(group), status: groupStatus(group), node: group.hostNode },
             zIndex: -1,
         });
@@ -166,6 +181,7 @@ export async function layoutTopology(nodes: InfraNodeData[], edges: InfraEdgeDat
         const absolute = { x: (placed.x ?? 0) - NODE_WIDTH / 2, y: (placed.y ?? 0) - NODE_HEIGHT / 2 };
         const parent = parentOf.get(node.id);
         const origin = parent ? groupOrigin.get(parent) : undefined;
+        include(absolute.x, absolute.y, NODE_WIDTH, NODE_HEIGHT);
 
         flowNodes.push({
             id: node.id,
@@ -176,5 +192,9 @@ export async function layoutTopology(nodes: InfraNodeData[], edges: InfraEdgeDat
         });
     }
 
-    return { nodes: flowNodes, hiddenEdgeIds };
+    const bounds = flowNodes.length === 0
+        ? { x: 0, y: 0, width: 0, height: 0 }
+        : { x: extent.minX, y: extent.minY, width: extent.maxX - extent.minX, height: extent.maxY - extent.minY };
+
+    return { nodes: flowNodes, hiddenEdgeIds, bounds };
 }

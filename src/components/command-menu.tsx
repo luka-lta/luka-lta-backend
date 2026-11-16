@@ -1,91 +1,70 @@
 import React from 'react'
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, Laptop, Moon, Sun } from "lucide-react";
+import { QUICK_ACTIONS } from "@/config/quickActions";
 import { useSearch } from '@/context/search-context'
 import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
+    CommandDialog,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+    CommandSeparator,
 } from '@/components/ui/command'
 import { sidebarData } from './layout/data/sidebar-data'
-import { ScrollArea } from './ui/scroll-area'
-import {ArrowRight, Laptop, Moon, Sun} from "lucide-react";
-import {useNavigate} from "react-router-dom";
-import {useTheme} from "@/context/theme-context.tsx";
+import { useTheme } from "@/context/theme-context.tsx";
 
+
+/** ⌘K-Befehlspalette: Navigation, Schnellaktionen, Farbschema. */
 export function CommandMenu() {
-  const navigate = useNavigate()
-  const { setTheme } = useTheme()
-  const { open, setOpen } = useSearch()
+    const navigate = useNavigate()
+    const { setTheme } = useTheme()
+    const { open, setOpen } = useSearch()
 
-  const runCommand = React.useCallback(
-    (command: () => unknown) => {
-      setOpen(false)
-      command()
-    },
-    [setOpen]
-  )
+    const run = React.useCallback((command: () => unknown) => {
+        setOpen(false)
+        command()
+    }, [setOpen])
 
-  return (
-    <CommandDialog modal open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder='Type a command or search...' />
-      <CommandList>
-        <ScrollArea type='hover' className='h-72 pr-1'>
-          <CommandEmpty>No results found.</CommandEmpty>
-          {sidebarData.navGroups.map((group) => (
-            <CommandGroup key={group.title} heading={group.title}>
-              {group.items.map((navItem, i) => {
-                if (navItem.url)
-                  return (
-                    <CommandItem
-                      key={`${navItem.url}-${i}`}
-                      value={navItem.title}
-                      onSelect={() => {
-                        runCommand(() => navigate(navItem.url))
-                      }}
-                    >
-                      <div className='mr-2 flex h-4 w-4 items-center justify-center'>
-                        <ArrowRight className='size-2 text-muted-foreground/80' />
-                      </div>
-                      {navItem.title}
-                    </CommandItem>
-                  )
-
-                return navItem.items?.map((subItem, i) => (
-                  <CommandItem
-                    key={`${subItem.url}-${i}`}
-                    value={subItem.title}
-                    onSelect={() => {
-                      runCommand(() => navigate(subItem.url))
-                    }}
-                  >
-                    <div className='mr-2 flex h-4 w-4 items-center justify-center'>
-                      <ArrowRight className='size-2 text-muted-foreground/80' />
-                    </div>
-                    {subItem.title}
-                  </CommandItem>
-                ))
-              })}
-            </CommandGroup>
-          ))}
-          <CommandSeparator />
-          <CommandGroup heading='Theme'>
-            <CommandItem onSelect={() => runCommand(() => setTheme('light'))}>
-              <Sun /> <span>Light</span>
-            </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme('dark'))}>
-              <Moon className='scale-90' />
-              <span>Dark</span>
-            </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme('system'))}>
-              <Laptop />
-              <span>System</span>
-            </CommandItem>
-          </CommandGroup>
-        </ScrollArea>
-      </CommandList>
-    </CommandDialog>
-  )
+    return (
+        <CommandDialog open={open} onOpenChange={setOpen}>
+            <CommandInput placeholder='Seite oder Aktion suchen…' />
+            <CommandList className='max-h-[min(24rem,60svh)]'>
+                <CommandEmpty>Keine Treffer.</CommandEmpty>
+                <CommandGroup heading='Schnellaktionen'>
+                    {QUICK_ACTIONS.map((action) => (
+                        <CommandItem key={action.label} value={action.label} onSelect={() => run(() => navigate(action.to))}>
+                            <action.icon />
+                            {action.label}
+                        </CommandItem>
+                    ))}
+                </CommandGroup>
+                {sidebarData.navGroups.map((group, gi) => (
+                    <CommandGroup key={group.title ?? gi} heading={group.title ?? 'Allgemein'}>
+                        {group.items.flatMap((item) => (item.items ? item.items.map((sub) => ({ ...sub, title: `${item.title} › ${sub.title}` })) : [item])).map((item) => (
+                            <CommandItem key={item.url} value={item.title} onSelect={() => run(() => navigate(item.url))}>
+                                {item.icon ? <item.icon /> : <ArrowRight />}
+                                {item.title}
+                            </CommandItem>
+                        ))}
+                    </CommandGroup>
+                ))}
+                <CommandGroup heading='Konto'>
+                    {sidebarData.accountLinks.map((item) => (
+                        <CommandItem key={item.url} value={item.title} onSelect={() => run(() => navigate(item.url))}>
+                            {item.icon ? <item.icon /> : <ArrowRight />}
+                            {item.title}
+                        </CommandItem>
+                    ))}
+                </CommandGroup>
+                <CommandSeparator />
+                <CommandGroup heading='Farbschema'>
+                    <CommandItem value='Hell' onSelect={() => run(() => setTheme('light'))}><Sun />Hell</CommandItem>
+                    <CommandItem value='Dunkel' onSelect={() => run(() => setTheme('dark'))}><Moon />Dunkel</CommandItem>
+                    <CommandItem value='System' onSelect={() => run(() => setTheme('system'))}><Laptop />System</CommandItem>
+                </CommandGroup>
+            </CommandList>
+        </CommandDialog>
+    )
 }

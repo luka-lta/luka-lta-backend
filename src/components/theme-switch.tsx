@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { cn } from '@/lib/utils'
+import { Check, Laptop, Moon, Sun } from "lucide-react";
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -7,51 +7,42 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {Check, Moon, Sun} from "lucide-react";
-import {useTheme} from "@/context/theme-context.tsx";
+import { useTheme } from "@/context/theme-context.tsx";
+
+const OPTIONS = [
+    { value: 'light', label: 'Hell', icon: Sun },
+    { value: 'dark', label: 'Dunkel', icon: Moon },
+    { value: 'system', label: 'System', icon: Laptop },
+] as const
 
 export function ThemeSwitch() {
     const { theme, setTheme } = useTheme()
 
-    /* Update theme-color meta tag
-     * when theme is updated */
+    // Browser-UI-Farbe an die Hintergrundfarbe angleichen.
     useEffect(() => {
-        const themeColor = theme === 'dark' ? '#020817' : '#fff'
-        const metaThemeColor = document.querySelector("meta[name='theme-color']")
-        if (metaThemeColor) metaThemeColor.setAttribute('content', themeColor)
+        const meta = document.querySelector("meta[name='theme-color']")
+        if (!meta) return
+        const bg = getComputedStyle(document.documentElement).getPropertyValue('--background').trim()
+        if (bg) meta.setAttribute('content', `hsl(${bg})`)
     }, [theme])
 
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-                <Button variant='ghost' size='icon' className='scale-95 rounded-full'>
-                    <Sun className='size-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />
-                    <Moon className='absolute size-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100' />
-                    <span className='sr-only'>Toggle theme</span>
+                <Button variant='ghost' size='icon-sm'>
+                    <Sun className='rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0' />
+                    <Moon className='absolute rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100' />
+                    <span className='sr-only'>Farbschema wählen</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
-                <DropdownMenuItem onClick={() => setTheme('light')}>
-                    Light{' '}
-                    <Check
-                        size={14}
-                        className={cn('ml-auto', theme !== 'light' && 'hidden')}
-                    />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('dark')}>
-                    Dark
-                    <Check
-                        size={14}
-                        className={cn('ml-auto', theme !== 'dark' && 'hidden')}
-                    />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('system')}>
-                    System
-                    <Check
-                        size={14}
-                        className={cn('ml-auto', theme !== 'system' && 'hidden')}
-                    />
-                </DropdownMenuItem>
+                {OPTIONS.map(({ value, label, icon: Icon }) => (
+                    <DropdownMenuItem key={value} onSelect={() => setTheme(value)}>
+                        <Icon />
+                        {label}
+                        {theme === value && <Check className='ml-auto' />}
+                    </DropdownMenuItem>
+                ))}
             </DropdownMenuContent>
         </DropdownMenu>
     )

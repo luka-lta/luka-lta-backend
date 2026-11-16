@@ -1,16 +1,8 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import { FormDialog } from "@/components/dialogs/form-dialog.tsx";
 import {
     Select,
     SelectContent,
@@ -123,7 +115,7 @@ function CreateNodeDialog({ open, onOpenChange, nodes }: CreateNodeDialogProps) 
             { type, name: name.trim(), status: selectedRef ? "unknown" : "healthy", ref: selectedRef?.ref },
             {
                 onSuccess: () => {
-                    toast.success("Node created.");
+                    toast.success("Knoten angelegt");
                     reset();
                     onOpenChange(false);
                 },
@@ -133,64 +125,61 @@ function CreateNodeDialog({ open, onOpenChange, nodes }: CreateNodeDialogProps) 
     }
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Add node</DialogTitle>
-                    <DialogDescription>
-                        Link it to a host or service to show its live status, or leave it unlinked for things
-                        like Internet, Cloudflare or a domain.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                        <Label>Linked to</Label>
-                        <Select value={linked} onValueChange={handleLinkedChange}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={UNLINKED}>Not linked</SelectItem>
-                                {optionsByHost.map(([hostName, options]) => (
-                                    <SelectGroup key={hostName}>
-                                        <SelectLabel>{hostName}</SelectLabel>
-                                        {options.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>
-                                                {option.ref.type === "host" ? "Host itself" : option.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="node-name">Name</Label>
-                        <Input id="node-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Internet" />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label>Type</Label>
-                        <Select value={type} onValueChange={setType}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.entries(NODE_TYPE_CONFIG).map(([key, config]) => (
-                                    <SelectItem key={key} value={key}>
-                                        {config.label}
+        <FormDialog
+            open={open}
+            onOpenChange={onOpenChange}
+            size="sm"
+            title="Knoten hinzufügen"
+            description="Mit einem Host oder Dienst verknüpfen, um dessen Live-Status zu zeigen – oder unverknüpft für Internet, Cloudflare oder eine Domain."
+            onSubmit={(event) => {
+                event.preventDefault();
+                handleSubmit();
+            }}
+            submitLabel="Hinzufügen"
+            isSubmitting={createNode.isPending}
+            submitDisabled={!name.trim()}
+        >
+            <div className="space-y-2">
+                <Label htmlFor="node-link">Verknüpft mit</Label>
+                <Select value={linked} onValueChange={handleLinkedChange}>
+                    <SelectTrigger id="node-link">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value={UNLINKED}>Nicht verknüpft</SelectItem>
+                        {optionsByHost.map(([hostName, options]) => (
+                            <SelectGroup key={hostName}>
+                                <SelectLabel>{hostName}</SelectLabel>
+                                {options.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.ref.type === "host" ? "Host selbst" : option.label}
                                     </SelectItem>
                                 ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button className="w-full" onClick={handleSubmit} disabled={createNode.isPending || !name.trim()}>
-                        Add node
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                            </SelectGroup>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="node-name">Name</Label>
+                <Input id="node-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="z. B. Internet" autoFocus />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="node-type">Typ</Label>
+                <Select value={type} onValueChange={setType}>
+                    <SelectTrigger id="node-type">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Object.entries(NODE_TYPE_CONFIG).map(([key, config]) => (
+                            <SelectItem key={key} value={key}>
+                                {config.label}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+        </FormDialog>
     );
 }
 

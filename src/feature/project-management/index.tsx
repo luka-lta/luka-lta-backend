@@ -1,21 +1,29 @@
+import { useCreateIntent } from "@/hooks/useCreateIntent";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
+  type Announcements,
   closestCenter,
   DndContext,
   type DragEndEvent,
+  KeyboardSensor,
   PointerSensor,
+  type UniqueIdentifier,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Main } from "@/components/layout/main.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import { Empty, EmptyMedia, EmptyTitle } from "@/components/ui/empty.tsx";
-import { ErrorState } from "@/components/error-state.tsx";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { FolderKanban, Plus } from "lucide-react";
-import { useSetPageTitle } from "@/hooks/useSetPageTitle.ts";
+import { Button } from "@/components/ui/button.tsx";
+import { PageContainer, PageHeader } from "@/components/layout/page.tsx";
+import { EmptyState } from "@/components/feedback/empty-state.tsx";
+import { ErrorState } from "@/components/feedback/error-state.tsx";
 import { useManagedProjects, useReorderProjects } from "@/api/projects/hooks.ts";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
 import ProjectsProvider, { useProjects } from "@/feature/project-management/context/projects-context.tsx";
@@ -56,7 +64,20 @@ function ProjectList() {
     return ordered.length === data.length ? ordered : data;
   }, [projects.data, localOrder]);
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const nameOf = (id: UniqueIdentifier) => orderedProjects.find((project) => project.id === id)?.name ?? "Projekt";
+  const positionOf = (id: UniqueIdentifier) => orderedProjects.findIndex((project) => project.id === id) + 1;
+  const announcements: Announcements = {
+    onDragStart: ({ active }) => `${nameOf(active.id)} aufgenommen, Position ${positionOf(active.id)}.`,
+    onDragOver: ({ active, over }) => (over ? `${nameOf(active.id)} über Position ${positionOf(over.id)}.` : undefined),
+    onDragEnd: ({ active, over }) =>
+      over ? `${nameOf(active.id)} auf Position ${positionOf(over.id)} abgelegt.` : `${nameOf(active.id)} abgelegt.`,
+    onDragCancel: ({ active }) => `Verschieben von ${nameOf(active.id)} abgebrochen.`,
+  };
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -88,16 +109,16 @@ function ProjectList() {
   if (projects.error) {
     return (
       <ErrorState
-        title="Failed to load projects"
-        message={getApiErrorMessage(projects.error)}
-        refetch={projects.refetch}
+        title="Projekte konnten nicht geladen werden"
+        error={projects.error}
+        onRetry={() => projects.refetch()}
       />
     );
   }
 
   if (projects.isPending) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-2" aria-busy="true" aria-label="Wird geladen">
         {Array.from({ length: SKELETON_COUNT }, (_, index) => (
           <ProjectCardSkeleton key={index} />
         ))}
@@ -107,71 +128,75 @@ function ProjectList() {
 
   if (orderedProjects.length === 0) {
     return (
-      <Empty className="border-0 py-12">
-        <EmptyMedia variant="icon">
-          <FolderKanban />
-        </EmptyMedia>
-        <EmptyTitle>No projects yet</EmptyTitle>
-        <Button onClick={() => setOpen("add")}>
-          <Plus className="h-4 w-4" />
-          Create project
-        </Button>
-      </Empty>
+      <EmptyState
+        icon={FolderKanban}
+        title="Noch keine Projekte"
+        description="Projekte erscheinen in dieser Reihenfolge im öffentlichen Portfolio."
+        action={
+          <Button variant="outline" size="sm" onClick={() => setOpen("add")}>
+            Projekt anlegen
+          </Button>
+        }
+      />
     );
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      modifiers={[restrictToVerticalAxis]}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={orderedProjects.map((project) => project.id)}
-        strategy={verticalListSortingStrategy}
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">
+        Reihenfolge per Ziehen am Griff ändern (oder Griff fokussieren, Leertaste, Pfeiltasten). So erscheinen die
+        Projekte im Portfolio.
+      </p>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={handleDragEnd}
+        accessibility={{
+          announcements,
+          screenReaderInstructions: {
+            draggable:
+              "Leertaste zum Aufnehmen, Pfeiltasten zum Verschieben, Leertaste zum Ablegen, Escape zum Abbrechen.",
+          },
+        }}
       >
-        <div className="space-y-3">
-          {orderedProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+        <SortableContext items={orderedProjects.map((project) => project.id)} strategy={verticalListSortingStrategy}>
+          <ol className="space-y-2" aria-label="Projekte in Portfolio-Reihenfolge">
+            {orderedProjects.map((project, index) => (
+              <ProjectCard key={project.id} project={project} position={index + 1} />
+            ))}
+          </ol>
+        </SortableContext>
+      </DndContext>
+    </div>
   );
 }
 
 function ProjectManagementContent() {
   const { setOpen } = useProjects();
+  useCreateIntent(() => setOpen("add"));
 
   return (
-    <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Projects</h2>
-          <p className="text-muted-foreground">
-            Manage the projects shown on the public portfolio.
-          </p>
-        </div>
-        <Button onClick={() => setOpen("add")}>
-          <Plus className="h-4 w-4" />
-          Project
-        </Button>
-      </div>
-
+    <PageContainer title="Projekte" width="narrow">
+      <PageHeader
+        title="Projekte"
+        description="Projekte im öffentlichen Portfolio pflegen und sortieren."
+        actions={
+          <Button onClick={() => setOpen("add")}>
+            <Plus />
+            Projekt anlegen
+          </Button>
+        }
+      />
       <ProjectList />
-    </>
+    </PageContainer>
   );
 }
 
 function ProjectManagement() {
-  useSetPageTitle("Backend - Projects");
-
   return (
     <ProjectsProvider>
-      <Main>
-        <ProjectManagementContent />
-      </Main>
+      <ProjectManagementContent />
       <ProjectDialogs />
     </ProjectsProvider>
   );

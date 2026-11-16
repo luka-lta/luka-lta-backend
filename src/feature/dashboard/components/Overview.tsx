@@ -1,12 +1,22 @@
+import { AlertTriangle, RefreshCcw } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.tsx'
+import { Button } from '@/components/ui/button.tsx'
 import { DayOverviewSection } from '@/feature/dashboard/widgets/DayOverviewSection.tsx'
 import { QuickStats } from '@/feature/dashboard/components/QuickStats.tsx'
-import { DashboardAlerts } from '@/feature/dashboard/components/DashboardAlerts.tsx'
+import { QuickActions } from '@/feature/dashboard/components/QuickActions.tsx'
 import { RecentActivity } from '@/feature/dashboard/components/RecentActivity.tsx'
 import { useClickSummary } from '@/api/dashboard/hooks.ts'
 import { useLinktreeList } from '@/api/linktree/hooks.ts'
 import { useBlogList } from '@/api/blog/hooks.ts'
 import { useUserList } from '@/api/user/hooks.ts'
-import { motion } from 'motion/react'
+import { getApiErrorMessage } from '@/lib/apiError.ts'
+
+interface DataProblem {
+    id: string
+    label: string
+    error: unknown
+    refetch: () => void
+}
 
 function Overview() {
     const [clickSummary] = useClickSummary()
@@ -17,37 +27,51 @@ function Overview() {
     const links = linktreeList.data?.links ?? []
     const posts = blogList.data?.posts ?? []
 
-    const alerts: { id: string; title: string; description: string; refetch: () => void }[] = []
-    if (clickSummary.error) alerts.push({ id: 'clicks', title: 'Clicks data unavailable', description: clickSummary.error.message, refetch: () => clickSummary.refetch() })
-    if (linktreeList.error) alerts.push({ id: 'linktree', title: 'Linktree data unavailable', description: linktreeList.error.message, refetch: () => linktreeList.refetch() })
-    if (blogList.error) alerts.push({ id: 'blog', title: 'Blog data unavailable', description: blogList.error.message, refetch: () => blogList.refetch() })
-    if (userList.error) alerts.push({ id: 'users', title: 'User data unavailable', description: userList.error.message, refetch: () => userList.refetch() })
+    const problems: DataProblem[] = []
+    if (clickSummary.error) problems.push({ id: 'clicks', label: 'Klicks', error: clickSummary.error, refetch: () => clickSummary.refetch() })
+    if (linktreeList.error) problems.push({ id: 'links', label: 'Links', error: linktreeList.error, refetch: () => linktreeList.refetch() })
+    if (blogList.error) problems.push({ id: 'blog', label: 'Blog', error: blogList.error, refetch: () => blogList.refetch() })
+    if (userList.error) problems.push({ id: 'users', label: 'Benutzer', error: userList.error, refetch: () => userList.refetch() })
 
     return (
-        <div className="space-y-6">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}>
-                <DayOverviewSection />
-            </motion.div>
-
-            {alerts.length > 0 && (
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}>
-                    <DashboardAlerts alerts={alerts} />
-                </motion.div>
+        <div className='space-y-6'>
+            {problems.length > 0 && (
+                <Alert variant='warning'>
+                    <AlertTriangle />
+                    <AlertTitle>Nicht alle Daten konnten geladen werden</AlertTitle>
+                    <AlertDescription>
+                        <ul className='mt-2 space-y-1.5'>
+                            {problems.map((problem) => (
+                                <li key={problem.id} className='flex flex-wrap items-center justify-between gap-2'>
+                                    <span>
+                                        <span className='font-medium text-foreground'>{problem.label}:</span> {getApiErrorMessage(problem.error)}
+                                    </span>
+                                    <Button variant='outline' size='sm' className='h-7' onClick={problem.refetch}>
+                                        <RefreshCcw />
+                                        Erneut versuchen
+                                    </Button>
+                                </li>
+                            ))}
+                        </ul>
+                    </AlertDescription>
+                </Alert>
             )}
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}>
-                <QuickStats
-                    totalClicks={clickSummary.data?.summary.totalClicks}
-                    clicksMonthly={clickSummary.data?.summary.clicksMonthly}
-                />
-            </motion.div>
+            <QuickStats
+                totalClicks={clickSummary.data?.summary.totalClicks}
+                clicksMonthly={clickSummary.data?.summary.clicksMonthly}
+                clicksFailed={Boolean(clickSummary.error)}
+            />
 
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}>
-                <RecentActivity
-                    posts={[...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)}
-                    links={[...links].sort((a, b) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime()).slice(0, 5)}
-                />
-            </motion.div>
+            <QuickActions />
+
+            <DayOverviewSection />
+
+            <RecentActivity
+                loading={blogList.isPending || linktreeList.isPending}
+                posts={posts}
+                links={links}
+            />
         </div>
     )
 }
