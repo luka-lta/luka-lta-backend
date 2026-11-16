@@ -75,9 +75,9 @@ type TabId = "general" | "links" | "details" | "media";
  * Fehlermarkierung der Tabs und der Sprung zum ersten fehlerhaften Tab ab.
  */
 const TAB_FIELDS: Record<TabId, readonly (keyof ProjectFormValues)[]> = {
-  general: ["name", "slug", "shortDescription", "description", "status", "isVisible", "category", "tagIds", "techStack"],
+  general: ["name", "slug", "shortDescription", "description", "status", "isVisible", "category"],
   links: ["websiteUrl", "liveLabel", "repositoryUrl", "repositoryOwner", "repositoryName", "demoUrl", "documentationUrl"],
-  details: ["role", "projectYear", "isClientProject"],
+  details: ["tagIds", "techStack", "role", "projectYear", "isClientProject"],
   media: [],
 };
 
@@ -437,21 +437,6 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
                 />
               }
             />
-            <Controller
-              control={form.control}
-              name="tagIds"
-              render={({ field }) => <ProjectTagsField value={field.value} onChange={field.onChange} />}
-            />
-            <TextInput
-              name="techStack"
-              id="project-tech-stack"
-              label="Tech-Stack"
-              form={form}
-              type="text"
-              optional
-              placeholder="PHP, MySQL, React"
-              description="Mehrere Einträge mit Komma trennen."
-            />
           </TabsContent>
 
           <TabsContent value="links" className="mt-0 space-y-5">
@@ -479,6 +464,21 @@ export function ProjectFormDialog({ mode, project, open, onOpenChange }: Props) 
           </TabsContent>
 
           <TabsContent value="details" className="mt-0 space-y-5">
+            <Controller
+              control={form.control}
+              name="tagIds"
+              render={({ field }) => <ProjectTagsField value={field.value} onChange={field.onChange} />}
+            />
+            <TextInput
+              name="techStack"
+              id="project-tech-stack"
+              label="Tech-Stack"
+              form={form}
+              type="text"
+              optional
+              placeholder="PHP, MySQL, React"
+              description="Mehrere Einträge mit Komma trennen."
+            />
             <div className="grid gap-5 sm:grid-cols-2">
               <TextInput name="role" id="project-role" label="Rolle" form={form} type="text" optional placeholder="z. B. Full-Stack" />
               <TextInput name="projectYear" id="project-year" label="Jahr" form={form} type="number" optional />
