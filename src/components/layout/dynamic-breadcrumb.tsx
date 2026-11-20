@@ -32,6 +32,7 @@ const SEGMENT_LABELS: Record<string, string> = {
     business: 'Business',
     customers: 'Kunden',
     offers: 'Angebote',
+    invoices: 'Rechnungen',
 }
 
 const DYNAMIC_LABELS: Record<string, string> = {

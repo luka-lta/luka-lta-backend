@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Check, Copy, Download, FileText, Pencil, Send, Trash2, X } from "lucide-react";
+import { Check, Copy, Download, Pencil, Send, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -31,13 +31,11 @@ interface Props {
   /** Nach Duplizieren: Detailansicht der Kopie öffnen. */
   onOpenOffer: (offerId: string) => void;
   /**
-   * Slot für "Anzahlungsrechnung / Schlussrechnung / Rechnung" (Task 13). Wird nur bei angenommenen Angeboten
-   * gerendert; ohne Angabe erscheinen deaktivierte Platzhalter-Buttons ("Folgt").
+   * Rechnungsaktionen (Anzahlung / Schlussrechnung / Rechnung erstellen bzw. öffnen). Wird nur bei angenommenen
+   * Angeboten gerendert; `OffersFeature` übergibt `OfferInvoiceActions`.
    */
   invoiceActions?: (offer: Offer) => ReactNode;
 }
-
-const PLACEHOLDER_LABELS = ["Anzahlungsrechnung", "Schlussrechnung", "Rechnung"];
 
 function formatQuantity(quantity: string): string {
   return quantity.replace(".", ",");
@@ -127,14 +125,8 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
   }
 
   function renderInvoiceSlot(current: Offer): ReactNode {
-    if (current.status !== "accepted") return null;
-    if (invoiceActions !== undefined) return invoiceActions(current);
-    return PLACEHOLDER_LABELS.map((label) => (
-      <Button key={label} variant="outline" disabled title="Folgt">
-        <FileText />
-        {label}
-      </Button>
-    ));
+    if (current.status !== "accepted" || invoiceActions === undefined) return null;
+    return invoiceActions(current);
   }
 
   // Nur die zum Status passenden Aktionen anzeigen; die API lehnt alles andere ohnehin ab

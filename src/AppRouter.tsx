@@ -28,6 +28,7 @@ import WeatherPage from "@/pages/Dashboard/WeatherPage.tsx";
 import BusinessPage from "@/pages/Dashboard/BusinessPage.tsx";
 import CustomersPage from "@/pages/Dashboard/CustomersPage.tsx";
 import OffersPage from "@/pages/Dashboard/OffersPage.tsx";
+import InvoicesPage from "@/pages/Dashboard/InvoicesPage.tsx";
 import BusinessSettingsPage from "@/pages/Dashboard/BusinessSettingsPage.tsx";
 import NotificationsPage from "@/pages/Dashboard/NotificationsPage.tsx";
 import ProjectsPage from "@/pages/Dashboard/ProjectsPage.tsx";
@@ -95,6 +96,10 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'business/offers',
                 element: <OffersPage />
+            },
+            {
+                path: 'business/invoices',
+                element: <InvoicesPage />
             },
             {
                 path: 'business/settings',

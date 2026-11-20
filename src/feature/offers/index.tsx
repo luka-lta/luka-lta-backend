@@ -12,6 +12,7 @@ import { useOffers } from "@/api/offers/hooks.ts";
 import { OfferTable } from "@/feature/offers/components/OfferTable.tsx";
 import { OfferEditor } from "@/feature/offers/components/OfferEditor.tsx";
 import { OfferDetail } from "@/feature/offers/components/OfferDetail.tsx";
+import { OfferInvoiceActions } from "@/feature/invoices/components/OfferInvoiceActions.tsx";
 import { offerStatusSchema, type Offer, type OfferFilters } from "@/feature/offers/schema/offer.ts";
 
 /** Anzahl der Skeleton-Zeilen im Ladezustand. */
@@ -52,6 +53,7 @@ export default function OffersFeature() {
           onEdit={(offer) => setView({ kind: "editor", offer })}
           onDeleted={() => setView({ kind: "list" })}
           onOpenOffer={(offerId) => setView({ kind: "detail", offerId })}
+          invoiceActions={(offer) => <OfferInvoiceActions offer={offer} />}
         />
       )}
       {view.kind === "editor" && (
