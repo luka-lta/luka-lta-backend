@@ -1,5 +1,4 @@
-import { isAxiosError } from "axios";
-import api from "@/api/axios.ts";
+import { loadPdfBlob } from "./pdfBlob";
 
 /** Wartezeit, bis die Blob-URL nach dem Download-Klick freigegeben wird. */
 const REVOKE_DELAY_MS = 10_000;
@@ -16,30 +15,14 @@ function readFileName(contentDisposition: unknown, fallback: string): string {
   }
 }
 
-/** Bei responseType "blob" ist auch der Fehlerkörper ein Blob; die echte Meldung steckt darin als JSON. */
-async function toReadableError(error: unknown): Promise<unknown> {
-  if (!isAxiosError(error) || !(error.response?.data instanceof Blob)) return error;
-  try {
-    const parsed: unknown = JSON.parse(await error.response.data.text());
-    if (typeof parsed === "object" && parsed !== null && "error" in parsed && typeof parsed.error === "string") {
-      return new Error(parsed.error);
-    }
-  } catch {
-    // kein JSON: ursprünglichen Fehler weiterreichen
-  }
-  return error;
-}
-
 /** Lädt ein PDF per authentifiziertem Request und startet den Browser-Download. */
 export async function downloadPdf(path: string, fileName: string): Promise<void> {
-  const response = await api.get(path, { responseType: "blob" }).catch(async (error: unknown) => {
-    throw await toReadableError(error);
-  });
-  const url = URL.createObjectURL(response.data as Blob);
+  const { blob, contentDisposition } = await loadPdfBlob(path);
+  const url = URL.createObjectURL(blob);
   try {
     const link = document.createElement("a");
     link.href = url;
-    link.download = readFileName(response.headers["content-disposition"], fileName);
+    link.download = readFileName(contentDisposition, fileName);
     document.body.appendChild(link);
     link.click();
     link.remove();
