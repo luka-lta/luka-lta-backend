@@ -16,6 +16,7 @@ import {
     Network,
     Palette,
     Server,
+    Settings,
     ShieldCheck,
     UserCog,
     Users,
@@ -45,7 +46,15 @@ export const sidebarData: SidebarData = {
             title: 'Analyse',
             items: [
                 { title: 'Klicks', url: '/dashboard/clicks', icon: MousePointerClick },
-                { title: 'Business', url: '/dashboard/business', icon: BarChart3 },
+                {
+                    title: 'Business',
+                    icon: BarChart3,
+                    items: [
+                        { title: 'Übersicht', url: '/dashboard/business', icon: LayoutGrid },
+                        { title: 'Kunden', url: '/dashboard/business/customers', icon: Users },
+                        { title: 'Einstellungen', url: '/dashboard/business/settings', icon: Settings },
+                    ],
+                },
                 { title: 'Apps', url: '/dashboard/apps', icon: Boxes },
             ],
         },
