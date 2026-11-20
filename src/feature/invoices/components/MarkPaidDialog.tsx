@@ -60,7 +60,10 @@ export function MarkPaidDialog({ invoice, open, onOpenChange }: Props) {
       isSubmitting={markPaid.isPending}
     >
       {error !== null && (
-        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {error}
         </p>
       )}

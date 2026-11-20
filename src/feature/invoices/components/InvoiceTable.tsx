@@ -39,7 +39,9 @@ export function InvoiceTable({ invoices, onOpen }: Props) {
               <TableCell className="font-medium">{invoice.invoiceNumber ?? NO_NUMBER}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap items-center gap-1">
-                  <Badge variant={invoice.kind === "standard" ? "outline" : "secondary"}>{KIND_LABELS[invoice.kind]}</Badge>
+                  <Badge variant={invoice.kind === "standard" ? "outline" : "secondary"}>
+                    {KIND_LABELS[invoice.kind]}
+                  </Badge>
                   {invoice.isImported && <Badge variant="outline">Importiert</Badge>}
                 </div>
               </TableCell>

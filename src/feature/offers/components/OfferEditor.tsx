@@ -90,7 +90,8 @@ export function OfferEditor({ offer, onCancel, onSaved }: Props) {
       introText: toNullable(introText),
       items: items.map((item) => ({ ...item, description: item.description.trim(), unit: item.unit.trim() })),
     };
-    // Leer beim Anlegen = Standardtext aus den Firmendaten: Schlüssel weglassen. Beim Bearbeiten heißt leer "kein Text".
+    // Leer beim Anlegen = Standardtext aus den Firmendaten: Schlüssel weglassen.
+    // Beim Bearbeiten heißt leer "kein Text".
     if (isEditing) return { ...input, closingText: toNullable(closingText) };
     const closing = toNullable(closingText);
     return closing === null ? input : { ...input, closingText: closing };
@@ -135,7 +136,10 @@ export function OfferEditor({ offer, onCancel, onSaved }: Props) {
       />
 
       {error !== null && (
-        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {error}
         </p>
       )}

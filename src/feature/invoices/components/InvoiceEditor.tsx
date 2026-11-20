@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
 import { PageHeader } from "@/components/layout/page.tsx";
 import { useCustomers } from "@/api/customers/hooks.ts";
 import { useCreateInvoice, useUpdateInvoice } from "@/api/invoices/hooks.ts";
-import { getApiErrorMessage } from "@/lib/apiError.ts";
+import { getBusinessErrorMessage } from "@/feature/business-documents/businessErrors.ts";
 import { todayIsoDate } from "@/lib/dateTimeUtils.ts";
+import { MoneyText } from "@/feature/business-documents/MoneyText.tsx";
 import { LineItemsEditor } from "@/feature/business-documents/LineItemsEditor.tsx";
 import { EMPTY_LINE_ITEM, validateLineItems, type LineItemInput } from "@/feature/business-documents/lineItems.ts";
 import { KIND_LABELS, MAX_PAYMENT_TERM_DAYS } from "@/feature/invoices/invoiceRules.ts";
@@ -67,6 +69,8 @@ export function InvoiceEditor({ invoice, onCancel, onSaved }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = invoice !== null;
+  // Positionen eines Anzahlungsentwurfs ergeben sich aus dem Betrag des Angebots; die API lehnt `items` ab
+  const isDepositDraft = invoice?.kind === "deposit";
   const isSaving = createInvoice.isPending || updateInvoice.isPending;
   // Aus einem Angebot entstandene Rechnungen behalten den Kunden des Angebots (API lehnt den Wechsel ab)
   const isCustomerLocked = invoice !== null && invoice.offerId !== null;
@@ -97,6 +101,7 @@ export function InvoiceEditor({ invoice, onCancel, onSaved }: Props) {
     if (introText.length > MAX_TEXT_LENGTH || closingText.length > MAX_TEXT_LENGTH) {
       return `Texte dürfen höchstens ${MAX_TEXT_LENGTH} Zeichen lang sein`;
     }
+    if (isDepositDraft) return null;
     if (!areItemsValid) return "Bitte ungültige Preise oder Mengen in den Positionen korrigieren";
     return validateLineItems(items);
   }
@@ -111,10 +116,14 @@ export function InvoiceEditor({ invoice, onCancel, onSaved }: Props) {
       servicePeriodStart: isPeriod ? toNullable(periodStart) : null,
       servicePeriodEnd: isPeriod ? toNullable(periodEnd) : null,
       introText: toNullable(introText),
-      items: items.map((item) => ({ ...item, description: item.description.trim(), unit: item.unit.trim() })),
     };
+    // Anzahlungsentwürfe: Schlüssel `items` ganz weglassen
+    if (!isDepositDraft) {
+      input.items = items.map((item) => ({ ...item, description: item.description.trim(), unit: item.unit.trim() }));
+    }
     const withTerm = paymentTerm === "" ? input : { ...input, paymentTermDays: Number(paymentTerm) };
-    // Leer beim Anlegen = Standardtext aus den Firmendaten: Schlüssel weglassen. Beim Bearbeiten heißt leer "kein Text".
+    // Leer beim Anlegen = Standardtext aus den Firmendaten: Schlüssel weglassen.
+    // Beim Bearbeiten heißt leer "kein Text".
     if (isEditing) return { ...withTerm, closingText: toNullable(closingText) };
     const closing = toNullable(closingText);
     return closing === null ? withTerm : { ...withTerm, closingText: closing };
@@ -131,7 +140,7 @@ export function InvoiceEditor({ invoice, onCancel, onSaved }: Props) {
         toast.success(isEditing ? "Rechnung gespeichert" : "Rechnung angelegt");
         onSaved(saved);
       },
-      onError: (mutationError: unknown) => setError(getApiErrorMessage(mutationError)),
+      onError: (mutationError: unknown) => setError(getBusinessErrorMessage(mutationError, "other")),
     };
     if (invoice === null) {
       createInvoice.mutate(buildInput(), options);
@@ -161,7 +170,10 @@ export function InvoiceEditor({ invoice, onCancel, onSaved }: Props) {
       />
 
       {error !== null && (
-        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {error}
         </p>
       )}
@@ -187,7 +199,9 @@ export function InvoiceEditor({ invoice, onCancel, onSaved }: Props) {
               ))}
             </SelectContent>
           </Select>
-          {isCustomerLocked && <p className="text-xs text-muted-foreground">Kunde aus dem Angebot, nicht änderbar.</p>}
+          {isCustomerLocked && (
+            <p className="text-xs text-muted-foreground">Kunde aus dem Angebot, nicht änderbar.</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="invoice-date">Rechnungsdatum</Label>
@@ -278,14 +292,53 @@ export function InvoiceEditor({ invoice, onCancel, onSaved }: Props) {
         <Label htmlFor="invoice-intro">
           Einleitung <span className="font-normal text-muted-foreground">(optional)</span>
         </Label>
-        <Textarea id="invoice-intro" value={introText} onChange={(event) => setIntroText(event.target.value)} rows={3} />
+        <Textarea
+          id="invoice-intro"
+          value={introText}
+          onChange={(event) => setIntroText(event.target.value)}
+          rows={3}
+        />
       </div>
 
       <section className="space-y-3" aria-labelledby="invoice-items-heading">
         <h2 id="invoice-items-heading" className="text-base font-semibold">
           Positionen
         </h2>
-        <LineItemsEditor value={items} onChange={setItems} disabled={isSaving} onValidityChange={setAreItemsValid} />
+        {isDepositDraft ? (
+          <>
+            <p className="text-sm text-muted-foreground">
+              Die Positionen einer Anzahlung ergeben sich aus dem Betrag des Angebots und sind hier nicht änderbar.
+              Alle anderen Felder lassen sich bearbeiten.
+            </p>
+            <div className="rounded-xl border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Beschreibung</TableHead>
+                    <TableHead className="text-right">Summe</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(invoice?.items ?? []).map((item) => (
+                    <TableRow key={item.position}>
+                      <TableCell className="whitespace-pre-line">{item.description}</TableCell>
+                      <TableCell className="text-right">
+                        <MoneyText cents={item.lineTotalCents} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        ) : (
+          <LineItemsEditor
+            value={items}
+            onChange={setItems}
+            disabled={isSaving}
+            onValidityChange={setAreItemsValid}
+          />
+        )}
       </section>
 
       <div className="space-y-2">

@@ -71,6 +71,7 @@ export async function importInvoice(data: ImportInvoiceInput): Promise<Invoice> 
   if (data.dueDate !== null) form.append("dueDate", data.dueDate);
   if (data.paidAt !== null) form.append("paidAt", data.paidAt);
   if (data.serviceDate !== null) form.append("serviceDate", data.serviceDate);
+  if (data.allowNumberJump === true) form.append("allowNumberJump", "1");
   form.append("file", data.file);
   const response = await apiForm.post("/invoices/import", form);
   return invoiceResultSchema.parse(response.data.data).invoice;

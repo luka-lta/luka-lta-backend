@@ -109,7 +109,10 @@ export function CreateFromOfferDialog({ offer, open, onOpenChange, onCreated }: 
       isSubmitting={createFromOffer.isPending}
     >
       {error !== null && (
-        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {error}
         </p>
       )}
@@ -184,7 +187,11 @@ export function CreateFromOfferDialog({ offer, open, onOpenChange, onCreated }: 
           )}
           <p className="text-sm" aria-live="polite">
             Anzahlungsbetrag:{" "}
-            {depositCents === null ? <span className="text-muted-foreground">–</span> : <MoneyText cents={depositCents} />}
+            {depositCents === null ? (
+              <span className="text-muted-foreground">–</span>
+            ) : (
+              <MoneyText cents={depositCents} />
+            )}
           </p>
           <p className="text-xs text-muted-foreground">
             Vor dem Festschreiben muss im Entwurf noch ein Leistungsdatum oder -zeitraum eingetragen werden.

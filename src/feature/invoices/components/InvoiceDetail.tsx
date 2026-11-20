@@ -11,8 +11,12 @@ import { ConfirmDialog } from "@/components/dialogs/confirm-dialog.tsx";
 import { useDeleteInvoice, useFinalizeInvoice, useInvoice, useUnmarkInvoicePaid } from "@/api/invoices/hooks.ts";
 import { getInvoicePdfPath } from "@/api/invoices/endpoints.ts";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
+import { useBusinessSettings } from "@/api/business-settings/hooks.ts";
 import { formatIsoDate } from "@/lib/dateTimeUtils.ts";
 import { DocumentStatusBadge } from "@/feature/business-documents/DocumentStatusBadge.tsx";
+import { FinalizeHints } from "@/feature/business-documents/FinalizeHints.tsx";
+import { getBusinessErrorMessage } from "@/feature/business-documents/businessErrors.ts";
+import { getDocumentDateHint } from "@/feature/business-documents/finalizeGuards.ts";
 import { MoneyText } from "@/feature/business-documents/MoneyText.tsx";
 import { downloadPdf } from "@/feature/business-documents/downloadPdf.ts";
 import { MarkPaidDialog } from "@/feature/invoices/components/MarkPaidDialog.tsx";
@@ -64,6 +68,7 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
   const finalizeInvoice = useFinalizeInvoice();
   const deleteInvoice = useDeleteInvoice();
   const unmarkPaid = useUnmarkInvoicePaid();
+  const businessSettings = useBusinessSettings();
   const [pending, setPending] = useState<PendingAction>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -71,7 +76,11 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
 
   if (invoiceQuery.error) {
     return (
-      <ErrorState title="Rechnung konnte nicht geladen werden" error={invoiceQuery.error} onRetry={() => invoiceQuery.refetch()} />
+      <ErrorState
+        title="Rechnung konnte nicht geladen werden"
+        error={invoiceQuery.error}
+        onRetry={() => invoiceQuery.refetch()}
+      />
     );
   }
   if (invoice === undefined) {
@@ -85,7 +94,10 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
 
   const isDraft = invoice.status === "draft";
   const isServiceMissing = isDraft && isServiceInfoMissing(invoice);
-  const isFinalizeBlocked = invoice.isLocked || isServiceMissing;
+  // Spiegelt die API-Prüfungen; Produktion liefert bei Ablehnung nur generische Texte
+  const isSettingsMissing = businessSettings.data === null;
+  const dateHint = isDraft ? getDocumentDateHint(invoice.invoiceDate) : null;
+  const isFinalizeBlocked = invoice.isLocked || isServiceMissing || isSettingsMissing || dateHint !== null;
   const isCancellable =
     invoice.kind !== "cancellation" && (invoice.status === "open" || invoice.status === "paid");
   const service = formatService(invoice);
@@ -109,7 +121,7 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
         toast.success(`Rechnung ${finalized.invoiceNumber ?? ""} festgeschrieben`.replace("  ", " "));
         setPending(null);
       },
-      onError: (error) => toast.error(getApiErrorMessage(error)),
+      onError: (error) => toast.error(getBusinessErrorMessage(error, "finalize")),
     });
   }
 
@@ -120,7 +132,7 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
         setPending(null);
         onDeleted();
       },
-      onError: (error) => toast.error(getApiErrorMessage(error)),
+      onError: (error) => toast.error(getBusinessErrorMessage(error, "delete")),
     });
   }
 
@@ -131,7 +143,7 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
         setPending(null);
       },
       // 409 z. B., wenn eine festgeschriebene Schlussrechnung diese Anzahlung abzieht
-      onError: (error) => toast.error(getApiErrorMessage(error)),
+      onError: (error) => toast.error(getBusinessErrorMessage(error, "unpay")),
     });
   }
 
@@ -200,7 +212,10 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
       />
 
       {isDraft && invoice.isLocked && (
-        <p role="status" className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+        <p
+          role="status"
+          className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm"
+        >
           <Lock className="size-4 shrink-0" aria-hidden />
           {translateLockReason(invoice.lockReason ?? "")}
         </p>
@@ -212,6 +227,8 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
         </p>
       )}
 
+      {isDraft && <FinalizeHints isSettingsMissing={isSettingsMissing} dateHint={dateHint} />}
+
       <dl className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3">
         <Meta label="Rechnungsdatum">{formatIsoDate(invoice.invoiceDate)}</Meta>
         <Meta label={invoice.servicePeriodStart !== null ? "Leistungszeitraum" : "Leistungsdatum"}>
@@ -222,14 +239,22 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
         {invoice.offerNumber !== null && <Meta label="Angebot">{invoice.offerNumber}</Meta>}
         {invoice.depositInvoiceId !== null && (
           <Meta label="Anzahlung">
-            <Button variant="link" className="h-auto p-0" onClick={() => onOpenInvoice(invoice.depositInvoiceId ?? "")}>
+            <Button
+              variant="link"
+              className="h-auto p-0"
+              onClick={() => onOpenInvoice(invoice.depositInvoiceId ?? "")}
+            >
               {invoice.depositInvoiceNumber ?? "Entwurf öffnen"}
             </Button>
           </Meta>
         )}
         {invoice.cancelsInvoiceId !== null && (
           <Meta label="Storno zu">
-            <Button variant="link" className="h-auto p-0" onClick={() => onOpenInvoice(invoice.cancelsInvoiceId ?? "")}>
+            <Button
+              variant="link"
+              className="h-auto p-0"
+              onClick={() => onOpenInvoice(invoice.cancelsInvoiceId ?? "")}
+            >
               {invoice.cancelsInvoiceNumber ?? "Rechnung öffnen"}
             </Button>
           </Meta>
@@ -308,7 +333,11 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
         isLoading={finalizeInvoice.isPending}
         disabled={isFinalizeBlocked}
         title="Rechnung festschreiben?"
-        description="Die Rechnung erhält jetzt ihre fortlaufende Rechnungsnummer und das PDF wird erzeugt. Nummer und PDF sind danach endgültig: Die Rechnung kann nicht mehr bearbeitet oder gelöscht werden, Korrekturen gehen nur noch per Storno."
+        description={
+          "Die Rechnung erhält jetzt ihre fortlaufende Rechnungsnummer und das PDF wird erzeugt. "
+          + "Nummer und PDF sind danach endgültig: Die Rechnung kann nicht mehr bearbeitet oder gelöscht werden, "
+          + "Korrekturen gehen nur noch per Storno."
+        }
         confirmLabel="Endgültig festschreiben"
       />
       <ConfirmDialog

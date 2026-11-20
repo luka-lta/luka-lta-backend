@@ -86,3 +86,16 @@ export function formatIsoDate(date: string): string {
     const parsed = DateTime.fromISO(date);
     return parsed.isValid ? parsed.toFormat("dd.MM.yyyy") : date;
 }
+
+/** Zeitzone, in der die API Dokumentdaten (Festschreiben/Versenden) prüft. */
+const BUSINESS_TIME_ZONE = "Europe/Berlin";
+
+/** Heutiges Datum in Berlin als "yyyy-MM-dd" (Referenz der API-Prüfung, unabhängig von der Browserzone). */
+export function todayBerlinIsoDate(): string {
+    return DateTime.now().setZone(BUSINESS_TIME_ZONE).toFormat(ISO_DATE_FORMAT);
+}
+
+/** 1. Januar des laufenden Jahres (Berlin) als "yyyy-MM-dd". */
+export function startOfYearBerlinIsoDate(): string {
+    return DateTime.now().setZone(BUSINESS_TIME_ZONE).startOf("year").toFormat(ISO_DATE_FORMAT);
+}

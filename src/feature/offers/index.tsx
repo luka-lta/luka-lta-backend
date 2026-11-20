@@ -59,7 +59,9 @@ export default function OffersFeature() {
       {view.kind === "editor" && (
         <OfferEditor
           offer={view.offer}
-          onCancel={() => setView(view.offer === null ? { kind: "list" } : { kind: "detail", offerId: view.offer.offerId })}
+          onCancel={() =>
+            setView(view.offer === null ? { kind: "list" } : { kind: "detail", offerId: view.offer.offerId })
+          }
           onSaved={(saved) => setView({ kind: "detail", offerId: saved.offerId })}
         />
       )}
@@ -96,7 +98,13 @@ function OfferList({ onCreate, onOpen }: OfferListProps) {
 
   function renderContent() {
     if (offers.error) {
-      return <ErrorState title="Angebote konnten nicht geladen werden" error={offers.error} onRetry={() => offers.refetch()} />;
+      return (
+        <ErrorState
+          title="Angebote konnten nicht geladen werden"
+          error={offers.error}
+          onRetry={() => offers.refetch()}
+        />
+      );
     }
     if (offers.isPending) {
       return (
@@ -112,7 +120,9 @@ function OfferList({ onCreate, onOpen }: OfferListProps) {
         <EmptyState
           icon={FileText}
           title={isFiltered ? "Keine Treffer" : "Noch keine Angebote"}
-          description={isFiltered ? "Mit diesen Filtern gibt es kein Angebot." : "Lege das erste Angebot für einen Kunden an."}
+          description={
+            isFiltered ? "Mit diesen Filtern gibt es kein Angebot." : "Lege das erste Angebot für einen Kunden an."
+          }
           action={
             isFiltered ? undefined : (
               <Button variant="outline" size="sm" onClick={onCreate}>

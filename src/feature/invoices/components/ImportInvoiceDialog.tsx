@@ -9,8 +9,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { useCustomers } from "@/api/customers/hooks.ts";
 import { useImportInvoice } from "@/api/invoices/hooks.ts";
-import { getApiErrorMessage } from "@/lib/apiError.ts";
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog.tsx";
 import { todayIsoDate } from "@/lib/dateTimeUtils.ts";
+import {
+  classifyImportConflict,
+  getBusinessErrorMessage,
+  readApiError,
+} from "@/feature/business-documents/businessErrors.ts";
 import { parseEuroInput } from "@/feature/business-documents/money.ts";
 import { CustomerFormDialog } from "@/feature/customers/components/CustomerFormDialog.tsx";
 import {
@@ -56,6 +61,8 @@ export function ImportInvoiceDialog({ open, onOpenChange, onImported }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Eingabe und Hinweis, wenn die API einen Nummernsprung (409) meldet und der Nutzer bestätigen soll
+  const [jumpPrompt, setJumpPrompt] = useState<{ input: ImportInvoiceInput; apiMessage: string | null } | null>(null);
 
   function validateDates(): string | null {
     if (invoiceDate === "") return "Rechnungsdatum ist erforderlich";
@@ -111,14 +118,40 @@ export function ImportInvoiceDialog({ open, onOpenChange, onImported }: Props) {
       totalCents,
       file,
     };
+    submitImport(input);
+  }
+
+  function submitImport(input: ImportInvoiceInput) {
     importInvoice.mutate(input, {
       onSuccess: (imported) => {
         toast.success(`Rechnung ${imported.invoiceNumber ?? ""} importiert`.trim());
+        setJumpPrompt(null);
         onOpenChange(false);
         onImported(imported);
       },
-      onError: (mutationError) => setError(getApiErrorMessage(mutationError)),
+      onError: (mutationError) => {
+        setJumpPrompt(null);
+        handleImportError(mutationError, input);
+      },
     });
+  }
+
+  function handleImportError(mutationError: unknown, input: ImportInvoiceInput) {
+    const conflict = classifyImportConflict(mutationError);
+    if (conflict === null) {
+      setError(getBusinessErrorMessage(mutationError, "import"));
+      return;
+    }
+    if (conflict === "duplicate") {
+      setError("Die Rechnungsnummer ist bereits vergeben.");
+      return;
+    }
+    // Nach bestätigtem Sprung kann kein Sprung-409 mehr kommen: Dann ist die Nummer vergeben
+    if (input.allowNumberJump === true) {
+      setError("Die Rechnungsnummer ist bereits vergeben.");
+      return;
+    }
+    setJumpPrompt({ input, apiMessage: readApiError(mutationError).message });
   }
 
   return (
@@ -128,13 +161,19 @@ export function ImportInvoiceDialog({ open, onOpenChange, onImported }: Props) {
         onOpenChange={onOpenChange}
         size="lg"
         title="Bestandsrechnung importieren"
-        description="Eine bereits außerhalb erstellte Rechnung mit ihrem PDF übernehmen. Spätere Rechnungsnummern schließen daran an."
+        description={
+          "Eine bereits außerhalb erstellte Rechnung mit ihrem PDF übernehmen. "
+          + "Spätere Rechnungsnummern schließen daran an."
+        }
         onSubmit={handleSubmit}
         submitLabel="Importieren"
         isSubmitting={importInvoice.isPending}
       >
         {error !== null && (
-          <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+          >
             {error}
           </p>
         )}
@@ -267,6 +306,24 @@ export function ImportInvoiceDialog({ open, onOpenChange, onImported }: Props) {
           <p className="text-xs text-muted-foreground">Höchstens 10 MiB. Die Datei wird unverändert archiviert.</p>
         </div>
       </FormDialog>
+
+      <ConfirmDialog
+        open={jumpPrompt !== null}
+        onOpenChange={(isOpen) => !isOpen && setJumpPrompt(null)}
+        onConfirm={() => jumpPrompt !== null && submitImport({ ...jumpPrompt.input, allowNumberJump: true })}
+        isLoading={importInvoice.isPending}
+        title="Nummer überspringt Nummern"
+        description={
+          <div className="space-y-2">
+            <p>Die Nummer überspringt Nummern. Trotzdem importieren?</p>
+            <p>
+              {jumpPrompt?.apiMessage ??
+                "Möglicherweise ist die Nummer auch bereits vergeben; dann schlägt der Import fehl."}
+            </p>
+          </div>
+        }
+        confirmLabel="Trotzdem importieren"
+      />
 
       {/* Außerhalb des Formulars, damit dessen Submit nicht in den Import-Dialog durchschlägt */}
       {isCustomerDialogOpen && (

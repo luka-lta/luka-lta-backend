@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2, Upload } from "lucide-react";
@@ -148,15 +148,16 @@ function SettingsForm({ settings }: SettingsFormProps) {
   });
   const saveSettings = useSaveBusinessSettings();
 
-  // Nach dem Speichern (bzw. Logo-Upload) die normalisierten Serverwerte übernehmen.
+  // Nur nach dem Speichern die normalisierten Serverwerte übernehmen; ein Logo-Upload ändert `settings`,
+  // darf ungespeicherte Eingaben aber nicht zurücksetzen.
   const { reset } = form;
-  useEffect(() => {
-    reset(buildDefaultValues(settings));
-  }, [settings, reset]);
 
   const handleSubmit = form.handleSubmit((values) => {
     saveSettings.mutate(buildInput(values), {
-      onSuccess: () => toast.success("Firmendaten gespeichert"),
+      onSuccess: (saved) => {
+        reset(buildDefaultValues(saved));
+        toast.success("Firmendaten gespeichert");
+      },
       onError: (error) => toast.error(getApiErrorMessage(error)),
     });
   });
@@ -261,7 +262,9 @@ export default function BusinessSettingsFeature() {
           <Alert>
             <AlertCircle className="size-4" />
             <AlertTitle>Firmendaten unvollständig</AlertTitle>
-            <AlertDescription>Ohne vollständige Firmendaten können keine Dokumente festgeschrieben werden</AlertDescription>
+            <AlertDescription>
+              Ohne vollständige Firmendaten können keine Dokumente festgeschrieben werden
+            </AlertDescription>
           </Alert>
         )}
         <SettingsForm settings={settings.data} />

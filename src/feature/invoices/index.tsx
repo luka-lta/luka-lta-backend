@@ -130,7 +130,11 @@ function InvoiceList({ onCreate, onOpen }: InvoiceListProps) {
   function renderContent() {
     if (invoices.error) {
       return (
-        <ErrorState title="Rechnungen konnten nicht geladen werden" error={invoices.error} onRetry={() => invoices.refetch()} />
+        <ErrorState
+          title="Rechnungen konnten nicht geladen werden"
+          error={invoices.error}
+          onRetry={() => invoices.refetch()}
+        />
       );
     }
     if (invoices.isPending) {
@@ -150,7 +154,8 @@ function InvoiceList({ onCreate, onOpen }: InvoiceListProps) {
           description={
             isFiltered
               ? "Mit diesen Filtern gibt es keine Rechnung."
-              : "Lege eine Rechnung an, erstelle sie aus einem angenommenen Angebot oder importiere eine Bestandsrechnung."
+              : "Lege eine Rechnung an, erstelle sie aus einem angenommenen Angebot "
+                + "oder importiere eine Bestandsrechnung."
           }
           action={
             isFiltered ? undefined : (

@@ -1,6 +1,8 @@
 import { isAxiosError } from "axios";
 import api from "@/api/axios.ts";
 
+/** Wartezeit, bis die Blob-URL nach dem Download-Klick freigegeben wird. */
+const REVOKE_DELAY_MS = 10_000;
 const FILE_NAME_PATTERN = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i;
 
 function readFileName(contentDisposition: unknown, fallback: string): string {
@@ -42,6 +44,7 @@ export async function downloadPdf(path: string, fileName: string): Promise<void>
     link.click();
     link.remove();
   } finally {
-    URL.revokeObjectURL(url);
+    // Erst nach dem Klick freigeben: Der Browser startet den Download asynchron
+    setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
   }
 }

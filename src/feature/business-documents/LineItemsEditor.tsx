@@ -36,7 +36,9 @@ interface Props {
  * geparste Cent-Wert; bei ungültigem Preistext bleibt der letzte gültige Wert stehen und das Feld wird markiert.
  */
 export function LineItemsEditor({ value, onChange, disabled, onValidityChange }: Props) {
-  const [priceTexts, setPriceTexts] = useState<string[]>(() => value.map((item) => centsToInputText(item.unitPriceCents)));
+  const [priceTexts, setPriceTexts] = useState<string[]>(() =>
+    value.map((item) => centsToInputText(item.unitPriceCents)),
+  );
 
   const isValid =
     value.every((item) => parseQuantityHundredths(item.quantity) !== null) &&
@@ -122,7 +124,9 @@ export function LineItemsEditor({ value, onChange, disabled, onValidityChange }:
               <div className="space-y-1.5 sm:text-right">
                 <span className="block text-sm font-medium">Summe</span>
                 <div className="flex h-9 items-center sm:justify-end">
-                  <MoneyText cents={hundredths === null ? 0 : calculateLineTotalCents(item.unitPriceCents, hundredths)} />
+                  <MoneyText
+                    cents={hundredths === null ? 0 : calculateLineTotalCents(item.unitPriceCents, hundredths)}
+                  />
                 </div>
               </div>
               <Button

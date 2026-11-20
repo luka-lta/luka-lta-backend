@@ -16,8 +16,12 @@ import {
 } from "@/api/offers/hooks.ts";
 import { getOfferPdfPath } from "@/api/offers/endpoints.ts";
 import { getApiErrorMessage } from "@/lib/apiError.ts";
+import { useBusinessSettings } from "@/api/business-settings/hooks.ts";
 import { formatIsoDate } from "@/lib/dateTimeUtils.ts";
 import { DocumentStatusBadge } from "@/feature/business-documents/DocumentStatusBadge.tsx";
+import { FinalizeHints } from "@/feature/business-documents/FinalizeHints.tsx";
+import { getBusinessErrorMessage } from "@/feature/business-documents/businessErrors.ts";
+import { getDocumentDateHint } from "@/feature/business-documents/finalizeGuards.ts";
 import { MoneyText } from "@/feature/business-documents/MoneyText.tsx";
 import { downloadPdf } from "@/feature/business-documents/downloadPdf.ts";
 import type { Offer } from "@/feature/offers/schema/offer.ts";
@@ -49,13 +53,20 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
   const setStatus = useSetOfferStatus();
   const duplicateOffer = useDuplicateOffer();
   const deleteOffer = useDeleteOffer();
+  const businessSettings = useBusinessSettings();
   const [pending, setPending] = useState<PendingAction>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const offer = offerQuery.data;
 
   if (offerQuery.error) {
-    return <ErrorState title="Angebot konnte nicht geladen werden" error={offerQuery.error} onRetry={() => offerQuery.refetch()} />;
+    return (
+      <ErrorState
+        title="Angebot konnte nicht geladen werden"
+        error={offerQuery.error}
+        onRetry={() => offerQuery.refetch()}
+      />
+    );
   }
   if (offer === undefined) {
     return (
@@ -67,6 +78,10 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
   }
 
   const isDraft = offer.status === "draft";
+  // Spiegelt die API-Prüfungen; Produktion liefert bei Ablehnung nur generische Texte
+  const isSettingsMissing = businessSettings.data === null;
+  const dateHint = isDraft ? getDocumentDateHint(offer.offerDate) : null;
+  const isSendBlocked = isSettingsMissing || dateHint !== null;
   const pdfFallbackName = offer.offerNumber === null ? "Angebot-Entwurf.pdf" : `${offer.offerNumber}.pdf`;
 
   async function handleDownload() {
@@ -86,7 +101,7 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
         toast.success(`Angebot ${sent.offerNumber ?? ""} versendet`.replace("  ", " "));
         setPending(null);
       },
-      onError: (error) => toast.error(getApiErrorMessage(error)),
+      onError: (error) => toast.error(getBusinessErrorMessage(error, "send")),
     });
   }
 
@@ -153,7 +168,7 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
             <Trash2 />
             Löschen
           </Button>
-          <Button onClick={() => setPending("send")}>
+          <Button onClick={() => setPending("send")} disabled={isSendBlocked}>
             <Send />
             Versenden (festschreiben)
           </Button>
@@ -183,6 +198,8 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
         meta={<DocumentStatusBadge kind="offer" status={offer.status} />}
         actions={actions}
       />
+
+      {isDraft && <FinalizeHints isSettingsMissing={isSettingsMissing} dateHint={dateHint} />}
 
       <dl className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3">
         <div>
@@ -241,8 +258,12 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
         onOpenChange={(open) => !open && setPending(null)}
         onConfirm={handleSend}
         isLoading={sendOffer.isPending}
+        disabled={isSendBlocked}
         title="Angebot versenden und festschreiben?"
-        description="Das Angebot erhält jetzt seine Nummer und das PDF wird erzeugt. Nummer und PDF sind danach endgültig, das Angebot kann nicht mehr bearbeitet oder gelöscht werden."
+        description={
+          "Das Angebot erhält jetzt seine Nummer und das PDF wird erzeugt. Nummer und PDF sind danach endgültig, "
+          + "das Angebot kann nicht mehr bearbeitet oder gelöscht werden."
+        }
         confirmLabel="Festschreiben"
       />
       <ConfirmDialog

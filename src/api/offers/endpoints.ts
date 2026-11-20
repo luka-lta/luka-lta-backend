@@ -41,7 +41,10 @@ export async function sendOffer(offerId: string): Promise<Offer> {
 }
 
 /** Nur aus "sent" heraus. */
-export async function setOfferStatus(offerId: string, status: Extract<OfferStatus, "accepted" | "rejected">): Promise<Offer> {
+export async function setOfferStatus(
+  offerId: string,
+  status: Extract<OfferStatus, "accepted" | "rejected">,
+): Promise<Offer> {
   const response = await api.post(`/offers/${offerId}/status`, { status });
   return offerResultSchema.parse(response.data.data).offer;
 }

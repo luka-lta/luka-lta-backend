@@ -81,7 +81,8 @@ export interface InvoiceInput {
   paymentTermDays?: number;
   introText: string | null;
   closingText?: string | null;
-  items: LineItemInput[];
+  /** Fehlt bei Anzahlungsentwürfen: Die API lehnt `items` dort mit 400 ab. */
+  items?: LineItemInput[];
 }
 
 /** Body für POST /offers/{offerId}/invoices: bei Anzahlung genau eins von Betrag oder Prozent. */
@@ -101,6 +102,8 @@ export interface ImportInvoiceInput {
   serviceDate: string | null;
   totalCents: number;
   file: File;
+  /** Bestätigter Nummernsprung: sendet `allowNumberJump=1` (sonst antwortet die API bei einem Sprung mit 409). */
+  allowNumberJump?: boolean;
 }
 
 /** Listenfilter; `undefined` = nicht filtern. `overdue: 1` = nur offene, überfällige Rechnungen. */
