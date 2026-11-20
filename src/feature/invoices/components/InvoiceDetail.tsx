@@ -20,6 +20,7 @@ import { getDocumentDateHint } from "@/feature/business-documents/finalizeGuards
 import { MoneyText } from "@/feature/business-documents/MoneyText.tsx";
 import { downloadPdf } from "@/feature/business-documents/downloadPdf.ts";
 import { MarkPaidDialog } from "@/feature/invoices/components/MarkPaidDialog.tsx";
+import { PdfPreview } from "@/feature/business-documents/PdfPreview.tsx";
 import { CancelInvoiceDialog } from "@/feature/invoices/components/CancelInvoiceDialog.tsx";
 import {
   getDeductionLabel,
@@ -195,6 +196,7 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
   );
 
   const title = invoice.invoiceNumber ?? `${KIND_LABELS[invoice.kind]} (Entwurf)`;
+  const previewTitle = invoice.invoiceNumber === null ? "Vorschau Entwurf" : `Vorschau ${invoice.invoiceNumber}`;
 
   return (
     <div className="space-y-6">
@@ -211,165 +213,180 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
         actions={actions}
       />
 
-      {isDraft && invoice.isLocked && (
-        <p
-          role="status"
-          className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm"
-        >
-          <Lock className="size-4 shrink-0" aria-hidden />
-          {translateLockReason(invoice.lockReason ?? "")}
-        </p>
-      )}
-      {isServiceMissing && (
-        <p role="status" className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
-          Leistungsdatum fehlt: Vor dem Festschreiben ein Leistungsdatum oder einen Leistungszeitraum eintragen
-          (Bearbeiten).
-        </p>
-      )}
-
-      {isDraft && <FinalizeHints isSettingsMissing={isSettingsMissing} dateHint={dateHint} />}
-
-      <dl className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3">
-        <Meta label="Rechnungsdatum">{formatIsoDate(invoice.invoiceDate)}</Meta>
-        <Meta label={invoice.servicePeriodStart !== null ? "Leistungszeitraum" : "Leistungsdatum"}>
-          {service ?? <span className="text-muted-foreground">–</span>}
-        </Meta>
-        {invoice.dueDate !== null && <Meta label="Fällig am">{formatIsoDate(invoice.dueDate)}</Meta>}
-        {invoice.paidAt !== null && <Meta label="Bezahlt am">{formatIsoDate(invoice.paidAt)}</Meta>}
-        {invoice.offerNumber !== null && <Meta label="Angebot">{invoice.offerNumber}</Meta>}
-        {invoice.depositInvoiceId !== null && (
-          <Meta label="Anzahlung">
-            <Button
-              variant="link"
-              className="h-auto p-0"
-              onClick={() => onOpenInvoice(invoice.depositInvoiceId ?? "")}
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] xl:gap-6">
+        <div className="space-y-6">
+          {isDraft && invoice.isLocked && (
+            <p
+              role="status"
+              className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm"
             >
-              {invoice.depositInvoiceNumber ?? "Entwurf öffnen"}
-            </Button>
-          </Meta>
-        )}
-        {invoice.cancelsInvoiceId !== null && (
-          <Meta label="Storno zu">
-            <Button
-              variant="link"
-              className="h-auto p-0"
-              onClick={() => onOpenInvoice(invoice.cancelsInvoiceId ?? "")}
-            >
-              {invoice.cancelsInvoiceNumber ?? "Rechnung öffnen"}
-            </Button>
-          </Meta>
-        )}
-      </dl>
+              <Lock className="size-4 shrink-0" aria-hidden />
+              {translateLockReason(invoice.lockReason ?? "")}
+            </p>
+          )}
+          {isServiceMissing && (
+            <p role="status" className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+              Leistungsdatum fehlt: Vor dem Festschreiben ein Leistungsdatum oder einen Leistungszeitraum eintragen
+              (Bearbeiten).
+            </p>
+          )}
 
-      {invoice.introText !== null && <p className="whitespace-pre-line text-sm">{invoice.introText}</p>}
+          {isDraft && <FinalizeHints isSettingsMissing={isSettingsMissing} dateHint={dateHint} />}
 
-      {invoice.items.length === 0 ? (
-        <p className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
-          Importierte Rechnung ohne Positionen, Details stehen im PDF.
-        </p>
-      ) : (
-        <div className="rounded-xl border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">Pos.</TableHead>
-                <TableHead>Beschreibung</TableHead>
-                <TableHead className="text-right">Menge</TableHead>
-                <TableHead>Einheit</TableHead>
-                <TableHead className="text-right">Einzelpreis</TableHead>
-                <TableHead className="text-right">Summe</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoice.items.map((item) => (
-                <TableRow key={item.position}>
-                  <TableCell>{item.position}</TableCell>
-                  <TableCell className="whitespace-pre-line">{item.description}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatQuantity(item.quantity)}</TableCell>
-                  <TableCell>{item.unit}</TableCell>
-                  <TableCell className="text-right">
-                    <MoneyText cents={item.unitPriceCents} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <MoneyText cents={item.lineTotalCents} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <dl className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3">
+            <Meta label="Rechnungsdatum">{formatIsoDate(invoice.invoiceDate)}</Meta>
+            <Meta label={invoice.servicePeriodStart !== null ? "Leistungszeitraum" : "Leistungsdatum"}>
+              {service ?? <span className="text-muted-foreground">–</span>}
+            </Meta>
+            {invoice.dueDate !== null && <Meta label="Fällig am">{formatIsoDate(invoice.dueDate)}</Meta>}
+            {invoice.paidAt !== null && <Meta label="Bezahlt am">{formatIsoDate(invoice.paidAt)}</Meta>}
+            {invoice.offerNumber !== null && <Meta label="Angebot">{invoice.offerNumber}</Meta>}
+            {invoice.depositInvoiceId !== null && (
+              <Meta label="Anzahlung">
+                <Button
+                  variant="link"
+                  className="h-auto p-0"
+                  onClick={() => onOpenInvoice(invoice.depositInvoiceId ?? "")}
+                >
+                  {invoice.depositInvoiceNumber ?? "Entwurf öffnen"}
+                </Button>
+              </Meta>
+            )}
+            {invoice.cancelsInvoiceId !== null && (
+              <Meta label="Storno zu">
+                <Button
+                  variant="link"
+                  className="h-auto p-0"
+                  onClick={() => onOpenInvoice(invoice.cancelsInvoiceId ?? "")}
+                >
+                  {invoice.cancelsInvoiceNumber ?? "Rechnung öffnen"}
+                </Button>
+              </Meta>
+            )}
+          </dl>
+
+          {invoice.introText !== null && <p className="whitespace-pre-line text-sm">{invoice.introText}</p>}
+
+          {invoice.items.length === 0 ? (
+            <p className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
+              Importierte Rechnung ohne Positionen, Details stehen im PDF.
+            </p>
+          ) : (
+            <div className="rounded-xl border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">Pos.</TableHead>
+                    <TableHead>Beschreibung</TableHead>
+                    <TableHead className="text-right">Menge</TableHead>
+                    <TableHead>Einheit</TableHead>
+                    <TableHead className="text-right">Einzelpreis</TableHead>
+                    <TableHead className="text-right">Summe</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoice.items.map((item) => (
+                    <TableRow key={item.position}>
+                      <TableCell>{item.position}</TableCell>
+                      <TableCell className="whitespace-pre-line">{item.description}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatQuantity(item.quantity)}</TableCell>
+                      <TableCell>{item.unit}</TableCell>
+                      <TableCell className="text-right">
+                        <MoneyText cents={item.unitPriceCents} />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <MoneyText cents={item.lineTotalCents} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          <dl className="ml-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-sm">
+            {hasDeduction && (
+              <>
+                <dt>Zwischensumme</dt>
+                <dd className="text-right">
+                  <MoneyText cents={invoice.subtotalCents} />
+                </dd>
+                <dt>{getDeductionLabel(invoice)}</dt>
+                <dd className="text-right">
+                  <MoneyText cents={-invoice.depositDeductionCents} />
+                </dd>
+              </>
+            )}
+            <dt className="font-semibold">{hasDeduction ? "Restbetrag" : "Gesamtbetrag"}</dt>
+            <dd className="text-right font-semibold">
+              <MoneyText cents={invoice.totalCents} />
+            </dd>
+          </dl>
+          {isDraft && invoice.kind === "final" && (
+            <p className="text-xs text-muted-foreground">
+              Vorläufiger Abzug; maßgeblich ist der Stand der Anzahlung beim Festschreiben.
+            </p>
+          )}
+
+          {invoice.closingText !== null && <p className="whitespace-pre-line text-sm">{invoice.closingText}</p>}
+
+          <ConfirmDialog
+            open={pending === "finalize"}
+            onOpenChange={(open) => !open && setPending(null)}
+            onConfirm={handleFinalize}
+            isLoading={finalizeInvoice.isPending}
+            disabled={isFinalizeBlocked}
+            title="Rechnung festschreiben?"
+            description={
+              "Die Rechnung erhält jetzt ihre fortlaufende Rechnungsnummer und das PDF wird erzeugt. "
+              + "Nummer und PDF sind danach endgültig: Die Rechnung kann nicht mehr bearbeitet oder gelöscht werden, "
+              + "Korrekturen gehen nur noch per Storno."
+            }
+            confirmLabel="Endgültig festschreiben"
+          />
+          <ConfirmDialog
+            open={pending === "delete"}
+            onOpenChange={(open) => !open && setPending(null)}
+            onConfirm={handleDelete}
+            isLoading={deleteInvoice.isPending}
+            destructive
+            title="Entwurf löschen?"
+            description="Der Entwurf wird endgültig gelöscht."
+            confirmLabel="Löschen"
+          />
+          <ConfirmDialog
+            open={pending === "unpay"}
+            onOpenChange={(open) => !open && setPending(null)}
+            onConfirm={handleUnpay}
+            isLoading={unmarkPaid.isPending}
+            title="Zahlung zurücknehmen?"
+            description="Die Rechnung gilt danach wieder als offen, das Zahlungsdatum wird entfernt."
+            confirmLabel="Zurücknehmen"
+          />
+          {pending === "pay" && (
+            <MarkPaidDialog invoice={invoice} open onOpenChange={(open) => !open && setPending(null)} />
+          )}
+          {pending === "cancel" && (
+            <CancelInvoiceDialog
+              invoice={invoice}
+              open
+              onOpenChange={(open) => !open && setPending(null)}
+              onCancelled={(cancellation) => onOpenInvoice(cancellation.invoiceId)}
+            />
+          )}
         </div>
-      )}
 
-      <dl className="ml-auto grid w-full max-w-sm grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-sm">
-        {hasDeduction && (
-          <>
-            <dt>Zwischensumme</dt>
-            <dd className="text-right">
-              <MoneyText cents={invoice.subtotalCents} />
-            </dd>
-            <dt>{getDeductionLabel(invoice)}</dt>
-            <dd className="text-right">
-              <MoneyText cents={-invoice.depositDeductionCents} />
-            </dd>
-          </>
-        )}
-        <dt className="font-semibold">{hasDeduction ? "Restbetrag" : "Gesamtbetrag"}</dt>
-        <dd className="text-right font-semibold">
-          <MoneyText cents={invoice.totalCents} />
-        </dd>
-      </dl>
-      {isDraft && invoice.kind === "final" && (
-        <p className="text-xs text-muted-foreground">
-          Vorläufiger Abzug; maßgeblich ist der Stand der Anzahlung beim Festschreiben.
-        </p>
-      )}
-
-      {invoice.closingText !== null && <p className="whitespace-pre-line text-sm">{invoice.closingText}</p>}
-
-      <ConfirmDialog
-        open={pending === "finalize"}
-        onOpenChange={(open) => !open && setPending(null)}
-        onConfirm={handleFinalize}
-        isLoading={finalizeInvoice.isPending}
-        disabled={isFinalizeBlocked}
-        title="Rechnung festschreiben?"
-        description={
-          "Die Rechnung erhält jetzt ihre fortlaufende Rechnungsnummer und das PDF wird erzeugt. "
-          + "Nummer und PDF sind danach endgültig: Die Rechnung kann nicht mehr bearbeitet oder gelöscht werden, "
-          + "Korrekturen gehen nur noch per Storno."
-        }
-        confirmLabel="Endgültig festschreiben"
-      />
-      <ConfirmDialog
-        open={pending === "delete"}
-        onOpenChange={(open) => !open && setPending(null)}
-        onConfirm={handleDelete}
-        isLoading={deleteInvoice.isPending}
-        destructive
-        title="Entwurf löschen?"
-        description="Der Entwurf wird endgültig gelöscht."
-        confirmLabel="Löschen"
-      />
-      <ConfirmDialog
-        open={pending === "unpay"}
-        onOpenChange={(open) => !open && setPending(null)}
-        onConfirm={handleUnpay}
-        isLoading={unmarkPaid.isPending}
-        title="Zahlung zurücknehmen?"
-        description="Die Rechnung gilt danach wieder als offen, das Zahlungsdatum wird entfernt."
-        confirmLabel="Zurücknehmen"
-      />
-      {pending === "pay" && (
-        <MarkPaidDialog invoice={invoice} open onOpenChange={(open) => !open && setPending(null)} />
-      )}
-      {pending === "cancel" && (
-        <CancelInvoiceDialog
-          invoice={invoice}
-          open
-          onOpenChange={(open) => !open && setPending(null)}
-          onCancelled={(cancellation) => onOpenInvoice(cancellation.invoiceId)}
-        />
-      )}
+        <aside className="mt-6 xl:sticky xl:top-4 xl:mt-0 xl:self-start">
+          <PdfPreview
+            path={getInvoicePdfPath(invoiceId)}
+            queryKey={["invoices", "pdf", invoiceId]}
+            title={previewTitle}
+            isFinal={!isDraft}
+            isBlocked={isDraft && isSettingsMissing}
+            blockedHint={<FinalizeHints isSettingsMissing dateHint={null} />}
+          />
+        </aside>
+      </div>
     </div>
   );
 }

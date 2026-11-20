@@ -24,6 +24,7 @@ import { getBusinessErrorMessage } from "@/feature/business-documents/businessEr
 import { getDocumentDateHint } from "@/feature/business-documents/finalizeGuards.ts";
 import { MoneyText } from "@/feature/business-documents/MoneyText.tsx";
 import { downloadPdf } from "@/feature/business-documents/downloadPdf.ts";
+import { PdfPreview } from "@/feature/business-documents/PdfPreview.tsx";
 import type { Offer } from "@/feature/offers/schema/offer.ts";
 
 interface Props {
@@ -190,6 +191,8 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
     </>
   );
 
+  const previewTitle = offer.offerNumber === null ? "Vorschau Entwurf" : `Vorschau ${offer.offerNumber}`;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -199,102 +202,117 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
         actions={actions}
       />
 
-      {isDraft && <FinalizeHints isSettingsMissing={isSettingsMissing} dateHint={dateHint} />}
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] xl:gap-6">
+        <div className="space-y-6">
+          {isDraft && <FinalizeHints isSettingsMissing={isSettingsMissing} dateHint={dateHint} />}
 
-      <dl className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3">
-        <div>
-          <dt className="text-xs text-muted-foreground">Angebotsdatum</dt>
-          <dd>{formatIsoDate(offer.offerDate)}</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-muted-foreground">Gültig bis</dt>
-          <dd>{formatIsoDate(offer.validUntil)}</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-muted-foreground">Summe</dt>
-          <dd className="font-semibold">
-            <MoneyText cents={offer.totalCents} />
-          </dd>
-        </div>
-      </dl>
+          <dl className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3">
+            <div>
+              <dt className="text-xs text-muted-foreground">Angebotsdatum</dt>
+              <dd>{formatIsoDate(offer.offerDate)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Gültig bis</dt>
+              <dd>{formatIsoDate(offer.validUntil)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Summe</dt>
+              <dd className="font-semibold">
+                <MoneyText cents={offer.totalCents} />
+              </dd>
+            </div>
+          </dl>
 
-      {offer.introText !== null && <p className="whitespace-pre-line text-sm">{offer.introText}</p>}
+          {offer.introText !== null && <p className="whitespace-pre-line text-sm">{offer.introText}</p>}
 
-      <div className="rounded-xl border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">Pos.</TableHead>
-              <TableHead>Beschreibung</TableHead>
-              <TableHead className="text-right">Menge</TableHead>
-              <TableHead>Einheit</TableHead>
-              <TableHead className="text-right">Einzelpreis</TableHead>
-              <TableHead className="text-right">Summe</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {offer.items.map((item) => (
-              <TableRow key={item.position}>
-                <TableCell>{item.position}</TableCell>
-                <TableCell className="whitespace-pre-line">{item.description}</TableCell>
-                <TableCell className="text-right tabular-nums">{formatQuantity(item.quantity)}</TableCell>
-                <TableCell>{item.unit}</TableCell>
-                <TableCell className="text-right">
-                  <MoneyText cents={item.unitPriceCents} />
-                </TableCell>
-                <TableCell className="text-right">
-                  <MoneyText cents={item.lineTotalCents} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+          <div className="rounded-xl border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">Pos.</TableHead>
+                  <TableHead>Beschreibung</TableHead>
+                  <TableHead className="text-right">Menge</TableHead>
+                  <TableHead>Einheit</TableHead>
+                  <TableHead className="text-right">Einzelpreis</TableHead>
+                  <TableHead className="text-right">Summe</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {offer.items.map((item) => (
+                  <TableRow key={item.position}>
+                    <TableCell>{item.position}</TableCell>
+                    <TableCell className="whitespace-pre-line">{item.description}</TableCell>
+                    <TableCell className="text-right tabular-nums">{formatQuantity(item.quantity)}</TableCell>
+                    <TableCell>{item.unit}</TableCell>
+                    <TableCell className="text-right">
+                      <MoneyText cents={item.unitPriceCents} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <MoneyText cents={item.lineTotalCents} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {offer.closingText !== null && <p className="whitespace-pre-line text-sm">{offer.closingText}</p>}
+
+          <ConfirmDialog
+            open={pending === "send"}
+            onOpenChange={(open) => !open && setPending(null)}
+            onConfirm={handleSend}
+            isLoading={sendOffer.isPending}
+            disabled={isSendBlocked}
+            title="Angebot versenden und festschreiben?"
+            description={
+              "Das Angebot erhält jetzt seine Nummer und das PDF wird erzeugt. Nummer und PDF sind danach endgültig, "
+              + "das Angebot kann nicht mehr bearbeitet oder gelöscht werden."
+            }
+            confirmLabel="Festschreiben"
+          />
+          <ConfirmDialog
+            open={pending === "delete"}
+            onOpenChange={(open) => !open && setPending(null)}
+            onConfirm={handleDelete}
+            isLoading={deleteOffer.isPending}
+            destructive
+            title="Entwurf löschen?"
+            description="Der Entwurf wird endgültig gelöscht."
+            confirmLabel="Löschen"
+          />
+          <ConfirmDialog
+            open={pending === "accept"}
+            onOpenChange={(open) => !open && setPending(null)}
+            onConfirm={() => handleDecision("accepted")}
+            isLoading={setStatus.isPending}
+            title="Angebot als angenommen markieren?"
+            description="Danach können Rechnungen aus dem Angebot erstellt werden."
+            confirmLabel="Angenommen"
+          />
+          <ConfirmDialog
+            open={pending === "reject"}
+            onOpenChange={(open) => !open && setPending(null)}
+            onConfirm={() => handleDecision("rejected")}
+            isLoading={setStatus.isPending}
+            destructive
+            title="Angebot als abgelehnt markieren?"
+            description="Der Status lässt sich danach nicht mehr ändern."
+            confirmLabel="Abgelehnt"
+          />
+        </div>
+
+        <aside className="mt-6 xl:sticky xl:top-4 xl:mt-0 xl:self-start">
+          <PdfPreview
+            path={getOfferPdfPath(offerId)}
+            queryKey={["offers", "pdf", offerId]}
+            title={previewTitle}
+            isFinal={!isDraft}
+            isBlocked={isDraft && isSettingsMissing}
+            blockedHint={<FinalizeHints isSettingsMissing dateHint={null} />}
+          />
+        </aside>
       </div>
-
-      {offer.closingText !== null && <p className="whitespace-pre-line text-sm">{offer.closingText}</p>}
-
-      <ConfirmDialog
-        open={pending === "send"}
-        onOpenChange={(open) => !open && setPending(null)}
-        onConfirm={handleSend}
-        isLoading={sendOffer.isPending}
-        disabled={isSendBlocked}
-        title="Angebot versenden und festschreiben?"
-        description={
-          "Das Angebot erhält jetzt seine Nummer und das PDF wird erzeugt. Nummer und PDF sind danach endgültig, "
-          + "das Angebot kann nicht mehr bearbeitet oder gelöscht werden."
-        }
-        confirmLabel="Festschreiben"
-      />
-      <ConfirmDialog
-        open={pending === "delete"}
-        onOpenChange={(open) => !open && setPending(null)}
-        onConfirm={handleDelete}
-        isLoading={deleteOffer.isPending}
-        destructive
-        title="Entwurf löschen?"
-        description="Der Entwurf wird endgültig gelöscht."
-        confirmLabel="Löschen"
-      />
-      <ConfirmDialog
-        open={pending === "accept"}
-        onOpenChange={(open) => !open && setPending(null)}
-        onConfirm={() => handleDecision("accepted")}
-        isLoading={setStatus.isPending}
-        title="Angebot als angenommen markieren?"
-        description="Danach können Rechnungen aus dem Angebot erstellt werden."
-        confirmLabel="Angenommen"
-      />
-      <ConfirmDialog
-        open={pending === "reject"}
-        onOpenChange={(open) => !open && setPending(null)}
-        onConfirm={() => handleDecision("rejected")}
-        isLoading={setStatus.isPending}
-        destructive
-        title="Angebot als abgelehnt markieren?"
-        description="Der Status lässt sich danach nicht mehr ändern."
-        confirmLabel="Abgelehnt"
-      />
     </div>
   );
 }
