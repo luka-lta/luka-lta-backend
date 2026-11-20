@@ -56,6 +56,7 @@ export function OfferEditor({ offer, onCancel, onSaved }: Props) {
   const [introText, setIntroText] = useState(offer?.introText ?? "");
   const [closingText, setClosingText] = useState(offer?.closingText ?? "");
   const [items, setItems] = useState<LineItemInput[]>(() => toLineItemInputs(offer));
+  const [areItemsValid, setAreItemsValid] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = offer !== null;
@@ -77,6 +78,7 @@ export function OfferEditor({ offer, onCancel, onSaved }: Props) {
     if (introText.length > MAX_TEXT_LENGTH || closingText.length > MAX_TEXT_LENGTH) {
       return `Texte dürfen höchstens ${MAX_TEXT_LENGTH} Zeichen lang sein`;
     }
+    if (!areItemsValid) return "Bitte ungültige Preise oder Mengen in den Positionen korrigieren";
     return validateLineItems(items);
   }
 
@@ -187,7 +189,7 @@ export function OfferEditor({ offer, onCancel, onSaved }: Props) {
         <h2 id="offer-items-heading" className="text-base font-semibold">
           Positionen
         </h2>
-        <LineItemsEditor value={items} onChange={setItems} disabled={isSaving} />
+        <LineItemsEditor value={items} onChange={setItems} disabled={isSaving} onValidityChange={setAreItemsValid} />
       </section>
 
       <div className="space-y-2">

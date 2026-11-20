@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
@@ -24,14 +24,26 @@ interface Props {
   value: LineItemInput[];
   onChange: (next: LineItemInput[]) => void;
   disabled?: boolean;
+  /**
+   * Meldet, ob alle Preis- und Mengentexte gültig sind (auch beim ersten Rendern). Ungültige Preistexte
+   * sind in `value` nicht sichtbar; Aufrufer MÜSSEN Speichern/Versenden sperren, solange `false` gemeldet wird.
+   */
+  onValidityChange?: (isValid: boolean) => void;
 }
 
 /**
  * Positionen bearbeiten. Der Preis wird als Text geführt (Zwischenzustände wie "1,"), nach oben geht nur der
  * geparste Cent-Wert; bei ungültigem Preistext bleibt der letzte gültige Wert stehen und das Feld wird markiert.
  */
-export function LineItemsEditor({ value, onChange, disabled }: Props) {
+export function LineItemsEditor({ value, onChange, disabled, onValidityChange }: Props) {
   const [priceTexts, setPriceTexts] = useState<string[]>(() => value.map((item) => centsToInputText(item.unitPriceCents)));
+
+  const isValid =
+    value.every((item) => parseQuantityHundredths(item.quantity) !== null) &&
+    value.every((_, index) => parseEuroInput(priceTexts[index] ?? "") !== null);
+  useEffect(() => {
+    onValidityChange?.(isValid);
+  }, [isValid, onValidityChange]);
 
   function updateItem(index: number, patch: Partial<LineItemInput>) {
     onChange(value.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)));
