@@ -7,6 +7,7 @@ import {
     CalendarDays,
     CloudSun,
     Container as ContainerIcon,
+    FileText,
     FolderKanban,
     KeyRound,
     LayoutDashboard,
@@ -52,6 +53,7 @@ export const sidebarData: SidebarData = {
                     items: [
                         { title: 'Übersicht', url: '/dashboard/business', icon: LayoutGrid },
                         { title: 'Kunden', url: '/dashboard/business/customers', icon: Users },
+                        { title: 'Angebote', url: '/dashboard/business/offers', icon: FileText },
                         { title: 'Einstellungen', url: '/dashboard/business/settings', icon: Settings },
                     ],
                 },
