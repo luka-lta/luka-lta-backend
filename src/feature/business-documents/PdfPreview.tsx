@@ -26,6 +26,9 @@ export function PdfPreview({ path, queryKey, title, isFinal, isBlocked = false, 
     queryFn: async () => (await loadPdfBlob(path)).blob,
     enabled: !isBlocked,
     staleTime: isFinal ? Infinity : 0,
+    // Jeder Refetch liefert ein neues Blob und lädt das iframe neu: nur bei Invalidierung neu laden
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
   const blob = query.data;
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
