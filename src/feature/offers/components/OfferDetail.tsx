@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState, type ReactNode } from "react";
 import { Check, Copy, Download, Pencil, Send, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -202,7 +203,7 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
         actions={actions}
       />
 
-      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] xl:gap-6">
+      <div className="2xl:grid 2xl:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] 2xl:gap-6">
         <div className="space-y-6">
           {isDraft && <FinalizeHints isSettingsMissing={isSettingsMissing} dateHint={dateHint} />}
 
@@ -302,14 +303,22 @@ export function OfferDetail({ offerId, onBack, onEdit, onDeleted, onOpenOffer, i
           />
         </div>
 
-        <aside className="mt-6 xl:sticky xl:top-4 xl:mt-0 xl:self-start">
+        <aside className="mt-6 2xl:sticky 2xl:top-[4.5rem] 2xl:mt-0 2xl:self-start">
           <PdfPreview
             path={getOfferPdfPath(offerId)}
             queryKey={["offers", "pdf", offerId]}
             title={previewTitle}
             isFinal={!isDraft}
             isBlocked={isDraft && isSettingsMissing}
-            blockedHint={<FinalizeHints isSettingsMissing dateHint={null} />}
+            blockedHint={
+              <>
+                Vorschau verfügbar, sobald die{" "}
+                <Link to="/dashboard/business/settings" className="font-medium underline underline-offset-4">
+                  Firmendaten
+                </Link>{" "}
+                hinterlegt sind.
+              </>
+            }
           />
         </aside>
       </div>

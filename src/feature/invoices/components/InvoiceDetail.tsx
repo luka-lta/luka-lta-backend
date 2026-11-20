@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState, type ReactNode } from "react";
 import { BadgeCheck, Ban, Download, Lock, Pencil, Stamp, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
@@ -213,7 +214,7 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
         actions={actions}
       />
 
-      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] xl:gap-6">
+      <div className="2xl:grid 2xl:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] 2xl:gap-6">
         <div className="space-y-6">
           {isDraft && invoice.isLocked && (
             <p
@@ -376,14 +377,22 @@ export function InvoiceDetail({ invoiceId, onBack, onEdit, onDeleted, onOpenInvo
           )}
         </div>
 
-        <aside className="mt-6 xl:sticky xl:top-4 xl:mt-0 xl:self-start">
+        <aside className="mt-6 2xl:sticky 2xl:top-[4.5rem] 2xl:mt-0 2xl:self-start">
           <PdfPreview
             path={getInvoicePdfPath(invoiceId)}
             queryKey={["invoices", "pdf", invoiceId]}
             title={previewTitle}
             isFinal={!isDraft}
             isBlocked={isDraft && isSettingsMissing}
-            blockedHint={<FinalizeHints isSettingsMissing dateHint={null} />}
+            blockedHint={
+              <>
+                Vorschau verfügbar, sobald die{" "}
+                <Link to="/dashboard/business/settings" className="font-medium underline underline-offset-4">
+                  Firmendaten
+                </Link>{" "}
+                hinterlegt sind.
+              </>
+            }
           />
         </aside>
       </div>

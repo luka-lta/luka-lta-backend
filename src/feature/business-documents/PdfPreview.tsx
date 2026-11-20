@@ -26,11 +26,15 @@ export function PdfPreview({ path, queryKey, title, isFinal, isBlocked = false, 
     queryFn: async () => (await loadPdfBlob(path)).blob,
     enabled: !isBlocked,
     staleTime: isFinal ? Infinity : 0,
+    // Entwurfs-PDFs nicht cachen: sonst erscheint nach Invalidierung beim Remount kurz das veraltete PDF
+    gcTime: isFinal ? undefined : 0,
     // Jeder Refetch liefert ein neues Blob und lädt das iframe neu: nur bei Invalidierung neu laden
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
   const blob = query.data;
+  // Entwurf wird neu geladen: das angezeigte PDF ist veraltet
+  const isRefreshing = !isFinal && query.isFetching && blob !== undefined;
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,7 +42,7 @@ export function PdfPreview({ path, queryKey, title, isFinal, isBlocked = false, 
       setBlobUrl(null);
       return;
     }
-    const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
     setBlobUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [blob]);
@@ -61,16 +65,33 @@ export function PdfPreview({ path, queryKey, title, isFinal, isBlocked = false, 
   }
   if (blobUrl === null) {
     return (
-      <Skeleton className="aspect-[1/1.414] w-full rounded-xl" aria-busy="true" aria-label="Vorschau wird geladen" />
+      <Skeleton
+        className="aspect-[1/1.414] w-full rounded-xl 2xl:aspect-auto 2xl:h-[calc(100svh-8rem)]"
+        role="status"
+        aria-busy="true"
+        aria-label="Vorschau wird geladen"
+      />
     );
   }
   return (
     <div className="space-y-2">
-      <iframe
-        src={`${blobUrl}${VIEWER_FRAGMENT}`}
-        title={title}
-        className="aspect-[1/1.414] w-full rounded-xl border bg-white"
-      />
+      <div className="relative aspect-[1/1.414] w-full 2xl:aspect-auto 2xl:h-[calc(100svh-8rem)]">
+        <iframe
+          src={`${blobUrl}${VIEWER_FRAGMENT}`}
+          title={title}
+          className="size-full rounded-xl border bg-white"
+        />
+        {isRefreshing && (
+          <div
+            role="status"
+            className="absolute inset-0 flex items-start justify-center rounded-xl bg-background/60 p-3"
+          >
+            <span className="rounded-md border bg-background px-3 py-1 text-sm text-muted-foreground">
+              Vorschau wird aktualisiert…
+            </span>
+          </div>
+        )}
+      </div>
       <a
         href={blobUrl}
         target="_blank"
