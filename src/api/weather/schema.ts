@@ -23,6 +23,8 @@ export const WeatherReadingSchema = z.object({
     fetchedAt: z.string(),
 });
 
+// Optionale Felder sind `nullish`: ältere API-Stände bzw. Forecast-Caches liefern sie
+// nicht, und die UI blendet fehlende Werte aus, statt sie zu erfinden.
 export const WeatherHourPointSchema = z.object({
     time: z.string(),
     temperatureCelsius: z.number(),
@@ -30,6 +32,15 @@ export const WeatherHourPointSchema = z.object({
     precipitationMm: z.number(),
     condition: z.string(),
     icon: z.string(),
+    isDay: z.boolean().nullish(),
+    humidityPercent: z.number().nullish(),
+    dewPointCelsius: z.number().nullish(),
+    windSpeedKmh: z.number().nullish(),
+    windDirectionDegrees: z.number().nullish(),
+    windGustsKmh: z.number().nullish(),
+    visibilityMeters: z.number().nullish(),
+    cloudCoverPercent: z.number().nullish(),
+    uvIndex: z.number().nullish(),
 });
 
 export const WeatherForecastDaySchema = z.object({
@@ -43,6 +54,16 @@ export const WeatherForecastDaySchema = z.object({
     uvIndexMax: z.number().nullable(),
     sunrise: z.string(),
     sunset: z.string(),
+    windSpeedMaxKmh: z.number().nullish(),
+    windGustsMaxKmh: z.number().nullish(),
+    windDirectionDominantDegrees: z.number().nullish(),
+});
+
+export const WeatherAirQualitySchema = z.object({
+    europeanAqi: z.number().nullable(),
+    pm25: z.number().nullable(),
+    pm10: z.number().nullable(),
+    measuredAt: z.string(),
 });
 
 export const weatherStatusSchema = z.enum(["ok", "stale", "pending", "not_configured"]);
@@ -59,6 +80,7 @@ export const weatherDetailSchema = z.object({
     current: WeatherReadingSchema.nullable(),
     hourly: z.array(WeatherHourPointSchema),
     daily: z.array(WeatherForecastDaySchema),
+    airQuality: WeatherAirQualitySchema.nullish(),
 });
 
 export const weatherLocationResultSchema = z.object({
@@ -69,6 +91,7 @@ export type WeatherLocation = z.infer<typeof WeatherLocationSchema>;
 export type WeatherReading = z.infer<typeof WeatherReadingSchema>;
 export type WeatherHourPoint = z.infer<typeof WeatherHourPointSchema>;
 export type WeatherForecastDay = z.infer<typeof WeatherForecastDaySchema>;
+export type WeatherAirQuality = z.infer<typeof WeatherAirQualitySchema>;
 export type WeatherStatus = z.infer<typeof weatherStatusSchema>;
 export type WeatherSummary = z.infer<typeof weatherSummarySchema>;
 export type WeatherDetail = z.infer<typeof weatherDetailSchema>;
