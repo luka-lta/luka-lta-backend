@@ -11,6 +11,19 @@ export function formatUptime(seconds: number | null): string {
     return `${minutes}m`;
 }
 
+/** Ab dieser Gesamtgröße (in GB) wird Speicher in TB statt GB angezeigt. */
+const STORAGE_TB_THRESHOLD_GB = 1000;
+
+/**
+ * Formatiert belegten und gesamten Speicher in einer gemeinsamen Einheit. Kleine Disks
+ * (z. B. 64 GB SD-Karte) in TB anzuzeigen, ergäbe sonst "0 / 0,1 TB".
+ */
+export function formatStorage(usedGb: number, totalGb: number): string {
+    const format = (value: number) => value.toLocaleString("de-DE", { maximumFractionDigits: 1 });
+    if (totalGb < STORAGE_TB_THRESHOLD_GB) return `${format(usedGb)} / ${format(totalGb)} GB`;
+    return `${format(usedGb / STORAGE_TB_THRESHOLD_GB)} / ${format(totalGb / STORAGE_TB_THRESHOLD_GB)} TB`;
+}
+
 export function overallUptimeSeconds(hosts: Host[]): number | null {
     if (hosts.length === 0) return null;
     return Math.min(...hosts.map((h) => h.uptimeSeconds));

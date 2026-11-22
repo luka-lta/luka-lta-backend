@@ -6,7 +6,7 @@ import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } f
 import { Area, AreaChart } from "recharts";
 import { Cpu, HardDrive, MemoryStick, Thermometer } from "lucide-react";
 import type { Host } from "@/feature/homelab/types.ts";
-import { formatUptime } from "@/feature/homelab/data.ts";
+import { formatStorage, formatUptime } from "@/feature/homelab/data.ts";
 import { cn } from "@/lib/utils.ts";
 import { usageTone } from "@/feature/homelab/status.ts";
 import { PageSection } from "@/components/layout/page.tsx";
@@ -115,7 +115,7 @@ export function HostOverview({ hosts }: HostOverviewProps) {
                                     icon={HardDrive}
                                     label="Disk"
                                     percent={host.diskUsagePercent}
-                                    detail={`${(host.diskUsedGb / 1000).toLocaleString("de-DE", { maximumFractionDigits: 1 })} / ${(host.diskTotalGb / 1000).toLocaleString("de-DE", { maximumFractionDigits: 1 })} TB`}
+                                    detail={formatStorage(host.diskUsedGb, host.diskTotalGb)}
                                 />
                             </div>
 
