@@ -26,6 +26,10 @@ import ApiKeysPage from "@/pages/Dashboard/ApiKeysPage.tsx";
 import CalendarPage from "@/pages/Dashboard/CalendarPage.tsx";
 import WeatherPage from "@/pages/Dashboard/WeatherPage.tsx";
 import BusinessPage from "@/pages/Dashboard/BusinessPage.tsx";
+import CustomersPage from "@/pages/Dashboard/CustomersPage.tsx";
+import OffersPage from "@/pages/Dashboard/OffersPage.tsx";
+import InvoicesPage from "@/pages/Dashboard/InvoicesPage.tsx";
+import BusinessSettingsPage from "@/pages/Dashboard/BusinessSettingsPage.tsx";
 import NotificationsPage from "@/pages/Dashboard/NotificationsPage.tsx";
 import ProjectsPage from "@/pages/Dashboard/ProjectsPage.tsx";
 import NotFoundPage from "@/pages/Dashboard/NotFoundPage.tsx";
@@ -84,6 +88,22 @@ export const appRouter = createBrowserRouter([
             {
                 path: 'business',
                 element: <BusinessPage />
+            },
+            {
+                path: 'business/customers',
+                element: <CustomersPage />
+            },
+            {
+                path: 'business/offers',
+                element: <OffersPage />
+            },
+            {
+                path: 'business/invoices',
+                element: <InvoicesPage />
+            },
+            {
+                path: 'business/settings',
+                element: <BusinessSettingsPage />
             },
             {
                 path: 'tools',
